@@ -4,6 +4,9 @@ Wszystkie teksty interfejsu są po polsku. Poniżej prawdziwe napisy z apki i re
 których można użyć w makietach. Liczby pochodzą z wygenerowanych danych demo (18 miesięcy treningów),
 więc są wiarygodne, ale nie są czyimiś prawdziwymi treningami.
 
+**Emoji do usunięcia.** W kilku miejscach są dzisiaj `🏆`, `🎉` i `✔`/`✘` — to stan obecny, nie wzór.
+W nowym projekcie nie ma emoji; te miejsca mają dostać ikony z jednego zestawu albo samą typografię.
+
 ## Formaty (obowiązkowe)
 | Co | Format | Przykład |
 |---|---|---|

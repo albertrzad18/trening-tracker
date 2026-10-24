@@ -46,11 +46,35 @@ realne wartości. Żadnych „Lorem ipsum" i żadnego angielskiego w interfejsie
 
 ## Czego chcemy od strony odczuć
 
-- Ma wyglądać jak narzędzie sportowe, a nie jak formularz: duże liczby, wyraźna hierarchia,
-  jeden najważniejszy wskaźnik na ekranie.
-- Ma być czytelne po treningu, jednym rzutem oka, często przy słabym świetle.
-- Bez przesady z dekoracją: żadnych gradientów na pół ekranu, żadnych maskotek.
-- Dane są najważniejsze. Jeśli coś nie niesie informacji, ma zniknąć.
+Trzy słowa: **nowoczesne, płynne, minimalistyczne.**
+
+- **Nowoczesne** znaczy: przemyślana typografia i odstępy, a nie modne ozdobniki. Ma wyglądać jak
+  narzędzie zrobione przez kogoś, kto wie, co robi, a nie jak szablon ze sklepu z motywami.
+- **Płynne** znaczy: spokojne przejścia między ekranami, wykresy, które dorysowują się przy wejściu,
+  reakcja na dotyk bez skakania układu. Animacja ma tłumaczyć zmianę, a nie zwracać na siebie uwagę.
+  Żadnych odbić, sprężyn i efektów dłuższych niż ułamek sekundy.
+- **Minimalistyczne** znaczy: mało elementów, dużo powietrza, jeden najważniejszy wskaźnik na ekranie.
+  Duże liczby, wyraźna hierarchia, czytelność jednym rzutem oka po treningu, często przy słabym świetle.
+  Jeśli coś nie niesie informacji, ma zniknąć.
+
+### Czego nie chcemy (to jest ważne)
+
+Projekt **nie może wyglądać jak typowy wygenerowany interfejs**. Konkretnie, nie używaj:
+
+- **emoji w interfejsie** — żadnych 🏆 🎉 🔥 💪 ani znaczków w rodzaju ✔/✘ wstawianych jako ikony.
+  Jeśli coś ma mieć symbol, to ma to być ikona z jednego, spójnego zestawu (Material Symbols
+  albo własny), w kolorze z palety;
+- fioletowo-niebieskich gradientów, poświat, szkła (glassmorphism) i cieni dokładanych „dla efektu";
+- stosu identycznych zaokrąglonych kart jedna pod drugą (to jest dokładnie dzisiejszy problem);
+- napompowanych nagłówków typu „Twoje niesamowite postępy" i haseł motywacyjnych;
+- dekoracyjnych ilustracji, maskotek, ikon-naklejek, losowych akcentów koloru;
+- trzech odcieni szarości tam, gdzie wystarczy jeden kontrast.
+
+Dekoracja ma być efektem ubocznym dobrej kompozycji, nie osobną warstwą doklejoną na wierzch.
+Kolor zostaw danym: dyscyplinom, wykresom i jednemu akcentowi na akcję. Reszta to tło i tekst.
+
+**Uwaga:** w obecnej apce jest kilka emoji (`🏆` przy nowych rekordach, `🎉` przy zrobionym celu,
+`✔`/`✘` w historii celu). Zaprojektuj, co wchodzi w ich miejsce.
 
 ## Jak chcę to dostać
 

@@ -26,7 +26,9 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 - Package: `io.github.albertrzad18.treningtracker`, jeden moduł `app`. Wersje bibliotek w `gradle/libs.versions.toml`.
 - `local.properties` (poza gitem) ma `sdk.dir=C\:/Users/Albert/AppData/Local/Android/Sdk`.
 - Pierwszy build trwa kilka minut (pobieranie zależności), kolejne są szybsze.
-- Struktura `app/src/main/java/io/github/albertrzad18/treningtracker/`: `data/` (`db` Room, `healthconnect`, `sync`), `domain/` (czysty Kotlin: agregacje, lista, pulpit, porównanie), `ui/` (`dashboard`, `workouts`, `detail`, `more`, `debug`, `common`, `format`, `theme`), `TreningApp` (współdzielone obiekty).
+- Struktura `app/src/main/java/io/github/albertrzad18/treningtracker/`: `data/` (`db` Room, `healthconnect`, `sync`, `demo` dane testowe tylko w debug), `domain/` (czysty Kotlin: agregacje, lista, pulpit, porównanie, statystyki, podsumowania), `ui/` (`dashboard`, `workouts`, `detail`, `stats`, `summaries`, `more`, `debug`, `charts`, `common`, `format`, `theme`), `TreningApp` (współdzielone obiekty).
+- Wykresy: Vico 3 (słupki i linie) plus własne rysunki na `Canvas` (heatmapa, pierścień). Kolory wykresów biorą się z motywu przez `ProvideVicoTheme` w `Theme.kt`.
+- Dane demo: w buildzie debug ekran diagnostyki wczytuje sztuczne treningi (`dataOrigin = "demo"`), żeby dało się sprawdzić ekrany bez zegarka.
 - Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację.
 - Wyniki rozpoznania danych: `docs/ETAP0-WYNIKI.md`.
 

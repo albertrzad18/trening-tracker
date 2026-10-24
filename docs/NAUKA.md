@@ -145,3 +145,40 @@ Zadania w tle, które system uruchamia nawet gdy apka jest zamknięta. `SyncWork
 ### Changes API (Health Connect)
 Zamiast czytać wszystko za każdym razem, bierzemy token i pytamy tylko o zmiany od ostatniego razu
 (`SyncRepository`). Token jest zapisany w `SharedPreferences` (`SyncPrefs`). Gdy wygaśnie, robimy pełny odczyt.
+
+## Wykresy (Etap 2)
+
+### Vico: `CartesianChartHost`
+Vico rysuje wykresy słupkowe i liniowe. Trzy elementy: **model** (dane), **chart** (warstwy i osie), **host** (to, co widać).
+Dane wkładamy do `CartesianChartModelProducer` w `runTransaction` (to funkcja `suspend`, więc wołamy ją w `LaunchedEffect`).
+
+```kotlin
+LaunchedEffect(bars) {
+    producer.runTransaction { columnModel { bars.forEachIndexed { i, bar -> series(bar.values, key = i) } } }
+}
+CartesianChartHost(chart = rememberCartesianChart(rememberColumnCartesianLayer(), bottomAxis = ...), modelProducer = producer)
+```
+
+`MergeMode.Stacked` układa słupki jeden na drugim (u nas: dyscypliny w jednym słupku miesiąca).
+`CartesianValueFormatter` zamienia liczbę z osi na tekst, dzięki czemu oś pokazuje `25 h` albo `paź`, a nie `1500`.
+
+### `LaunchedEffect`
+Uruchamia kod `suspend` wtedy, gdy ekran się pojawi albo gdy zmieni się klucz podany w nawiasie.
+`LaunchedEffect(bars)` znaczy „przelicz wykres, gdy zmienią się dane”. Bez klucza kod poszedłby raz i nigdy więcej.
+
+### Rysowanie samemu: `Canvas` i `drawRoundRect`
+Heatmapa i pierścień dyscyplin nie są wykresem Vico, tylko własnym rysunkiem.
+`Canvas { }` daje powierzchnię, na której liczymy piksele (`cell.toPx()`) i rysujemy kształty: `drawRoundRect`, `drawArc`.
+`BoxWithConstraints` podaje dostępną szerokość (`maxWidth`), więc można policzyć rozmiar kwadratu: szerokość podzielona przez liczbę tygodni.
+
+### `LazyColumn`: `item` i `items`
+`LazyColumn` tworzy tylko te elementy, które widać. `item { }` to jeden element, `items(lista) { }` to wiele.
+`key` pomaga Compose rozpoznać element po zmianie listy (u nas `key = { it.id }`).
+
+### `plurals` (liczba mnoga)
+Polski ma inne formy dla 1, 2–4 i 5+. Zamiast `"%d dni"` używamy `<plurals name="days">` w `strings.xml`
+i `pluralStringResource(R.plurals.days, n, n)`, więc wychodzi „1 dzień”, ale „5 dni”.
+
+### `BuildConfig.DEBUG`
+Stała generowana przez Gradle: `true` w buildzie debug, `false` w release. Używamy jej, żeby przyciski
+„Wczytaj dane demo” były tylko u nas, a nie u kogoś, kto dostanie APK. Wymaga `buildFeatures { buildConfig = true }`.

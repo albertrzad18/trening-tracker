@@ -175,10 +175,65 @@ Heatmapa i pierścień dyscyplin nie są wykresem Vico, tylko własnym rysunkiem
 `LazyColumn` tworzy tylko te elementy, które widać. `item { }` to jeden element, `items(lista) { }` to wiele.
 `key` pomaga Compose rozpoznać element po zmianie listy (u nas `key = { it.id }`).
 
-### `plurals` (liczba mnoga)
-Polski ma inne formy dla 1, 2–4 i 5+. Zamiast `"%d dni"` używamy `<plurals name="days">` w `strings.xml`
-i `pluralStringResource(R.plurals.days, n, n)`, więc wychodzi „1 dzień”, ale „5 dni”.
+### Liczba mnoga po polsku
+Polski ma inne formy dla 1, 2–4 i 5+. Androidowe `plurals` wybierają formę **według języka telefonu**,
+więc na telefonie po angielsku „6” trafia do formy `other` i wychodzi „6 okresu”.
+Dlatego odmieniamy sami (`pluralPl` w `Formatters.kt`), a w `strings.xml` trzymamy tylko same słowa.
 
-### `BuildConfig.DEBUG`
+```kotlin
+pluralPl(6, "okres", "okresy", "okresów") // "6 okresów"
+```
+
+### `BuildConfig.DEBUG` (było przy danych demo)
 Stała generowana przez Gradle: `true` w buildzie debug, `false` w release. Używamy jej, żeby przyciski
 „Wczytaj dane demo” były tylko u nas, a nie u kogoś, kto dostanie APK. Wymaga `buildFeatures { buildConfig = true }`.
+
+## Etap 3: więcej danych i mapa
+
+### Migracja Room
+Zmiana schematu bazy wymaga podbicia `version` i napisania migracji, inaczej apka wywala się przy starcie
+(„Room cannot verify the data integrity”). Migracja to zwykły SQL; my w wersji 2 tylko dokładamy tabele,
+więc zapisane treningi zostają nietknięte.
+
+```kotlin
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) { db.execSQL("CREATE TABLE IF NOT EXISTS ...") }
+}
+Room.databaseBuilder(...).addMigrations(MIGRATION_1_2).build()
+```
+
+Najprostszy sposób na poprawny SQL: zbudować projekt i przepisać `createSql` z `app/schemas/....AppDatabase/2.json`.
+Room porównuje schemat po migracji z tym plikiem, więc błąd od razu wychodzi przy uruchomieniu.
+
+### Klucz obcy i `CASCADE`
+`@ForeignKey(..., onDelete = CASCADE)` w `SampleEntity` mówi bazie: skasuj próbki razem z treningiem.
+Dzięki temu nie trzeba o tym pamiętać w kodzie.
+
+### `@Transaction`
+Metoda DAO oznaczona `@Transaction` wykonuje kilka zapytań „wszystko albo nic”.
+U nas `replaceSamples` najpierw kasuje stare próbki, potem wstawia nowe — przerwanie w połowie zostawiłoby pustkę.
+
+### `AndroidView`: stary widok w Compose
+Mapa (osmdroid) to zwykły `View` z Androida, nie Compose. `AndroidView(factory = { MapView(it) }, update = { ... })`
+tworzy go raz i pozwala aktualizować przy zmianie danych. `factory` to tworzenie, `update` to odświeżanie.
+Taki widok sam się nie przycina do swojego miejsca, dlatego dokładamy `Modifier.clip(...)`.
+
+### Ustawienia w `SharedPreferences` + `StateFlow`
+`AppSettings` czyta i zapisuje proste wartości (tętno maksymalne, długość basenu, motyw) i wystawia je jako
+`StateFlow`, więc ekrany odświeżają się same, tak samo jak przy danych z Room.
+
+### `FlowRow`
+Jak `Row`, ale zawija elementy do następnej linii, gdy zabraknie miejsca. Używamy w oknie dodawania celu,
+żeby chipy nie uciekały poza ekran.
+
+## Etap 4: wydanie
+
+### Ikona adaptacyjna
+Ikona Androida 8+ ma dwie warstwy (tło i to, co na nim) rysowane jako `vector drawable`, czyli ścieżki,
+a nie obrazek. Launcher sam przycina je do kształtu, jakiego używa system. Plik `mipmap-anydpi-v26/ic_launcher.xml`
+spina warstwy, a `<monochrome>` daje wersję jednokolorową pod motywowane ikony.
+
+### Podpisywanie APK
+Każdy APK musi być podpisany kluczem z pliku keystore. Android pozwala na aktualizację apki tylko tym samym
+kluczem, więc keystore trzeba zachować (kopia zapasowa!). Hasła trzymamy w `keystore.properties` poza repo
+(wpis w `.gitignore`), a `build.gradle.kts` czyta je przy budowaniu wydania.

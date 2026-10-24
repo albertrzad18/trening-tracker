@@ -140,6 +140,10 @@ Osobno dla każdej dyscypliny. Każdy rekord pokazuje datę i link do treningu:
 i zapisać w nim ten plan jako `docs/PLAN.md`. Dopiero potem: Android Studio, szkielet apki, `git init` i publiczne repo
 `trening-tracker` na GitHubie. Do tego trzeba zainstalować `gh` i Android Studio.
 
+**Stan na 24 paź 2026:** etapy 0–4 zrobione i wypchnięte; apka sprawdzona na emulatorze na danych demo,
+czeka na test na telefonie z prawdziwymi treningami. Rower na dworze niesprawdzony na prawdziwych danych
+(sezon), więc mapa tras i trasa z Health Connect przetestowane tylko na danych demo.
+
 0. **Rozpoznanie danych:** szkielet apki z ekranem debug, który wypisuje, co faktycznie przychodzi z Health Connect dla każdej z 3 dyscyplin. Wynik decyduje o szczegółach ekranu basenu i trenażera.
 1. **MVP:** synchronizacja do Room, tabela treningów z filtrami i sortowaniem, podstawowe szczegóły treningu, Pulpit.
 2. **Wykresy i podsumowania:** ekran Statystyki (wykresy 1–8), podsumowania tygodnia, miesiąca i roku.

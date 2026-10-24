@@ -21,6 +21,7 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 ## Komendy
 - Build: `./gradlew assembleDebug`
 - Testy: `./gradlew test`
+- Wydanie: `./gradlew assembleRelease` (wymaga `keystore.properties` w katalogu projektu, poza gitem).
 
 - Środowisko: Gradle 9.8.2 (wrapper), AGP 9.4.1 (wbudowany Kotlin, bez wtyczki `kotlin-android`), Kotlin 2.4.21, KSP, compileSdk/targetSdk 37, minSdk 28.
 - Package: `io.github.albertrzad18.treningtracker`, jeden moduł `app`. Wersje bibliotek w `gradle/libs.versions.toml`.
@@ -29,7 +30,8 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 - Struktura `app/src/main/java/io/github/albertrzad18/treningtracker/`: `data/` (`db` Room, `healthconnect`, `sync`, `demo` dane testowe tylko w debug), `domain/` (czysty Kotlin: agregacje, lista, pulpit, porównanie, statystyki, podsumowania), `ui/` (`dashboard`, `workouts`, `detail`, `stats`, `summaries`, `more`, `debug`, `charts`, `common`, `format`, `theme`), `TreningApp` (współdzielone obiekty).
 - Wykresy: Vico 3 (słupki i linie) plus własne rysunki na `Canvas` (heatmapa, pierścień). Kolory wykresów biorą się z motywu przez `ProvideVicoTheme` w `Theme.kt`.
 - Dane demo: w buildzie debug ekran diagnostyki wczytuje sztuczne treningi (`dataOrigin = "demo"`), żeby dało się sprawdzić ekrany bez zegarka.
-- Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację.
+- Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację (`data/db/Migrations.kt`).
+  Baza jest w wersji 2: `workouts`, `samples` (tętno i prędkość), `route_points`, `goals`.
 - Wyniki rozpoznania danych: `docs/ETAP0-WYNIKI.md`.
 
 ## Nauka (ważne)

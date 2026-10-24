@@ -6,6 +6,62 @@
     <string name="discipline_road">Rower</string>
     <string name="discipline_trainer">Trenażer</string>
 
+    <string name="nav_dashboard">Pulpit</string>
+    <string name="nav_workouts">Treningi</string>
+    <string name="nav_more">Więcej</string>
+    <string name="back">Wróć</string>
+
+    <string name="gate_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji. Zainstaluj go albo zaktualizuj w Sklepie Play.</string>
+    <string name="gate_needs_permissions">Apka potrzebuje uprawnień do odczytu treningów z Health Connect. Dane zostają na Twoim telefonie.</string>
+    <string name="gate_grant">Nadaj uprawnienia</string>
+
+    <string name="dashboard_week">Ten tydzień</string>
+    <string name="dashboard_vs_prev">%1$s vs poprzedni tydzień</string>
+    <string name="dashboard_latest">Ostatnie treningi</string>
+    <string name="dashboard_empty_title">Brak treningów</string>
+    <string name="dashboard_empty_body">Treningi pojawią się tutaj po synchronizacji z Health Connect. Upewnij się, że Health Sync przesyła treningi z Huawei Health.</string>
+    <string name="sync_now">Synchronizuj teraz</string>
+    <string name="tile_count">Treningi: %1$d</string>
+    <string name="week_no_workouts">Brak treningów w tym tygodniu</string>
+
+    <string name="metric_time">Czas</string>
+    <string name="metric_distance">Dystans</string>
+    <string name="metric_calories">Kalorie</string>
+    <string name="metric_avg_hr">Śr. tętno</string>
+    <string name="metric_max_hr">Maks. tętno</string>
+    <string name="metric_avg_speed">Śr. prędkość</string>
+    <string name="metric_max_speed">Maks. prędkość</string>
+    <string name="metric_pace">Tempo</string>
+    <string name="metric_elevation">Przewyższenie</string>
+
+    <string name="period_week">Tydzień</string>
+    <string name="period_month">Miesiąc</string>
+    <string name="period_year">Rok</string>
+    <string name="period_all">Wszystko</string>
+
+    <string name="col_date">Data</string>
+    <string name="col_time">Czas</string>
+    <string name="col_distance">Dystans</string>
+    <string name="col_calories">Kalorie</string>
+    <string name="col_speed">Tempo / prędkość</string>
+    <string name="col_hr">Tętno</string>
+    <string name="list_empty">Brak treningów dla wybranych filtrów.</string>
+    <string name="list_sum">Suma (%1$d)</string>
+    <string name="list_average">Średni czas: %1$s</string>
+    <string name="list_group_total">%1$s · %2$d</string>
+
+    <string name="detail_not_found">Nie znaleziono treningu.</string>
+    <string name="detail_compare_title">Na tle Twojej średniej</string>
+    <string name="detail_compare_duration">Czas: %1$s</string>
+    <string name="detail_compare_distance">Dystans: %1$s</string>
+    <string name="detail_compare_hint">Średnia z innych treningów tej dyscypliny</string>
+
+    <string name="more_sync_title">Synchronizacja</string>
+    <string name="more_last_sync">Ostatnia synchronizacja: %1$s</string>
+    <string name="more_never">Jeszcze nie synchronizowano</string>
+    <string name="more_error">Ostatni błąd: %1$s</string>
+    <string name="more_diagnostics">Diagnostyka danych z Health Connect</string>
+
     <string name="debug_title">Dane z Health Connect</string>
     <string name="debug_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji.</string>
     <string name="debug_needs_permissions">Apka potrzebuje uprawnień do odczytu treningów z Health Connect.</string>

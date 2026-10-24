@@ -56,3 +56,10 @@ fun formatPercentChange(percent: Double): String {
         else -> "$rounded%"
     }
 }
+
+/** `14:30` */
+fun formatTime(time: java.time.LocalTime): String = time.format(DateTimeFormatter.ofPattern("HH:mm", PL))
+
+/** `24 paź 2026, 14:30` */
+fun formatDateTime(dateTime: java.time.LocalDateTime): String =
+    formatDate(dateTime.toLocalDate()) + ", " + formatTime(dateTime.toLocalTime())

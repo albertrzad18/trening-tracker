@@ -53,4 +53,13 @@ class FormattersTest {
         assertEquals("-5%", formatPercentChange(-5.0))
         assertEquals("0%", formatPercentChange(0.2))
     }
+
+    @Test
+    fun timeAndDateTime() {
+        assertEquals("07:05", formatTime(java.time.LocalTime.of(7, 5)))
+        assertEquals(
+            "24 paź 2026, 14:30",
+            formatDateTime(java.time.LocalDateTime.of(2026, 10, 24, 14, 30)),
+        )
+    }
 }

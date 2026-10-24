@@ -1,0 +1,177 @@
+package io.github.albertrzad18.treningtracker.ui
+
+import android.app.Application
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import io.github.albertrzad18.treningtracker.R
+import io.github.albertrzad18.treningtracker.TreningApp
+import io.github.albertrzad18.treningtracker.data.sync.SyncScheduler
+import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardScreen
+import io.github.albertrzad18.treningtracker.ui.debug.DebugScreen
+import io.github.albertrzad18.treningtracker.ui.detail.WorkoutDetailScreen
+import io.github.albertrzad18.treningtracker.ui.more.MoreScreen
+import io.github.albertrzad18.treningtracker.ui.workouts.WorkoutsScreen
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+sealed interface GateState {
+    data object Loading : GateState
+    data object Unavailable : GateState
+    data class NeedsPermissions(val toRequest: Set<String>) : GateState
+    data object Ready : GateState
+}
+
+/** Sprawdza, czy Health Connect jest dostępny i czy mamy uprawnienie do odczytu treningów. */
+class GateViewModel(app: Application) : AndroidViewModel(app) {
+    private val treningApp = app as TreningApp
+    private val _state = MutableStateFlow<GateState>(GateState.Loading)
+    val state: StateFlow<GateState> = _state.asStateFlow()
+
+    fun refresh() {
+        viewModelScope.launch {
+            val gateway = treningApp.gateway
+            if (gateway.sdkStatus() != HealthConnectClient.SDK_AVAILABLE) {
+                _state.value = GateState.Unavailable
+                return@launch
+            }
+            val granted = gateway.grantedPermissions()
+            if (HealthPermission.getReadPermission(ExerciseSessionRecord::class) in granted) {
+                _state.value = GateState.Ready
+                // Synchronizacja przy każdym otwarciu apki; w tle dba o nią cykliczne zadanie.
+                SyncScheduler.syncNow(treningApp)
+            } else {
+                _state.value = GateState.NeedsPermissions(gateway.wantedPermissions())
+            }
+        }
+    }
+}
+
+@Composable
+fun AppRoot(gate: GateViewModel = viewModel()) {
+    val state by gate.state.collectAsStateWithLifecycle()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { gate.refresh() }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        PermissionController.createRequestPermissionResultContract(),
+    ) { gate.refresh() }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        when (val s = state) {
+            GateState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+            GateState.Unavailable -> Message(stringResource(R.string.gate_unavailable))
+            is GateState.NeedsPermissions -> Message(stringResource(R.string.gate_needs_permissions)) {
+                Button(onClick = { permissionLauncher.launch(s.toRequest) }) { Text(stringResource(R.string.gate_grant)) }
+            }
+            GateState.Ready -> MainScaffold()
+        }
+    }
+}
+
+@Composable
+private fun Message(text: String, action: @Composable () -> Unit = {}) {
+    Column(
+        Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(text, style = MaterialTheme.typography.bodyLarge)
+        action()
+    }
+}
+
+private object Routes {
+    const val DASHBOARD = "dashboard"
+    const val WORKOUTS = "workouts"
+    const val MORE = "more"
+    const val DEBUG = "debug"
+    const val DETAIL = "workout/{id}"
+    fun detail(id: String) = "workout/${java.net.URLEncoder.encode(id, "UTF-8")}"
+}
+
+private data class TopLevel(val route: String, val labelRes: Int, val icon: ImageVector)
+
+private val topLevel = listOf(
+    TopLevel(Routes.DASHBOARD, R.string.nav_dashboard, Icons.Filled.Home),
+    TopLevel(Routes.WORKOUTS, R.string.nav_workouts, Icons.AutoMirrored.Filled.List),
+    TopLevel(Routes.MORE, R.string.nav_more, Icons.Filled.MoreVert),
+)
+
+@Composable
+private fun MainScaffold() {
+    val nav = rememberNavController()
+    val backStack by nav.currentBackStackEntryAsState()
+    val destination = backStack?.destination
+    val showBar = topLevel.any { item -> destination?.hierarchy?.any { it.route == item.route } == true }
+
+    Scaffold(
+        bottomBar = {
+            if (showBar) {
+                NavigationBar {
+                    topLevel.forEach { item ->
+                        NavigationBarItem(
+                            selected = destination?.hierarchy?.any { it.route == item.route } == true,
+                            onClick = {
+                                nav.navigate(item.route) {
+                                    popUpTo(Routes.DASHBOARD) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(item.icon, contentDescription = null) },
+                            label = { Text(stringResource(item.labelRes)) },
+                        )
+                    }
+                }
+            }
+        },
+    ) { padding ->
+        NavHost(nav, startDestination = Routes.DASHBOARD, modifier = Modifier.padding(padding)) {
+            composable(Routes.DASHBOARD) { DashboardScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
+            composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
+            composable(Routes.MORE) { MoreScreen(onOpenDiagnostics = { nav.navigate(Routes.DEBUG) }) }
+            composable(Routes.DETAIL) { WorkoutDetailScreen(onBack = { nav.popBackStack() }) }
+            composable(Routes.DEBUG) { DebugScreen() }
+        }
+    }
+}

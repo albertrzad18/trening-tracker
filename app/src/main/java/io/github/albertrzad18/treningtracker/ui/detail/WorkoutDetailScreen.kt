@@ -98,7 +98,8 @@ class WorkoutDetailViewModel(app: Application, handle: SavedStateHandle) : Andro
     private val dao = treningApp.database.workoutDao()
     private val sampleDao = treningApp.database.sampleDao()
 
-    val state: StateFlow<DetailState> = combine(
+    /** Dane z bazy bez stref tętna: strefy zależą jeszcze od ustawień, więc dochodzą niżej. */
+    private val fromDatabase = combine(
         dao.observeById(id),
         dao.observeAll(),
         sampleDao.observeSamples(id, SampleType.HEART_RATE),
@@ -106,20 +107,28 @@ class WorkoutDetailViewModel(app: Application, handle: SavedStateHandle) : Andro
         sampleDao.observeRoute(id),
     ) { entity, all, hr, speed, route ->
         if (entity == null) {
-            DetailState.NotFound
+            null
         } else {
             val workout = entity.toDomain()
-            val zones = heartRateZones(treningApp.settings.state.value.maxHeartRate)
-            val heartRate = hr.map { it.toDomain() }
             DetailState.Found(
                 workout = workout,
                 comparison = compareToAverage(workout, all.map { it.toDomain() }),
-                heartRate = heartRate,
+                heartRate = hr.map { it.toDomain() },
                 speed = speed.map { it.toDomain() },
-                zones = zones,
-                timeInZones = timeInZones(heartRate, zones),
+                zones = emptyList(),
+                timeInZones = emptyList(),
                 route = route.toTrack(),
             )
+        }
+    }
+
+    // Zmiana tętna maksymalnego w ustawieniach od razu przelicza strefy.
+    val state: StateFlow<DetailState> = combine(fromDatabase, treningApp.settings.state) { found, settings ->
+        if (found == null) {
+            DetailState.NotFound
+        } else {
+            val zones = heartRateZones(settings.maxHeartRate)
+            found.copy(zones = zones, timeInZones = timeInZones(found.heartRate, zones))
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailState.Loading)
 }

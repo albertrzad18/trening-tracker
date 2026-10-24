@@ -67,3 +67,53 @@ fun HelloScreen() { Text("Cześć") }
 ### Motyw Material 3
 `TreningTrackerTheme { ... }` ustawia kolory i czcionki dla wszystkiego w środku. Na Androidzie 12+
 bierze kolory z tapety (dynamic color), a na starszych ma własny jasny i ciemny zestaw.
+
+## Kotlin: dane i null
+
+### `data class`
+Klasa do przechowywania danych. Kotlin sam dodaje `equals`, `toString` i `copy`. U nas: `Workout` (model
+treningu w `domain/Workout.kt`) i `WorkoutEntity` (wiersz w bazie).
+
+```kotlin
+data class Totals(val count: Int, val duration: Duration, val distanceM: Double?, val caloriesKcal: Double?)
+```
+
+### Null-safety: `?`, `?.`, `?:`
+Typ z `?` (np. `Double?`) może być `null`, bez `?` nigdy. U nas `distanceM: Double?` jest `null` na trenażerze,
+a UI wtedy pole ukrywa. `?.` wywołuje coś tylko gdy wartość nie jest `null` (`distanceM?.let { ... }`),
+a `?:` podaje wartość zastępczą (`avgSpeedMps?.let { it * 3.6 } ?: policzZDystansu`).
+
+### Extension functions
+Funkcja „doklejona” do istniejącego typu. `fun List<Workout>.totals()` pozwala napisać `treningi.totals()`
+(w `domain/Aggregations.kt`), mimo że `List` nie jest naszą klasą.
+
+### Lambdy i funkcje na listach
+`filter { ... }`, `map { ... }`, `sumOf { ... }` biorą mały kawałek kodu (lambdę) i stosują go do każdego elementu.
+`it` to domyślna nazwa elementu. Przykład: `filter { it.discipline == discipline }`.
+
+## Room (baza danych)
+
+### `@Entity`, `@Dao`, `@Database`
+Trzy elementy Rooma w `data/db/`: **`@Entity`** (`WorkoutEntity`) opisuje tabelę, **`@Dao`** (`WorkoutDao`) to lista
+zapytań jako metody, a **`@Database`** (`AppDatabase`) spina wszystko w bazę. Room na podstawie adnotacji sam
+generuje kod SQL (to robi KSP przy budowaniu).
+
+```kotlin
+@Query("SELECT * FROM workouts ORDER BY startMillis DESC")
+fun observeAll(): Flow<List<WorkoutEntity>>
+```
+
+Dodanie nowego pola do bazy = dopisanie go w `WorkoutEntity`, **podbicie `version`** w `@Database` i napisanie migracji,
+żeby dane na telefonie nie zniknęły. Schemat każdej wersji zapisuje się w `app/schemas/`.
+
+### `suspend` i coroutines
+`suspend fun` to funkcja, która może „poczekać” (np. na bazę) bez blokowania ekranu. Wywołuje się ją z coroutine,
+np. `viewModelScope.launch { ... }`. U nas: `suspend fun upsertAll(...)` w `WorkoutDao`.
+
+### `Flow`
+Strumień wartości, który wysyła nową listę za każdym razem, gdy dane w bazie się zmienią. Ekran dzięki temu
+odświeża się sam po synchronizacji. U nas `observeAll(): Flow<List<WorkoutEntity>>`.
+
+### `@Upsert`
+„Wstaw lub nadpisz”: jeśli trening o tym `id` już jest, zostanie zaktualizowany, jeśli nie, dodany.
+Dzięki temu ponowna synchronizacja nie tworzy duplikatów.

@@ -1,41 +1,41 @@
 # trening-tracker
 
-Apka na Androida, która pokazuje treningi z zegarka Huawei Watch GT5: pływanie na basenie,
-rower na dworze i trenażer. Tabele, szczegóły, wykresy, podsumowania, cele, rekordy i mapa tras.
+An Android app that shows workouts recorded by a Huawei Watch GT5: pool swimming, outdoor cycling
+and indoor trainer rides. Tables, workout details, charts, summaries, goals, personal records and route maps.
 
-Dane zostają na telefonie. Apka nie ma serwera ani kont.
+All data stays on the phone. There is no server and no accounts. The app UI is in Polish.
 
-> Projekt w budowie. Plan funkcji: [`docs/PLAN.md`](docs/PLAN.md).
+> Work in progress. Feature plan (in Polish): [`docs/PLAN.md`](docs/PLAN.md).
 
-## Skąd apka bierze dane
-
-```
-Zegarek → Huawei Health → Health Sync → Health Connect → trening-tracker
-```
-
-Apka nie korzysta z Huawei Health Kit. Czyta treningi z **Health Connect**, a lokalnie
-zapisuje je w bazie Room, żeby historia nie znikała.
-
-## Konfiguracja
-
-1. Na telefonie zainstaluj **Huawei Health** i sparuj zegarek.
-2. Zainstaluj **Health Sync** (Google Play) i ustaw synchronizację Huawei Health → Health Connect
-   dla treningów (pływanie, rower, trenażer), tętna, dystansu i kalorii.
-3. Upewnij się, że **Health Connect** jest zainstalowany (od Androida 14 jest częścią systemu).
-4. Uruchom trening-tracker i nadaj uprawnienia do odczytu danych z Health Connect.
-
-Health Connect domyślnie udostępnia dane z 30 dni przed nadaniem uprawnień. Starszą historię
-odblokowuje dodatkowe uprawnienie „dostęp do historii”, o które apka poprosi.
-
-## Budowanie
-
-Wymagania: JDK 17+ i Android SDK (platforma 37).
+## Where the data comes from
 
 ```
-./gradlew assembleDebug   # APK w app/build/outputs/apk/debug/
-./gradlew test            # testy jednostkowe
+Watch → Huawei Health → Health Sync → Health Connect → trening-tracker
 ```
 
-## Licencja
+The app does not use Huawei Health Kit. It reads workouts from **Health Connect** and keeps a local
+copy in a Room database, so the history is not lost.
 
-MIT, zobacz [`LICENSE`](LICENSE).
+## Setup
+
+1. Install **Huawei Health** on your phone and pair the watch.
+2. Install **Health Sync** (Google Play) and set up syncing from Huawei Health to Health Connect for
+   workouts (swimming, cycling, indoor cycling), heart rate, distance and calories.
+3. Make sure **Health Connect** is installed (it is part of the system since Android 14).
+4. Open trening-tracker and grant it read access to Health Connect.
+
+By default Health Connect exposes data from the 30 days before you grant permissions. To read older
+history the app asks for the additional "history access" permission.
+
+## Building
+
+Requirements: JDK 17+ and the Android SDK (platform 37).
+
+```
+./gradlew assembleDebug   # APK in app/build/outputs/apk/debug/
+./gradlew test            # unit tests
+```
+
+## License
+
+MIT, see [`LICENSE`](LICENSE).

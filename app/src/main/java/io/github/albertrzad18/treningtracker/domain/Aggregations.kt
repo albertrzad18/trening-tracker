@@ -22,6 +22,13 @@ fun List<Workout>.totals(): Totals = Totals(
     caloriesKcal = mapNotNull { it.caloriesKcal }.takeIf { it.isNotEmpty() }?.sum(),
 )
 
+/** Sumy jednej dyscypliny: używane na kafelkach Pulpitu i w podsumowaniach okresów. */
+data class DisciplineTotals(val discipline: Discipline, val totals: Totals)
+
+/** Sumy dla każdej z trzech dyscyplin, zawsze w tej samej kolejności (także zerowe). */
+fun List<Workout>.perDiscipline(): List<DisciplineTotals> =
+    Discipline.entries.map { d -> DisciplineTotals(d, filter { it.discipline == d }.totals()) }
+
 /** Zakres dat `[start, end)`: początek włącznie, koniec wyłącznie. */
 data class DateRange(val start: LocalDate, val endExclusive: LocalDate) {
     fun previous(): DateRange {

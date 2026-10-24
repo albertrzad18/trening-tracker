@@ -40,9 +40,13 @@ import io.github.albertrzad18.treningtracker.domain.DashboardData
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import io.github.albertrzad18.treningtracker.domain.DisciplineTotals
 import io.github.albertrzad18.treningtracker.domain.StatsMetric
+import io.github.albertrzad18.treningtracker.domain.RecordKind
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.buildDashboard
 import io.github.albertrzad18.treningtracker.domain.metricValue
+import io.github.albertrzad18.treningtracker.ui.goals.GoalCard
+import io.github.albertrzad18.treningtracker.ui.goals.GoalsViewModel
+import io.github.albertrzad18.treningtracker.ui.records.RecordsViewModel
 import io.github.albertrzad18.treningtracker.ui.charts.ChartCard
 import io.github.albertrzad18.treningtracker.ui.charts.ChartSeries
 import io.github.albertrzad18.treningtracker.ui.charts.StackedBarChart
@@ -79,6 +83,7 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
 fun DashboardScreen(
     onOpenWorkout: (String) -> Unit,
     onOpenSummaries: () -> Unit,
+    onOpenGoals: () -> Unit,
     vm: DashboardViewModel = viewModel(),
 ) {
     val data by vm.state.collectAsStateWithLifecycle()
@@ -98,6 +103,8 @@ fun DashboardScreen(
                 }
             }
             item { SevenDayCard(d) }
+            item { GoalsSection(onOpenGoals) }
+            item { NewRecordsSection(onOpenWorkout) }
             item { Text(stringResource(R.string.dashboard_latest), style = MaterialTheme.typography.titleMedium) }
             items(d.latest, key = { it.id }) { WorkoutCard(it, onClick = { onOpenWorkout(it.id) }) }
             item {
@@ -105,6 +112,58 @@ fun DashboardScreen(
             }
         }
     }
+}
+
+/** Postęp celów: najwyżej dwa, reszta na ekranie Cele. */
+@Composable
+private fun GoalsSection(onOpenGoals: () -> Unit, vm: GoalsViewModel = viewModel()) {
+    val rows by vm.rows.collectAsStateWithLifecycle()
+    val list = rows.orEmpty()
+    if (list.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.dashboard_goals), style = MaterialTheme.typography.titleMedium)
+        list.take(2).forEach { GoalCard(it) }
+        if (list.size > 2) {
+            TextButton(onClick = onOpenGoals) { Text(stringResource(R.string.more_goals)) }
+        }
+    }
+}
+
+/** Rekordy pobite w ostatnim tygodniu; gdy nie ma żadnego, sekcja znika. */
+@Composable
+private fun NewRecordsSection(onOpenWorkout: (String) -> Unit, vm: RecordsViewModel = viewModel()) {
+    val data by vm.data.collectAsStateWithLifecycle()
+    val since = LocalDate.now().minusDays(7)
+    val fresh = data?.perDiscipline?.values?.flatten().orEmpty().filter { !it.date.isBefore(since) }
+    if (fresh.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.dashboard_new_records), style = MaterialTheme.typography.titleMedium)
+        fresh.forEach { record ->
+            Card(Modifier.fillMaxWidth().clickable { onOpenWorkout(record.workoutId) }) {
+                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    DisciplineDot(record.discipline, size = 10.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        stringResource(
+                            R.string.dashboard_record_line,
+                            stringResource(record.discipline.labelRes()),
+                            stringResource(record.kind.shortLabelRes()),
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun RecordKind.shortLabelRes() = when (this) {
+    RecordKind.LONGEST_DISTANCE -> R.string.record_distance
+    RecordKind.LONGEST_DURATION -> R.string.record_duration
+    RecordKind.BEST_AVG_SPEED -> R.string.record_speed
+    RecordKind.BEST_PACE -> R.string.record_pace
+    RecordKind.MOST_CALORIES -> R.string.record_calories
+    RecordKind.BIGGEST_ELEVATION -> R.string.record_elevation
 }
 
 /** Mini-wykres: minuty treningu na każdy z ostatnich 7 dni, kolorowane dyscypliną. */

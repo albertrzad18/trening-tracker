@@ -23,7 +23,13 @@ import java.time.Instant
 import java.time.ZoneId
 
 @Composable
-fun MoreScreen(onOpenDiagnostics: () -> Unit, onOpenSummaries: () -> Unit) {
+fun MoreScreen(
+    onOpenDiagnostics: () -> Unit,
+    onOpenSummaries: () -> Unit,
+    onOpenRecords: () -> Unit,
+    onOpenGoals: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val context = LocalContext.current
     val prefs = (context.applicationContext as TreningApp).syncPrefs
     val status by prefs.status.collectAsStateWithLifecycle()
@@ -42,6 +48,9 @@ fun MoreScreen(onOpenDiagnostics: () -> Unit, onOpenSummaries: () -> Unit) {
         }
         Button(onClick = { SyncScheduler.syncNow(context) }) { Text(stringResource(R.string.sync_now)) }
         OutlinedButton(onClick = onOpenSummaries) { Text(stringResource(R.string.more_summaries)) }
+        OutlinedButton(onClick = onOpenRecords) { Text(stringResource(R.string.more_records)) }
+        OutlinedButton(onClick = onOpenGoals) { Text(stringResource(R.string.more_goals)) }
+        OutlinedButton(onClick = onOpenSettings) { Text(stringResource(R.string.more_settings)) }
         OutlinedButton(onClick = onOpenDiagnostics) { Text(stringResource(R.string.more_diagnostics)) }
     }
 }

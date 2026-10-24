@@ -29,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
@@ -44,6 +43,7 @@ import io.github.albertrzad18.treningtracker.domain.PeriodSummary
 import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.domain.summaries
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
+import io.github.albertrzad18.treningtracker.ui.common.daysText
 import io.github.albertrzad18.treningtracker.ui.common.durationText
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
@@ -149,10 +149,7 @@ private fun SummaryCard(s: PeriodSummary, onOpenWorkout: (String) -> Unit) {
                 Text(stringResource(R.string.summary_count, s.count), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.summary_active_days, s.activeDays), style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    stringResource(
-                        R.string.summary_streak,
-                        pluralStringResource(R.plurals.days, s.longestStreakDays, s.longestStreakDays),
-                    ),
+                    stringResource(R.string.summary_streak, daysText(s.longestStreakDays)),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Changes(s)

@@ -56,6 +56,13 @@
     <string name="detail_compare_duration">Czas: %1$s</string>
     <string name="detail_compare_distance">Dystans: %1$s</string>
     <string name="detail_compare_hint">Średnia z innych treningów tej dyscypliny</string>
+    <string name="detail_hr_chart">Tętno w czasie</string>
+    <string name="detail_speed_chart">Prędkość (km/h)</string>
+    <string name="detail_zones">Strefy tętna</string>
+    <string name="detail_zones_desc">Ile czasu trening spędził w każdej strefie. Granice liczymy z tętna maksymalnego z ustawień.</string>
+    <string name="detail_zone_label">Strefa %1$d · %2$d+</string>
+    <string name="detail_route">Trasa</string>
+    <string name="detail_elevation_chart">Wysokość</string>
 
     <string name="more_sync_title">Synchronizacja</string>
     <string name="more_last_sync">Ostatnia synchronizacja: %1$s</string>
@@ -134,16 +141,77 @@
     <string name="summary_vs_previous">Na tle poprzedniego okresu</string>
     <string name="more_summaries">Podsumowania tygodni, miesięcy i lat</string>
 
-    <plurals name="days">
-        <item quantity="one">1 dzień</item>
-        <item quantity="few">%d dni</item>
-        <item quantity="many">%d dni</item>
-        <item quantity="other">%d dni</item>
-    </plurals>
+    <!--
+      Odmianę liczymy sami (Formatters.pluralPl), bo reguły Androida idą za językiem telefonu,
+      a interfejs jest zawsze po polsku.
+    -->
+    <string name="unit_day_one">dzień</string>
+    <string name="unit_day_few">dni</string>
+    <string name="unit_day_many">dni</string>
+    <string name="unit_period_one">okres</string>
+    <string name="unit_period_few">okresy</string>
+    <string name="unit_period_many">okresów</string>
 
     <!-- Pulpit -->
     <string name="dashboard_last_seven">Ostatnie 7 dni</string>
     <string name="dashboard_open_summaries">Zobacz podsumowania</string>
+    <string name="dashboard_new_records">Nowe rekordy</string>
+    <string name="dashboard_record_line">🏆 %1$s: %2$s</string>
+
+    <!-- Rekordy -->
+    <string name="records_title">Rekordy</string>
+    <string name="records_empty">Rekordy pojawią się, gdy w bazie będą treningi.</string>
+    <string name="records_periods">Najlepsze okresy</string>
+    <string name="records_best_week_distance">Tydzień: dystans</string>
+    <string name="records_best_week_time">Tydzień: czas</string>
+    <string name="records_best_month_distance">Miesiąc: dystans</string>
+    <string name="records_best_month_time">Miesiąc: czas</string>
+    <string name="record_distance">Najdłuższy dystans</string>
+    <string name="record_duration">Najdłuższy czas</string>
+    <string name="record_speed">Najlepsza średnia prędkość</string>
+    <string name="record_pace">Najlepsze tempo</string>
+    <string name="record_calories">Najwięcej kalorii</string>
+    <string name="record_elevation">Największe przewyższenie</string>
+    <string name="more_records">Rekordy osobiste</string>
+
+    <!-- Cele -->
+    <string name="goals_title">Cele</string>
+    <string name="more_goals">Cele</string>
+    <string name="goals_empty">Nie masz jeszcze żadnego celu. Dodaj pierwszy przyciskiem poniżej.</string>
+    <string name="goals_add">Dodaj cel</string>
+    <string name="goals_new">Nowy cel</string>
+    <string name="goals_save">Zapisz</string>
+    <string name="goals_cancel">Anuluj</string>
+    <string name="goals_delete">Usuń</string>
+    <string name="goals_target">Wartość celu</string>
+    <string name="goals_all_disciplines">Wszystko</string>
+    <string name="goals_metric_distance">Dystans (km)</string>
+    <string name="goals_metric_duration">Czas (godziny)</string>
+    <string name="goals_metric_calories">Kalorie</string>
+    <string name="goals_metric_count">Liczba treningów</string>
+    <string name="goals_period_week">Tygodniowy</string>
+    <string name="goals_period_month">Miesięczny</string>
+    <string name="goals_period_year">Roczny</string>
+    <string name="goals_progress">%1$s z %2$s</string>
+    <string name="goals_projection">W tym tempie wyjdzie %1$s</string>
+    <string name="goals_done">Cel zrobiony 🎉</string>
+    <string name="goals_days_left">Zostało %1$s</string>
+    <string name="goals_history">Historia: %1$s</string>
+    <string name="goals_streak">Seria: %1$s pod rząd</string>
+    <string name="dashboard_goals">Cele</string>
+
+    <!-- Ustawienia -->
+    <string name="settings_title">Ustawienia</string>
+    <string name="more_settings">Ustawienia</string>
+    <string name="settings_max_hr">Tętno maksymalne</string>
+    <string name="settings_max_hr_desc">Potrzebne do stref tętna w szczegółach treningu.</string>
+    <string name="settings_pool">Długość basenu</string>
+    <string name="settings_theme">Motyw</string>
+    <string name="settings_theme_system">Jak w systemie</string>
+    <string name="settings_theme_light">Jasny</string>
+    <string name="settings_theme_dark">Ciemny</string>
+    <string name="settings_howto">Jak ustawić Health Sync</string>
+    <string name="settings_howto_body">1. Zainstaluj Health Sync.\n2. Wybierz Huawei Health jako źródło, a Health Connect jako cel.\n3. Zaznacz treningi, tętno, dystans i kalorie.\n4. Włącz automatyczną synchronizację.\n5. W tej apce nadaj uprawnienia i naciśnij „Synchronizuj teraz”.</string>
 
     <!-- Dane demo (tylko build debug) -->
     <string name="debug_demo_title">Dane demo</string>

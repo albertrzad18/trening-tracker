@@ -64,6 +64,21 @@ fun formatTime(time: java.time.LocalTime): String = time.format(DateTimeFormatte
 fun formatDateTime(dateTime: java.time.LocalDateTime): String =
     formatDate(dateTime.toLocalDate()) + ", " + formatTime(dateTime.toLocalTime())
 
+/**
+ * Polska odmiana rzeczownika po liczbie: `1 dzień`, `3 dni`, `7 dni`, `22 dni`.
+ * Robimy to sami, bo `plurals` w Androidzie idzie za językiem telefonu, a interfejs jest zawsze po polsku.
+ */
+fun pluralPl(count: Int, one: String, few: String, many: String): String {
+    val lastTwo = count % 100
+    val last = count % 10
+    val form = when {
+        count == 1 -> one
+        last in 2..4 && lastTwo !in 12..14 -> few
+        else -> many
+    }
+    return "$count $form"
+}
+
 /** `34%` z udziału 0..1 (bez znaku, inaczej niż [formatPercentChange]). */
 fun formatPercent(fraction: Double): String = "${(fraction * 100).roundToInt()}%"
 

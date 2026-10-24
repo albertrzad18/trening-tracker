@@ -50,7 +50,10 @@ import io.github.albertrzad18.treningtracker.data.sync.SyncScheduler
 import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardScreen
 import io.github.albertrzad18.treningtracker.ui.debug.DebugScreen
 import io.github.albertrzad18.treningtracker.ui.detail.WorkoutDetailScreen
+import io.github.albertrzad18.treningtracker.ui.goals.GoalsScreen
 import io.github.albertrzad18.treningtracker.ui.more.MoreScreen
+import io.github.albertrzad18.treningtracker.ui.records.RecordsScreen
+import io.github.albertrzad18.treningtracker.ui.settings.SettingsScreen
 import io.github.albertrzad18.treningtracker.ui.stats.StatsScreen
 import io.github.albertrzad18.treningtracker.ui.summaries.SummariesScreen
 import io.github.albertrzad18.treningtracker.ui.workouts.WorkoutsScreen
@@ -130,6 +133,9 @@ private object Routes {
     const val MORE = "more"
     const val DEBUG = "debug"
     const val SUMMARIES = "summaries"
+    const val RECORDS = "records"
+    const val GOALS = "goals"
+    const val SETTINGS = "settings"
     const val DETAIL = "workout/{id}"
     fun detail(id: String) = "workout/${java.net.URLEncoder.encode(id, "UTF-8")}"
 }
@@ -177,6 +183,7 @@ private fun MainScaffold() {
                 DashboardScreen(
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
+                    onOpenGoals = { nav.navigate(Routes.GOALS) },
                 )
             }
             composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
@@ -185,8 +192,19 @@ private fun MainScaffold() {
                 MoreScreen(
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
+                    onOpenRecords = { nav.navigate(Routes.RECORDS) },
+                    onOpenGoals = { nav.navigate(Routes.GOALS) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                 )
             }
+            composable(Routes.RECORDS) {
+                RecordsScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenWorkout = { nav.navigate(Routes.detail(it)) },
+                )
+            }
+            composable(Routes.GOALS) { GoalsScreen(onBack = { nav.popBackStack() }) }
+            composable(Routes.SETTINGS) { SettingsScreen(onBack = { nav.popBackStack() }) }
             composable(Routes.SUMMARIES) {
                 SummariesScreen(
                     onBack = { nav.popBackStack() },

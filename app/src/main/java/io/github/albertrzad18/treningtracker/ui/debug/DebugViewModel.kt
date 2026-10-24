@@ -4,12 +4,17 @@ import android.app.Application
 import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.albertrzad18.treningtracker.TreningApp
+import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
+import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 sealed interface DebugState {
@@ -20,13 +25,39 @@ sealed interface DebugState {
     data class Error(val message: String) : DebugState
 }
 
+sealed interface DemoMessage {
+    data class Added(val count: Int) : DemoMessage
+    data object Removed : DemoMessage
+}
+
 class DebugViewModel(app: Application) : AndroidViewModel(app) {
     private val gateway = HealthConnectGateway(app)
+    private val dao = (app as TreningApp).database.workoutDao()
     private val _state = MutableStateFlow<DebugState>(DebugState.Loading)
     val state: StateFlow<DebugState> = _state.asStateFlow()
 
+    /** Komunikat po operacji na danych demo; `null`, gdy nie ma nic do pokazania. */
+    private val _demoMessage = MutableStateFlow<DemoMessage?>(null)
+    val demoMessage: StateFlow<DemoMessage?> = _demoMessage.asStateFlow()
+
     init {
         refresh()
+    }
+
+    /** Wrzuca do bazy sztuczne treningi (tylko build debug), żeby dało się sprawdzić wykresy i tabelę. */
+    fun fillDemoData() {
+        viewModelScope.launch {
+            val demo = demoWorkouts(LocalDate.now(), ZoneId.systemDefault())
+            dao.upsertAll(demo)
+            _demoMessage.value = DemoMessage.Added(demo.size)
+        }
+    }
+
+    fun clearDemoData() {
+        viewModelScope.launch {
+            dao.deleteByOrigin(DEMO_ORIGIN)
+            _demoMessage.value = DemoMessage.Removed
+        }
     }
 
     fun refresh() {

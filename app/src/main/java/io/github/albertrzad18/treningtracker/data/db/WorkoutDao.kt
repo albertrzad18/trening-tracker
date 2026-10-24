@@ -22,4 +22,8 @@ interface WorkoutDao {
 
     @Query("SELECT id FROM workouts WHERE startMillis >= :sinceMillis")
     suspend fun idsSince(sinceMillis: Long): List<String>
+
+    /** Używane przez dane demo w buildzie debug: usuwa wszystko z jednego źródła. */
+    @Query("DELETE FROM workouts WHERE dataOrigin = :origin")
+    suspend fun deleteByOrigin(origin: String)
 }

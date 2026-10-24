@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.albertrzad18.treningtracker.BuildConfig
 import io.github.albertrzad18.treningtracker.R
 
 @Composable
@@ -41,6 +45,7 @@ fun DebugScreen(viewModel: DebugViewModel = viewModel()) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(R.string.debug_title), style = MaterialTheme.typography.headlineSmall)
+            if (BuildConfig.DEBUG) DemoDataSection(viewModel)
             when (val s = state) {
                 DebugState.Loading -> CircularProgressIndicator()
                 DebugState.Unavailable -> Text(stringResource(R.string.debug_unavailable))
@@ -65,5 +70,32 @@ fun DebugScreen(viewModel: DebugViewModel = viewModel()) {
                 }
             }
         }
+    }
+}
+
+/**
+ * Dane demo: tylko w buildzie debug. Pozwalają sprawdzić wykresy i tabelę bez zegarka,
+ * a potem usunąć sztuczne treningi jednym kliknięciem.
+ */
+@Composable
+private fun DemoDataSection(viewModel: DebugViewModel) {
+    val message by viewModel.demoMessage.collectAsStateWithLifecycle()
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.debug_demo_title), style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.debug_demo_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = viewModel::fillDemoData) { Text(stringResource(R.string.debug_demo_fill)) }
+            OutlinedButton(onClick = viewModel::clearDemoData) { Text(stringResource(R.string.debug_demo_clear)) }
+        }
+        when (val m = message) {
+            is DemoMessage.Added -> Text(stringResource(R.string.debug_demo_added, m.count), style = MaterialTheme.typography.bodySmall)
+            DemoMessage.Removed -> Text(stringResource(R.string.debug_demo_removed), style = MaterialTheme.typography.bodySmall)
+            null -> Unit
+        }
+        HorizontalDivider(Modifier.padding(vertical = 4.dp))
     }
 }

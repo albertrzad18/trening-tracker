@@ -8,6 +8,7 @@
 
     <string name="nav_dashboard">Pulpit</string>
     <string name="nav_workouts">Treningi</string>
+    <string name="nav_stats">Statystyki</string>
     <string name="nav_more">Więcej</string>
     <string name="back">Wróć</string>
 
@@ -77,4 +78,78 @@
     <string name="report_route">trasa GPS: %1$d/%3$d (wymaga zgody: %2$d)</string>
     <string name="report_origins">źródła: %1$s</string>
     <string name="report_other_types">Inne typy ćwiczeń (kod Health Connect: liczba):</string>
+
+    <!-- Statystyki -->
+    <string name="chart_no_data">Brak danych w tym okresie.</string>
+    <string name="chart_need_two">Potrzebne są co najmniej dwa treningi z tymi danymi.</string>
+    <string name="heatmap_less">mniej</string>
+    <string name="heatmap_more">więcej</string>
+    <string name="metric_label_time">Czas</string>
+    <string name="metric_label_distance">Dystans</string>
+    <string name="metric_label_calories">Kalorie</string>
+
+    <string name="chart_volume_title">Objętość treningowa</string>
+    <string name="chart_volume_desc_time">Minuty treningu, słupki ułożone według dyscyplin</string>
+    <string name="chart_volume_desc_distance">Kilometry, słupki ułożone według dyscyplin</string>
+    <string name="chart_volume_desc_calories">Kilokalorie, słupki ułożone według dyscyplin</string>
+
+    <string name="chart_heatmap_title">Kalendarz aktywności</string>
+    <string name="chart_heatmap_desc">Ostatnie 26 tygodni: kolumna to tydzień, kwadrat to dzień</string>
+
+    <string name="chart_share_title">Udział dyscyplin</string>
+    <string name="chart_share_desc">Podział łącznego czasu treningów</string>
+
+    <string name="chart_weekday_title">Dni tygodnia</string>
+    <string name="chart_weekday_desc">W które dni trenujesz najwięcej</string>
+    <string name="chart_timeofday_title">Pora dnia</string>
+    <string name="chart_timeofday_desc">O której godzinie zaczynasz treningi</string>
+
+    <string name="chart_trend_title">Trend: %1$s</string>
+    <string name="chart_trend_desc_pace">Tempo /100 m: niżej znaczy szybciej. Gruba linia to średnia z ostatnich pięciu treningów.</string>
+    <string name="chart_trend_desc_speed">Średnia prędkość km/h. Gruba linia to średnia z ostatnich pięciu treningów.</string>
+
+    <string name="chart_cumulative_title">Dystans narastająco</string>
+    <string name="chart_cumulative_desc">Kilometry od 1 stycznia: %1$d na tle %2$d</string>
+    <string name="chart_cumulative_desc_single">Kilometry od 1 stycznia %1$d</string>
+
+    <string name="chart_efficiency_title">Forma: %1$s</string>
+    <string name="chart_efficiency_desc">Km/h na 100 uderzeń tętna. Rośnie, gdy przy tym samym tętnie jedziesz szybciej.</string>
+
+    <string name="stats_empty">Brak treningów do pokazania. Zsynchronizuj dane w zakładce Więcej.</string>
+
+    <!-- Podsumowania -->
+    <string name="summaries_title">Podsumowania</string>
+    <string name="summary_tab_week">Tygodnie</string>
+    <string name="summary_tab_month">Miesiące</string>
+    <string name="summary_tab_year">Lata</string>
+    <string name="summary_week_label">%1$s – %2$s</string>
+    <string name="summary_count">Treningi: %1$d</string>
+    <string name="summary_active_days">Dni z treningiem: %1$d</string>
+    <string name="summary_streak">Najdłuższa seria: %1$s</string>
+    <string name="summary_best">Najlepszy trening: %1$s</string>
+    <string name="summary_empty">Brak treningów w tym okresie.</string>
+    <string name="summary_change_duration">Czas: %1$s</string>
+    <string name="summary_change_distance">Dystans: %1$s</string>
+    <string name="summary_change_calories">Kalorie: %1$s</string>
+    <string name="summary_vs_previous">Na tle poprzedniego okresu</string>
+    <string name="more_summaries">Podsumowania tygodni, miesięcy i lat</string>
+
+    <plurals name="days">
+        <item quantity="one">1 dzień</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+        <item quantity="other">%d dni</item>
+    </plurals>
+
+    <!-- Pulpit -->
+    <string name="dashboard_last_seven">Ostatnie 7 dni</string>
+    <string name="dashboard_open_summaries">Zobacz podsumowania</string>
+
+    <!-- Dane demo (tylko build debug) -->
+    <string name="debug_demo_title">Dane demo</string>
+    <string name="debug_demo_desc">Sztuczne treningi do sprawdzenia wykresów i tabeli. Nie są wysyłane do Health Connect i nie mieszają się z Twoimi danymi.</string>
+    <string name="debug_demo_fill">Wczytaj dane demo</string>
+    <string name="debug_demo_clear">Usuń dane demo</string>
+    <string name="debug_demo_added">Dodano treningów demo: %1$d</string>
+    <string name="debug_demo_removed">Dane demo usunięte</string>
 </resources>

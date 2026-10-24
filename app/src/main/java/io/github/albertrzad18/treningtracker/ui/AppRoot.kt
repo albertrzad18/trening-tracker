@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
@@ -50,6 +51,8 @@ import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardScreen
 import io.github.albertrzad18.treningtracker.ui.debug.DebugScreen
 import io.github.albertrzad18.treningtracker.ui.detail.WorkoutDetailScreen
 import io.github.albertrzad18.treningtracker.ui.more.MoreScreen
+import io.github.albertrzad18.treningtracker.ui.stats.StatsScreen
+import io.github.albertrzad18.treningtracker.ui.summaries.SummariesScreen
 import io.github.albertrzad18.treningtracker.ui.workouts.WorkoutsScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -123,8 +126,10 @@ private fun Message(text: String, action: @Composable () -> Unit = {}) {
 private object Routes {
     const val DASHBOARD = "dashboard"
     const val WORKOUTS = "workouts"
+    const val STATS = "stats"
     const val MORE = "more"
     const val DEBUG = "debug"
+    const val SUMMARIES = "summaries"
     const val DETAIL = "workout/{id}"
     fun detail(id: String) = "workout/${java.net.URLEncoder.encode(id, "UTF-8")}"
 }
@@ -134,6 +139,7 @@ private data class TopLevel(val route: String, val labelRes: Int, val icon: Imag
 private val topLevel = listOf(
     TopLevel(Routes.DASHBOARD, R.string.nav_dashboard, Icons.Filled.Home),
     TopLevel(Routes.WORKOUTS, R.string.nav_workouts, Icons.AutoMirrored.Filled.List),
+    TopLevel(Routes.STATS, R.string.nav_stats, Icons.Filled.DateRange),
     TopLevel(Routes.MORE, R.string.nav_more, Icons.Filled.MoreVert),
 )
 
@@ -167,9 +173,26 @@ private fun MainScaffold() {
         },
     ) { padding ->
         NavHost(nav, startDestination = Routes.DASHBOARD, modifier = Modifier.padding(padding)) {
-            composable(Routes.DASHBOARD) { DashboardScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
+            composable(Routes.DASHBOARD) {
+                DashboardScreen(
+                    onOpenWorkout = { nav.navigate(Routes.detail(it)) },
+                    onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
+                )
+            }
             composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
-            composable(Routes.MORE) { MoreScreen(onOpenDiagnostics = { nav.navigate(Routes.DEBUG) }) }
+            composable(Routes.STATS) { StatsScreen(onOpenSummaries = { nav.navigate(Routes.SUMMARIES) }) }
+            composable(Routes.MORE) {
+                MoreScreen(
+                    onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },
+                    onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
+                )
+            }
+            composable(Routes.SUMMARIES) {
+                SummariesScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenWorkout = { nav.navigate(Routes.detail(it)) },
+                )
+            }
             composable(Routes.DETAIL) { WorkoutDetailScreen(onBack = { nav.popBackStack() }) }
             composable(Routes.DEBUG) { DebugScreen() }
         }

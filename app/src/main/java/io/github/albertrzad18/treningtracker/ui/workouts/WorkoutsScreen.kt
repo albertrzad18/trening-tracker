@@ -44,7 +44,9 @@ import io.github.albertrzad18.treningtracker.domain.SortColumn
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.WorkoutListResult
 import io.github.albertrzad18.treningtracker.domain.buildWorkoutList
+import io.github.albertrzad18.treningtracker.ui.common.DisciplineChips
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
+import io.github.albertrzad18.treningtracker.ui.common.PeriodChips
 import io.github.albertrzad18.treningtracker.ui.common.avgHeartRateText
 import io.github.albertrzad18.treningtracker.ui.common.caloriesText
 import io.github.albertrzad18.treningtracker.ui.common.distanceText
@@ -155,33 +157,9 @@ private fun FilterBar(
     onPeriod: (PeriodFilter) -> Unit,
 ) {
     Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Discipline.entries.forEach { d ->
-                FilterChip(
-                    selected = d in filters.disciplines,
-                    onClick = { onToggleDiscipline(d) },
-                    label = { Text(stringResource(d.labelRes())) },
-                    leadingIcon = { DisciplineDot(d, size = 10.dp) },
-                )
-            }
-        }
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PeriodFilter.entries.forEach { p ->
-                FilterChip(
-                    selected = p == filters.period,
-                    onClick = { onPeriod(p) },
-                    label = { Text(stringResource(p.labelRes())) },
-                )
-            }
-        }
+        DisciplineChips(filters.disciplines, onToggleDiscipline)
+        PeriodChips(filters.period, onPeriod)
     }
-}
-
-private fun PeriodFilter.labelRes() = when (this) {
-    PeriodFilter.WEEK -> R.string.period_week
-    PeriodFilter.MONTH -> R.string.period_month
-    PeriodFilter.YEAR -> R.string.period_year
-    PeriodFilter.ALL -> R.string.period_all
 }
 
 @Composable

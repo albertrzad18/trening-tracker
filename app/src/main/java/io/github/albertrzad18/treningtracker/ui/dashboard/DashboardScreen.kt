@@ -20,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,9 +37,15 @@ import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.db.toDomain
 import io.github.albertrzad18.treningtracker.data.sync.SyncScheduler
 import io.github.albertrzad18.treningtracker.domain.DashboardData
-import io.github.albertrzad18.treningtracker.domain.DisciplineWeek
+import io.github.albertrzad18.treningtracker.domain.Discipline
+import io.github.albertrzad18.treningtracker.domain.DisciplineTotals
+import io.github.albertrzad18.treningtracker.domain.StatsMetric
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.buildDashboard
+import io.github.albertrzad18.treningtracker.domain.metricValue
+import io.github.albertrzad18.treningtracker.ui.charts.ChartCard
+import io.github.albertrzad18.treningtracker.ui.charts.ChartSeries
+import io.github.albertrzad18.treningtracker.ui.charts.StackedBarChart
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
 import io.github.albertrzad18.treningtracker.ui.common.color
 import io.github.albertrzad18.treningtracker.ui.common.distanceText
@@ -47,8 +54,10 @@ import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
 import io.github.albertrzad18.treningtracker.ui.common.summaryText
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
+import io.github.albertrzad18.treningtracker.ui.format.formatDayShort
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
+import io.github.albertrzad18.treningtracker.ui.format.formatMinutesShort
 import io.github.albertrzad18.treningtracker.ui.format.formatPercentChange
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -67,7 +76,11 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun DashboardScreen(onOpenWorkout: (String) -> Unit, vm: DashboardViewModel = viewModel()) {
+fun DashboardScreen(
+    onOpenWorkout: (String) -> Unit,
+    onOpenSummaries: () -> Unit,
+    vm: DashboardViewModel = viewModel(),
+) {
     val data by vm.state.collectAsStateWithLifecycle()
     val d = data
     when {
@@ -84,9 +97,35 @@ fun DashboardScreen(onOpenWorkout: (String) -> Unit, vm: DashboardViewModel = vi
                     d.perDiscipline.forEach { DisciplineTile(it, Modifier.weight(1f)) }
                 }
             }
+            item { SevenDayCard(d) }
             item { Text(stringResource(R.string.dashboard_latest), style = MaterialTheme.typography.titleMedium) }
             items(d.latest, key = { it.id }) { WorkoutCard(it, onClick = { onOpenWorkout(it.id) }) }
+            item {
+                TextButton(onClick = onOpenSummaries) { Text(stringResource(R.string.dashboard_open_summaries)) }
+            }
         }
+    }
+}
+
+/** Mini-wykres: minuty treningu na każdy z ostatnich 7 dni, kolorowane dyscypliną. */
+@Composable
+private fun SevenDayCard(d: DashboardData) {
+    val series = Discipline.entries.map { discipline ->
+        ChartSeries(
+            color = discipline.color(),
+            values = d.lastSevenDays.map { it.perDiscipline[discipline]?.metricValue(StatsMetric.TIME) ?: 0.0 },
+        )
+    }
+    ChartCard(
+        title = stringResource(R.string.dashboard_last_seven),
+        hasData = series.any { s -> s.values.any { it > 0.0 } },
+    ) {
+        StackedBarChart(
+            bars = series,
+            xLabel = { i -> d.lastSevenDays.getOrNull(i)?.start?.let(::formatDayShort).orEmpty() },
+            yLabel = ::formatMinutesShort,
+            height = 140.dp,
+        )
     }
 }
 
@@ -128,7 +167,7 @@ private fun WeekCard(d: DashboardData) {
 }
 
 @Composable
-private fun DisciplineTile(week: DisciplineWeek, modifier: Modifier = Modifier) {
+private fun DisciplineTile(week: DisciplineTotals, modifier: Modifier = Modifier) {
     Card(modifier) {
         Column {
             Box(Modifier.fillMaxWidth().height(4.dp).background(week.discipline.color()))

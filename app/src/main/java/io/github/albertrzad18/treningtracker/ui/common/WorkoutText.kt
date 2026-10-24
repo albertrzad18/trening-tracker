@@ -7,6 +7,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatCalories
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHeartRate
+import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.formatPacePer100m
 import io.github.albertrzad18.treningtracker.ui.format.formatSpeedKmh
 import java.time.LocalDateTime
@@ -23,9 +24,9 @@ fun Workout.durationText(): String = formatDuration(duration)
 
 fun Workout.localDateTime(zone: ZoneId): LocalDateTime = startLocal(zone).toLocalDateTime()
 
-/** Jedna linia podsumowania: czas, a dystans i kalorie tylko jeśli są. */
+/** Jedna linia podsumowania: czas, a dystans i kalorie tylko jeśli są. Sumy podajemy w godzinach i minutach. */
 fun Totals.summaryText(): String = buildList {
-    add(formatDuration(duration))
+    add(formatHoursAndMinutes(duration))
     distanceM?.let { add(formatDistanceKm(it)) }
     caloriesKcal?.let { add(formatCalories(it)) }
 }.joinToString(" · ")

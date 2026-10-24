@@ -12,6 +12,10 @@
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 
+    <!-- Kafelki mapy OpenStreetMap do tras rowerowych; żadne dane treningowe nie wychodzą z telefonu. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
     </queries>

@@ -35,6 +35,9 @@ data class ChartSeries(val color: Color, val values: List<Double>)
 /** Punkt linii z własnym X (np. numer dnia w roku), gdy serie mają różne długości. */
 data class ChartLine(val color: Color, val points: List<Pair<Double, Double>>)
 
+/** Wartość osi X zaokrąglona do czterech miejsc po przecinku: tyle przyjmuje Vico. */
+private fun roundX(value: Double): Double = kotlin.math.round(value * 10_000) / 10_000
+
 /** Opis osi X: etykieta dla wartości X i co która ma być pokazana. */
 private fun labelFormatter(labels: (Double) -> String) =
     CartesianValueFormatter { _, value, _ -> labels(value) }
@@ -118,7 +121,8 @@ fun MultiLineChart(
         producer.runTransaction {
             lineModel {
                 lines.forEachIndexed { index, line ->
-                    series(x = line.points.map { it.first }, y = line.points.map { it.second }, key = index)
+                    // Vico przyjmuje na osi X najwyżej cztery miejsca po przecinku, więc zaokrąglamy.
+                    series(x = line.points.map { roundX(it.first) }, y = line.points.map { it.second }, key = index)
                 }
             }
         }

@@ -9,6 +9,7 @@ import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
 import io.github.albertrzad18.treningtracker.data.demo.demoSeries
 import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
+import io.github.albertrzad18.treningtracker.domain.Discipline
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,8 +52,10 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val demo = demoWorkouts(LocalDate.now(), ZoneId.systemDefault())
             dao.upsertAll(demo)
-            // Przebiegi tylko dla ostatnich treningów: reszta i tak służy wykresom zbiorczym.
-            demo.sortedByDescending { it.startMillis }.take(40).forEach { workout ->
+            // Przebiegi tylko dla ostatnich treningów (plus kilka rowerowych, żeby była trasa na mapie).
+            val newest = demo.sortedByDescending { it.startMillis }
+            val withSeries = (newest.take(40) + newest.filter { it.discipline == Discipline.ROAD }.take(10)).distinct()
+            withSeries.forEach { workout ->
                 val series = demoSeries(workout)
                 sampleDao.replaceSamples(workout.id, series.samples, series.route)
             }

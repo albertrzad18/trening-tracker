@@ -116,14 +116,16 @@ fun demoSeries(workout: WorkoutEntity, seed: Int = workout.id.hashCode()): DemoS
         )
     }
     val route = if (workout.discipline != Discipline.ROAD) emptyList() else {
-        val radiusDeg = (workout.distanceM ?: 20000.0) / 1000 / 40.0
+        // Pętla o obwodzie równym dystansowi: promień w km to dystans / 2π, a stopień to około 111 km.
+        val radiusDeg = (workout.distanceM ?: 20000.0) / 1000 / (2 * Math.PI) / 111.0
         (0 until steps).map { i ->
             val angle = 2 * Math.PI * i / steps
             RoutePointEntity(
                 workoutId = workout.id,
                 timeMillis = workout.startMillis + i * stepSec * 1000,
-                latitude = DEMO_LAT + radiusDeg * kotlin.math.sin(angle) + random.nextDouble(-0.001, 0.001),
-                longitude = DEMO_LON + radiusDeg * 1.6 * kotlin.math.cos(angle) + random.nextDouble(-0.001, 0.001),
+                latitude = DEMO_LAT + radiusDeg * kotlin.math.sin(angle) + random.nextDouble(-0.0005, 0.0005),
+                // Długość geograficzna „kurczy się” z szerokością, stąd mnożnik.
+                longitude = DEMO_LON + radiusDeg * 1.55 * kotlin.math.cos(angle) + random.nextDouble(-0.0005, 0.0005),
                 altitudeM = 220 + 80 * kotlin.math.sin(angle * 3) + random.nextDouble(-5.0, 5.0),
             )
         }

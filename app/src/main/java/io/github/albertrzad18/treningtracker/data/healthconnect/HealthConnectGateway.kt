@@ -3,7 +3,13 @@ package io.github.albertrzad18.treningtracker.data.healthconnect
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectFeatures
+import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.changes.DeletionChange
+import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ChangesTokenRequest
+import io.github.albertrzad18.treningtracker.data.db.WorkoutEntity
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.DistanceRecord
@@ -49,6 +55,15 @@ data class SessionProbe(
     val route: RouteState,
 )
 
+/** Porcja zmian z Changes API: nowe/zmienione sesje, usunięte id, kolejny token. */
+data class ChangesBatch(
+    val upserts: List<ExerciseSessionRecord>,
+    val deletedIds: List<String>,
+    val nextToken: String,
+    val hasMore: Boolean,
+    val expired: Boolean,
+)
+
 class HealthConnectGateway(private val context: Context) {
 
     fun sdkStatus(): Int = HealthConnectClient.getSdkStatus(context)
@@ -84,6 +99,74 @@ class HealthConnectGateway(private val context: Context) {
             pageToken = response.pageToken
         } while (pageToken != null)
         return result
+    }
+
+    val backgroundPermission = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
+
+    fun isBackgroundReadAvailable(): Boolean =
+        client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+            HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+
+    /** Wszystkie uprawnienia, o które prosimy użytkownika (odczyt + opcjonalnie historia i tło). */
+    fun wantedPermissions(): Set<String> = buildSet {
+        addAll(readPermissions)
+        if (isHistoryAvailable()) add(historyPermission)
+        if (isBackgroundReadAvailable()) add(backgroundPermission)
+    }
+
+    /** Token do późniejszego pobierania tylko zmian w treningach (Changes API). */
+    suspend fun newChangesToken(): String =
+        client.getChangesToken(ChangesTokenRequest(recordTypes = setOf(ExerciseSessionRecord::class)))
+
+    /** Jedna porcja zmian od [token]. `expired` = token wygasł i trzeba zrobić pełny odczyt. */
+    suspend fun changesSince(token: String): ChangesBatch {
+        val response = client.getChanges(token)
+        if (response.changesTokenExpired) return ChangesBatch(emptyList(), emptyList(), token, false, expired = true)
+        val upserts = response.changes.filterIsInstance<UpsertionChange>().mapNotNull { it.record as? ExerciseSessionRecord }
+        val deletedIds = response.changes.filterIsInstance<DeletionChange>().map { it.recordId }
+        return ChangesBatch(upserts, deletedIds, response.nextChangesToken, response.hasMore, expired = false)
+    }
+
+    /**
+     * Zamienia sesję z Health Connect na wiersz bazy z podsumowaniem (dystans, kalorie, tętno, prędkość, przewyższenie).
+     * Zwraca `null` dla dyscyplin, których nie obsługujemy. Puste wartości zostają `null`.
+     */
+    suspend fun toEntity(session: ExerciseSessionRecord, granted: Set<String>, nowMillis: Long): WorkoutEntity? {
+        val discipline = disciplineOf(session.exerciseType) ?: return null
+        val metrics = buildSet<AggregateMetric<*>> {
+            fun allowed(kind: DataKind) = HealthPermission.getReadPermission(kind.recordClass) in granted
+            if (allowed(DataKind.DISTANCE)) add(DistanceRecord.DISTANCE_TOTAL)
+            if (allowed(DataKind.TOTAL_CALORIES)) add(TotalCaloriesBurnedRecord.ENERGY_TOTAL)
+            if (allowed(DataKind.HEART_RATE)) {
+                add(HeartRateRecord.BPM_AVG)
+                add(HeartRateRecord.BPM_MAX)
+            }
+            if (allowed(DataKind.SPEED)) {
+                add(SpeedRecord.SPEED_AVG)
+                add(SpeedRecord.SPEED_MAX)
+            }
+            if (allowed(DataKind.ELEVATION)) add(ElevationGainedRecord.ELEVATION_GAINED_TOTAL)
+        }
+        val result = if (metrics.isEmpty()) null else {
+            client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(session.startTime, session.endTime)))
+        }
+        return WorkoutEntity(
+            id = session.metadata.id,
+            discipline = discipline,
+            startMillis = session.startTime.toEpochMilli(),
+            zoneOffsetSec = session.startZoneOffset?.totalSeconds,
+            durationSec = session.endTime.epochSecond - session.startTime.epochSecond,
+            title = session.title?.takeIf { it.isNotBlank() },
+            distanceM = result?.get(DistanceRecord.DISTANCE_TOTAL)?.inMeters?.takeIf { it > 0 },
+            caloriesKcal = result?.get(TotalCaloriesBurnedRecord.ENERGY_TOTAL)?.inKilocalories?.takeIf { it > 0 },
+            avgHeartRate = result?.get(HeartRateRecord.BPM_AVG),
+            maxHeartRate = result?.get(HeartRateRecord.BPM_MAX),
+            avgSpeedMps = result?.get(SpeedRecord.SPEED_AVG)?.inMetersPerSecond?.takeIf { it > 0 },
+            maxSpeedMps = result?.get(SpeedRecord.SPEED_MAX)?.inMetersPerSecond?.takeIf { it > 0 },
+            elevationGainM = result?.get(ElevationGainedRecord.ELEVATION_GAINED_TOTAL)?.inMeters?.takeIf { it > 0 },
+            dataOrigin = session.metadata.dataOrigin.packageName,
+            syncedAt = nowMillis,
+        )
     }
 
     /** Dla jednego treningu sprawdza, jakie rekordy leżą w jego zakresie czasu. */

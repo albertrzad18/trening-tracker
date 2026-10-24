@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.HealthConnectClient
@@ -105,13 +106,32 @@ fun AppRoot(gate: GateViewModel = viewModel()) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         when (val s = state) {
             GateState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            GateState.Unavailable -> Message(stringResource(R.string.gate_unavailable))
+            GateState.Unavailable -> {
+                val context = LocalContext.current
+                Message(stringResource(R.string.gate_unavailable)) {
+                    Button(onClick = { openHealthConnectInStore(context) }) {
+                        Text(stringResource(R.string.gate_install))
+                    }
+                }
+            }
             is GateState.NeedsPermissions -> Message(stringResource(R.string.gate_needs_permissions)) {
                 Button(onClick = { permissionLauncher.launch(s.toRequest) }) { Text(stringResource(R.string.gate_grant)) }
             }
             GateState.Ready -> MainScaffold()
         }
     }
+}
+
+/** Otwiera Health Connect w Sklepie Play razem z ekranem powitalnym. */
+private fun openHealthConnectInStore(context: android.content.Context) {
+    val uri = "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(uri)).apply {
+        setPackage("com.android.vending")
+        putExtra("overlay", true)
+        putExtra("callerId", context.packageName)
+    }
+    // Gdy nie ma Sklepu Play (np. emulator bez usług Google), po prostu nic nie robimy.
+    runCatching { context.startActivity(intent) }
 }
 
 @Composable

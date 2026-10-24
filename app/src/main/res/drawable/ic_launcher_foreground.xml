@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ikona: pierścień złożony z trzech łuków w kolorach dyscyplin
+  (basen niebieski, rower zielony, trenażer pomarańczowy).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M54,26 A28,28 0 0 1 78.25,68"
+        android:strokeColor="#1E88E5"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M78.25,68 A28,28 0 0 1 29.75,68"
+        android:strokeColor="#43A047"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M29.75,68 A28,28 0 0 1 54,26"
+        android:strokeColor="#FB8C00"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+
+    <!-- Wskazówka stopera w środku -->
+    <path
+        android:pathData="M54,54 L54,40"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M54,54 L64,60"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+</vector>

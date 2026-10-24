@@ -15,6 +15,7 @@
     <string name="gate_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji. Zainstaluj go albo zaktualizuj w Sklepie Play.</string>
     <string name="gate_needs_permissions">Apka potrzebuje uprawnień do odczytu treningów z Health Connect. Dane zostają na Twoim telefonie.</string>
     <string name="gate_grant">Nadaj uprawnienia</string>
+    <string name="gate_install">Zainstaluj Health Connect</string>
 
     <string name="dashboard_week">Ten tydzień</string>
     <string name="dashboard_vs_prev">%1$s vs poprzedni tydzień</string>

@@ -24,6 +24,8 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import io.github.albertrzad18.treningtracker.domain.Discipline
+import io.github.albertrzad18.treningtracker.domain.SamplePoint
+import io.github.albertrzad18.treningtracker.domain.downsample
 import java.time.Instant
 import kotlin.reflect.KClass
 
@@ -54,6 +56,18 @@ data class SessionProbe(
     val laps: Int,
     val route: RouteState,
 )
+
+/** Jeden punkt trasy GPS. */
+data class RoutePoint(val timeMillis: Long, val latitude: Double, val longitude: Double, val altitudeM: Double?)
+
+/** Przebieg treningu w czasie: tętno, prędkość i trasa. */
+data class SessionSeries(
+    val heartRate: List<SamplePoint>,
+    val speed: List<SamplePoint>,
+    val route: List<RoutePoint>,
+) {
+    val isEmpty: Boolean get() = heartRate.isEmpty() && speed.isEmpty() && route.isEmpty()
+}
 
 /** Porcja zmian z Changes API: nowe/zmienione sesje, usunięte id, kolejny token. */
 data class ChangesBatch(
@@ -166,6 +180,36 @@ class HealthConnectGateway(private val context: Context) {
             elevationGainM = result?.get(ElevationGainedRecord.ELEVATION_GAINED_TOTAL)?.inMeters?.takeIf { it > 0 },
             dataOrigin = session.metadata.dataOrigin.packageName,
             syncedAt = nowMillis,
+        )
+    }
+
+    /**
+     * Przebieg jednego treningu: próbki tętna i prędkości oraz punkty trasy.
+     * Próbki są przerzedzone, żeby w bazie nie lądowały tysiące punktów z jednego treningu.
+     */
+    suspend fun readSeries(session: ExerciseSessionRecord, granted: Set<String>): SessionSeries {
+        val range = TimeRangeFilter.between(session.startTime, session.endTime)
+        fun allowed(kind: DataKind) = HealthPermission.getReadPermission(kind.recordClass) in granted
+
+        val heartRate = if (!allowed(DataKind.HEART_RATE)) emptyList() else {
+            client.readRecords(ReadRecordsRequest(HeartRateRecord::class, range)).records
+                .flatMap { record -> record.samples.map { SamplePoint(it.time.toEpochMilli(), it.beatsPerMinute.toDouble()) } }
+                .sortedBy { it.timeMillis }
+        }
+        val speed = if (!allowed(DataKind.SPEED)) emptyList() else {
+            client.readRecords(ReadRecordsRequest(SpeedRecord::class, range)).records
+                .flatMap { record -> record.samples.map { SamplePoint(it.time.toEpochMilli(), it.speed.inMetersPerSecond) } }
+                .sortedBy { it.timeMillis }
+        }
+        // Trasa przychodzi razem z sesją; gdy Health Connect chce osobnej zgody, zostawiamy pustą listę.
+        val route = (session.exerciseRouteResult as? ExerciseRouteResult.Data)?.exerciseRoute?.route.orEmpty()
+
+        return SessionSeries(
+            heartRate = downsample(heartRate),
+            speed = downsample(speed),
+            route = route.map {
+                RoutePoint(it.time.toEpochMilli(), it.latitude, it.longitude, it.altitude?.inMeters)
+            },
         )
     }
 

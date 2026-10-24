@@ -3,6 +3,10 @@ package io.github.albertrzad18.treningtracker.data.sync
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import io.github.albertrzad18.treningtracker.data.db.RoutePointEntity
+import io.github.albertrzad18.treningtracker.data.db.SampleDao
+import io.github.albertrzad18.treningtracker.data.db.SampleEntity
+import io.github.albertrzad18.treningtracker.data.db.SampleType
 import io.github.albertrzad18.treningtracker.data.db.WorkoutDao
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
 import kotlinx.coroutines.sync.Mutex
@@ -26,6 +30,7 @@ sealed interface SyncResult {
 class SyncRepository(
     private val gateway: HealthConnectGateway,
     private val dao: WorkoutDao,
+    private val sampleDao: SampleDao,
     private val prefs: SyncPrefs,
     private val clock: () -> Instant = Instant::now,
 ) {
@@ -97,7 +102,40 @@ class SyncRepository(
         val sessions = gateway.readSessions(from, to)
         val entities = sessions.mapNotNull { gateway.toEntity(it, granted, clock().toEpochMilli()) }
         if (entities.isNotEmpty()) dao.upsertAll(entities)
+        saveSeries(sessions, granted)
         return entities.size
+    }
+
+    /**
+     * Zapisuje przebiegi (tętno, prędkość, trasa) dla treningów, które ich jeszcze nie mają.
+     * Jedna synchronizacja bierze najwyżej [SERIES_PER_SYNC] treningów, od najnowszego,
+     * żeby pierwszy odczyt całej historii nie trwał w nieskończoność. Reszta dojdzie przy kolejnych.
+     */
+    private suspend fun saveSeries(sessions: List<ExerciseSessionRecord>, granted: Set<String>) {
+        val known = sampleDao.workoutIdsWithSamples().toSet()
+        val todo = sessions
+            .filter { it.metadata.id !in known }
+            .sortedByDescending { it.startTime }
+            .take(SERIES_PER_SYNC)
+        todo.forEach { session ->
+            val series = runCatching { gateway.readSeries(session, granted) }.getOrNull() ?: return@forEach
+            if (series.isEmpty) return@forEach
+            val id = session.metadata.id
+            sampleDao.replaceSamples(
+                workoutId = id,
+                samples = series.heartRate.map { SampleEntity(workoutId = id, type = SampleType.HEART_RATE, timeMillis = it.timeMillis, value = it.value) } +
+                    series.speed.map { SampleEntity(workoutId = id, type = SampleType.SPEED, timeMillis = it.timeMillis, value = it.value) },
+                route = series.route.map {
+                    RoutePointEntity(
+                        workoutId = id,
+                        timeMillis = it.timeMillis,
+                        latitude = it.latitude,
+                        longitude = it.longitude,
+                        altitudeM = it.altitudeM,
+                    )
+                },
+            )
+        }
     }
 
     private companion object {
@@ -105,5 +143,6 @@ class SyncRepository(
         const val RECENT_DAYS = 2L
         const val LIMITED_DAYS = 30L
         const val FULL_HISTORY_DAYS = 365L * 5
+        const val SERIES_PER_SYNC = 25
     }
 }

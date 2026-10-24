@@ -1,5 +1,8 @@
 package io.github.albertrzad18.treningtracker.data.demo
 
+import io.github.albertrzad18.treningtracker.data.db.RoutePointEntity
+import io.github.albertrzad18.treningtracker.data.db.SampleEntity
+import io.github.albertrzad18.treningtracker.data.db.SampleType
 import io.github.albertrzad18.treningtracker.data.db.WorkoutEntity
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import java.time.LocalDate
@@ -81,6 +84,58 @@ fun demoWorkouts(today: LocalDate, zone: ZoneId, months: Long = 18, seed: Int = 
     }
     return result
 }
+
+/**
+ * Przebieg jednego treningu demo: tętno co pół minuty, prędkość tam, gdzie jest dystans,
+ * i trasa w kształcie pętli dla roweru na dworze (okolice Krakowa).
+ */
+fun demoSeries(workout: WorkoutEntity, seed: Int = workout.id.hashCode()): DemoSeries {
+    val random = Random(seed)
+    val stepSec = 30L
+    val steps = (workout.durationSec / stepSec).toInt().coerceIn(2, 400)
+    val avgHr = workout.avgHeartRate?.toDouble() ?: 130.0
+    val avgSpeed = workout.avgSpeedMps
+
+    val heartRate = (0 until steps).map { i ->
+        // Rozgrzewka na początku, mocniejsza końcówka, do tego drobne wahania.
+        val progress = i.toDouble() / steps
+        val shape = 0.85 + 0.25 * progress + 0.05 * kotlin.math.sin(i / 3.0)
+        SampleEntity(
+            workoutId = workout.id,
+            type = SampleType.HEART_RATE,
+            timeMillis = workout.startMillis + i * stepSec * 1000,
+            value = (avgHr * shape + random.nextInt(-4, 5)).coerceIn(80.0, 200.0),
+        )
+    }
+    val speed = if (avgSpeed == null) emptyList() else (0 until steps).map { i ->
+        SampleEntity(
+            workoutId = workout.id,
+            type = SampleType.SPEED,
+            timeMillis = workout.startMillis + i * stepSec * 1000,
+            value = (avgSpeed * (0.8 + random.nextDouble() * 0.45)).coerceAtLeast(0.1),
+        )
+    }
+    val route = if (workout.discipline != Discipline.ROAD) emptyList() else {
+        val radiusDeg = (workout.distanceM ?: 20000.0) / 1000 / 40.0
+        (0 until steps).map { i ->
+            val angle = 2 * Math.PI * i / steps
+            RoutePointEntity(
+                workoutId = workout.id,
+                timeMillis = workout.startMillis + i * stepSec * 1000,
+                latitude = DEMO_LAT + radiusDeg * kotlin.math.sin(angle) + random.nextDouble(-0.001, 0.001),
+                longitude = DEMO_LON + radiusDeg * 1.6 * kotlin.math.cos(angle) + random.nextDouble(-0.001, 0.001),
+                altitudeM = 220 + 80 * kotlin.math.sin(angle * 3) + random.nextDouble(-5.0, 5.0),
+            )
+        }
+    }
+    return DemoSeries(heartRate + speed, route)
+}
+
+data class DemoSeries(val samples: List<SampleEntity>, val route: List<RoutePointEntity>)
+
+/** Środek demonstracyjnych tras: okolice Krakowa. */
+private const val DEMO_LAT = 50.06
+private const val DEMO_LON = 19.94
 
 private data class DemoMetrics(
     val minutes: Long,

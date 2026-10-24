@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
+import io.github.albertrzad18.treningtracker.data.demo.demoSeries
 import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ sealed interface DemoMessage {
 class DebugViewModel(app: Application) : AndroidViewModel(app) {
     private val gateway = HealthConnectGateway(app)
     private val dao = (app as TreningApp).database.workoutDao()
+    private val sampleDao = (app as TreningApp).database.sampleDao()
     private val _state = MutableStateFlow<DebugState>(DebugState.Loading)
     val state: StateFlow<DebugState> = _state.asStateFlow()
 
@@ -44,11 +46,16 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         refresh()
     }
 
-    /** Wrzuca do bazy sztuczne treningi (tylko build debug), żeby dało się sprawdzić wykresy i tabelę. */
+    /** Wrzuca do bazy sztuczne treningi z przebiegami i trasami (tylko build debug). */
     fun fillDemoData() {
         viewModelScope.launch {
             val demo = demoWorkouts(LocalDate.now(), ZoneId.systemDefault())
             dao.upsertAll(demo)
+            // Przebiegi tylko dla ostatnich treningów: reszta i tak służy wykresom zbiorczym.
+            demo.sortedByDescending { it.startMillis }.take(40).forEach { workout ->
+                val series = demoSeries(workout)
+                sampleDao.replaceSamples(workout.id, series.samples, series.route)
+            }
             _demoMessage.value = DemoMessage.Added(demo.size)
         }
     }

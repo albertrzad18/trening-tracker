@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Trening Tracker</string>
-    <string name="hello">Cześć, Albert! Szkielet apki działa.</string>
+
+    <string name="discipline_pool">Basen</string>
+    <string name="discipline_road">Rower</string>
+    <string name="discipline_trainer">Trenażer</string>
+
+    <string name="debug_title">Dane z Health Connect</string>
+    <string name="debug_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji.</string>
+    <string name="debug_needs_permissions">Apka potrzebuje uprawnień do odczytu treningów z Health Connect.</string>
+    <string name="debug_grant">Nadaj uprawnienia</string>
+    <string name="debug_error">Błąd: %1$s</string>
+    <string name="debug_retry">Spróbuj ponownie</string>
+    <string name="debug_copy">Kopiuj raport</string>
+
+    <string name="report_header">Treningi: %1$d (ostatnie %2$d dni)</string>
+    <string name="report_discipline">%1$s: %2$d</string>
+    <string name="report_segments">segmenty: %1$d/%2$d</string>
+    <string name="report_laps">okrążenia: %1$d/%2$d</string>
+    <string name="report_route">trasa GPS: %1$d/%3$d (wymaga zgody: %2$d)</string>
+    <string name="report_origins">źródła: %1$s</string>
+    <string name="report_other_types">Inne typy ćwiczeń (kod Health Connect: liczba):</string>
 </resources>

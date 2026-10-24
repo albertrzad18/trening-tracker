@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import io.github.albertrzad18.treningtracker.ui.theme.TreningTrackerTheme
-import io.github.albertrzad18.treningtracker.ui.HelloScreen
+import io.github.albertrzad18.treningtracker.ui.debug.DebugScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TreningTrackerTheme {
-                HelloScreen()
+                DebugScreen()
             }
         }
     }

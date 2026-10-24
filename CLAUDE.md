@@ -26,6 +26,9 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 - Package: `io.github.albertrzad18.treningtracker`, jeden moduł `app`. Wersje bibliotek w `gradle/libs.versions.toml`.
 - `local.properties` (poza gitem) ma `sdk.dir=C\:/Users/Albert/AppData/Local/Android/Sdk`.
 - Pierwszy build trwa kilka minut (pobieranie zależności), kolejne są szybsze.
+- Struktura `app/src/main/java/io/github/albertrzad18/treningtracker/`: `data/` (`db` Room, `healthconnect`, `sync`), `domain/` (czysty Kotlin: agregacje, lista, pulpit, porównanie), `ui/` (`dashboard`, `workouts`, `detail`, `more`, `debug`, `common`, `format`, `theme`), `TreningApp` (współdzielone obiekty).
+- Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację.
+- Wyniki rozpoznania danych: `docs/ETAP0-WYNIKI.md`.
 
 ## Nauka (ważne)
 Użytkownik uczy się Kotlina i Androida na tym projekcie. Zna podstawy programowania, ale nie zna Kotlina, Compose ani budowy apki na Androida.

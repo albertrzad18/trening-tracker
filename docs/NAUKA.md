@@ -117,3 +117,31 @@ odświeża się sam po synchronizacji. U nas `observeAll(): Flow<List<WorkoutEnt
 ### `@Upsert`
 „Wstaw lub nadpisz”: jeśli trening o tym `id` już jest, zostanie zaktualizowany, jeśli nie, dodany.
 Dzięki temu ponowna synchronizacja nie tworzy duplikatów.
+
+## Architektura apki
+
+### ViewModel i `StateFlow`
+`ViewModel` trzyma stan ekranu i przeżywa obrót telefonu. Ekran nie czyta bazy sam, tylko pyta ViewModel.
+U nas `DashboardViewModel` zamienia `Flow` z bazy na `StateFlow` (`stateIn`), który ekran obserwuje przez
+`collectAsStateWithLifecycle()`. Gdy dane w Room się zmienią, ekran odświeża się sam.
+
+```kotlin
+val state: StateFlow<DashboardData?> = dao.observeAll().map { ... }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+```
+
+### `@Composable` w praktyce: stan i `remember`
+Compose rysuje ekran na nowo, gdy zmieni się stan, który czyta. `by` w `val data by vm.state.collectAsStateWithLifecycle()`
+zamienia strumień w zwykłą wartość. `remember` zapamiętuje obiekt między przerysowaniami (np. `rememberScrollState()`).
+
+### Nawigacja (`NavHost`)
+`AppRoot.kt` definiuje ekrany jako trasy tekstowe (`"dashboard"`, `"workout/{id}"`). `nav.navigate("workout/abc")`
+otwiera szczegóły, a `{id}` czyta `SavedStateHandle` w `WorkoutDetailViewModel`. Dolny pasek to `NavigationBar`.
+Nowy ekran = nowy `composable("trasa") { ... }` w `NavHost` plus (jeśli ma być w pasku) pozycja w `topLevel`.
+
+### WorkManager
+Zadania w tle, które system uruchamia nawet gdy apka jest zamknięta. `SyncWorker` robi synchronizację,
+`SyncScheduler` planuje ją co 6 godzin (`PeriodicWorkRequest`) albo od razu (`OneTimeWorkRequest`).
+
+### Changes API (Health Connect)
+Zamiast czytać wszystko za każdym razem, bierzemy token i pytamy tylko o zmiany od ostatniego razu
+(`SyncRepository`). Token jest zapisany w `SharedPreferences` (`SyncPrefs`). Gdy wygaśnie, robimy pełny odczyt.

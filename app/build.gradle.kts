@@ -29,6 +29,8 @@ android {
 
     buildFeatures {
         compose = true
+        // Potrzebne do `BuildConfig.DEBUG`: dane demo są tylko w buildzie debug.
+        buildConfig = true
     }
 }
 
@@ -53,6 +55,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.health.connect.client)
+    implementation(libs.vico.compose.m3)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 

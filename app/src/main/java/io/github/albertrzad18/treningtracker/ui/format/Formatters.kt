@@ -63,3 +63,55 @@ fun formatTime(time: java.time.LocalTime): String = time.format(DateTimeFormatte
 /** `24 paź 2026, 14:30` */
 fun formatDateTime(dateTime: java.time.LocalDateTime): String =
     formatDate(dateTime.toLocalDate()) + ", " + formatTime(dateTime.toLocalTime())
+
+/** `34%` z udziału 0..1 (bez znaku, inaczej niż [formatPercentChange]). */
+fun formatPercent(fraction: Double): String = "${(fraction * 100).roundToInt()}%"
+
+// --- Krótkie etykiety na osie wykresów ---
+
+/**
+ * Etykieta osi czasu: `0`, `45 min`, `2,5 h`, `25 h`.
+ * Przy dużych wartościach rezygnujemy z części dziesiętnych, żeby oś nie była szeroka.
+ */
+fun formatMinutesShort(minutes: Double): String {
+    val hours = minutes / 60.0
+    return when {
+        minutes < 1 -> "0"
+        minutes < 60 -> "${minutes.roundToInt()} min"
+        hours < 10 -> number("0.#", hours) + " h"
+        else -> "${hours.roundToInt()} h"
+    }
+}
+
+/** `56 h 29 min` dla sum z wielu treningów; `1:23:45` zostawiamy pojedynczemu treningowi. */
+fun formatHoursAndMinutes(duration: Duration): String {
+    val minutes = duration.toMinutes()
+    val hours = minutes / 60
+    val rest = minutes % 60
+    return if (hours == 0L) "$rest min" else "$hours h $rest min"
+}
+
+/** `2:30` – tempo bez jednostki, do wąskiej osi wykresu. */
+fun formatPaceShort(secondsPer100m: Double): String {
+    val total = secondsPer100m.roundToInt().coerceAtLeast(0)
+    return "%d:%02d".format(total / 60, total % 60)
+}
+
+/** `2,4` – jedna cyfra po przecinku, do osi wykresu. */
+fun formatDecimalShort(value: Double): String = number("0.0", value)
+
+/** `1 200` bez jednostki: jednostka jest w opisie wykresu, a oś ma być wąska. */
+fun formatNumberShort(value: Double): String = number("#,##0", value)
+
+/** `12 km` (bez części dziesiętnych, bo oś ma być wąska). */
+fun formatKmShort(km: Double): String = number("#,##0", km) + " km"
+
+/** `24.10` */
+fun formatDayShort(date: LocalDate): String = date.format(DateTimeFormatter.ofPattern("d.MM", PL))
+
+/** `paź` */
+fun formatMonthShort(month: java.time.YearMonth): String = month.format(DateTimeFormatter.ofPattern("LLL", PL))
+
+/** `paź 26` dla osi, gdzie mieszają się różne lata. */
+fun formatMonthWithYear(month: java.time.YearMonth): String =
+    month.format(DateTimeFormatter.ofPattern("LLL yy", PL))

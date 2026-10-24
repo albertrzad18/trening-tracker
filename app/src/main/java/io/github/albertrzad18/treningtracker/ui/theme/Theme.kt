@@ -10,6 +10,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
+import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 
 // Stałe kolory dyscyplin: używane wszędzie (tabele, wykresy, kafelki).
 val PoolBlue = Color(0xFF1E88E5)
@@ -29,5 +31,8 @@ fun TreningTrackerTheme(
         darkTheme -> darkColorScheme()
         else -> lightColorScheme()
     }
-    MaterialTheme(colorScheme = colorScheme, content = content)
+    MaterialTheme(colorScheme = colorScheme) {
+        // Wykresy (Vico) biorą kolory osi i opisów z motywu Material 3, więc działają w jasnym i ciemnym.
+        ProvideVicoTheme(rememberM3VicoTheme(), content)
+    }
 }

@@ -216,7 +216,7 @@
     <string name="passive_title">Aktywność dzienna</string>
     <string name="passive_steps">Kroki</string>
     <string name="passive_steps_avg">Śr. dziennie</string>
-    <string name="passive_basal">Spalane naturalnie</string>
+    <string name="passive_basal">Przepalone</string>
     <string name="dashboard_burned">Przepalone</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
@@ -266,7 +266,7 @@
     <!-- Podsumowania (redesign) -->
     <string name="summary_best_label">Najlepszy trening</string>
     <string name="summary_steps">%1$s kroków</string>
-    <string name="summary_basal">%1$s spalane naturalnie</string>
+    <string name="summary_basal">%1$s przepalone</string>
     <string name="summary_active_days_short">%1$d dni z treningiem</string>
     <string name="summary_streak_short">seria %1$s</string>
 

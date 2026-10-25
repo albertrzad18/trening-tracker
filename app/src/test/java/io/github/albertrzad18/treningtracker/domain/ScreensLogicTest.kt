@@ -46,6 +46,15 @@ class ScreensLogicTest {
     }
 
     @Test
+    fun dashboardMonthCoversWholeMonthAndPreviousMonth() {
+        val d = buildDashboard(sample, today, zone, granularity = SummaryGranularity.MONTH)
+        // Październik: a, b, c; wrzesień: d.
+        assertEquals(3, d.week.count)
+        assertEquals(1, d.previousWeek.count)
+        assertEquals(LocalDate.of(2026, 10, 1), d.range.start)
+    }
+
+    @Test
     fun dashboardOnEmptyData() {
         val d = buildDashboard(emptyList(), today, zone)
         assertTrue(d.isEmpty)

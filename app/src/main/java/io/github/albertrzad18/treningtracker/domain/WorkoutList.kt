@@ -7,7 +7,7 @@ import java.time.ZoneId
 
 enum class PeriodFilter { WEEK, MONTH, YEAR, ALL }
 
-enum class SortColumn { DATE, DURATION, DISTANCE, CALORIES, SPEED, HEART_RATE }
+enum class SortColumn { DATE, DISCIPLINE, DURATION, DISTANCE, CALORIES, SPEED, HEART_RATE }
 
 data class MonthGroup(val month: YearMonth, val workouts: List<Workout>, val totals: Totals)
 
@@ -68,6 +68,7 @@ private fun comparatorFor(sort: SortColumn, ascending: Boolean): Comparator<Work
     }
     return when (sort) {
         SortColumn.DATE -> by<Long> { it.start.toEpochMilli() }
+        SortColumn.DISCIPLINE -> by<Int> { it.discipline.ordinal }
         SortColumn.DURATION -> by<Long> { it.duration.seconds }
         SortColumn.DISTANCE -> by<Double> { it.distanceM }
         SortColumn.CALORIES -> by<Double> { it.caloriesKcal }

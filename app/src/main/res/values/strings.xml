@@ -64,12 +64,15 @@
     <string name="detail_compare_distance">Dystans: %1$s</string>
     <string name="detail_compare_hint">Średnia z innych treningów tej dyscypliny</string>
     <string name="detail_hr_chart">Tętno w czasie</string>
-    <string name="detail_speed_chart">Prędkość (km/h)</string>
+    <string name="detail_hr_avg_unit">bpm śr.</string>
+    <string name="detail_speed_chart">Prędkość</string>
     <string name="detail_zones">Strefy tętna</string>
     <string name="detail_zones_desc">Ile czasu trening spędził w każdej strefie. Granice liczymy z tętna maksymalnego z ustawień.</string>
     <string name="detail_zone_label">Strefa %1$d · %2$d+</string>
     <string name="detail_route">Trasa</string>
-    <string name="detail_elevation_chart">Wysokość</string>
+    <string name="detail_route_start">Start</string>
+    <string name="detail_route_finish">Meta</string>
+    <string name="detail_elevation_chart">Profil wysokości</string>
 
     <string name="more_sync_title">Synchronizacja</string>
     <string name="more_last_sync">Ostatnia synchronizacja: %1$s</string>

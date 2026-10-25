@@ -1,34 +1,42 @@
 package io.github.albertrzad18.treningtracker.ui.workouts
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,24 +52,35 @@ import io.github.albertrzad18.treningtracker.domain.SortColumn
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.WorkoutListResult
 import io.github.albertrzad18.treningtracker.domain.buildWorkoutList
-import io.github.albertrzad18.treningtracker.ui.common.DisciplineChips
-import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
-import io.github.albertrzad18.treningtracker.ui.common.PeriodChips
+import io.github.albertrzad18.treningtracker.ui.common.DisciplineFilterChips
+import io.github.albertrzad18.treningtracker.ui.common.LabelText
+import io.github.albertrzad18.treningtracker.ui.common.PeriodMenuChip
+import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
+import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
+import io.github.albertrzad18.treningtracker.ui.common.TtChip
+import io.github.albertrzad18.treningtracker.ui.common.TtDivider
+import io.github.albertrzad18.treningtracker.ui.common.TtIcons
 import io.github.albertrzad18.treningtracker.ui.common.avgHeartRateText
 import io.github.albertrzad18.treningtracker.ui.common.caloriesText
 import io.github.albertrzad18.treningtracker.ui.common.distanceText
 import io.github.albertrzad18.treningtracker.ui.common.durationText
-import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.paceOrSpeedText
 import io.github.albertrzad18.treningtracker.ui.common.summaryText
-import io.github.albertrzad18.treningtracker.ui.format.formatDate
+import io.github.albertrzad18.treningtracker.ui.common.ttClickable
+import io.github.albertrzad18.treningtracker.ui.format.formatDayMonth
+import io.github.albertrzad18.treningtracker.ui.format.formatDayOfWeekShort
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatMonth
+import io.github.albertrzad18.treningtracker.ui.format.formatTime
+import io.github.albertrzad18.treningtracker.ui.format.pluralPl
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtShape
+import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
+import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
@@ -72,12 +91,19 @@ data class WorkoutFilters(
     val period: PeriodFilter = PeriodFilter.ALL,
     val sort: SortColumn = SortColumn.DATE,
     val ascending: Boolean = false,
-)
+) {
+    /** Czy cokolwiek zawęża listę: wtedy sumy liczymy dla tego, co widać. */
+    val isFiltered: Boolean get() = disciplines.isNotEmpty() || period != PeriodFilter.ALL
+}
 
 class WorkoutsViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = (app as TreningApp).database.workoutDao()
     private val _filters = MutableStateFlow(WorkoutFilters())
     val filters: StateFlow<WorkoutFilters> = _filters
+
+    /** Zwinięte miesiące; klucz to `YYYY-MM`. */
+    private val _collapsed = MutableStateFlow(emptySet<String>())
+    val collapsed: StateFlow<Set<String>> = _collapsed
 
     /** `null` = jeszcze się wczytuje. */
     val result: StateFlow<WorkoutListResult?> = combine(dao.observeAll(), _filters) { entities, f ->
@@ -98,150 +124,383 @@ class WorkoutsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setPeriod(p: PeriodFilter) = _filters.update { it.copy(period = p) }
 
-    /** Kliknięcie w nagłówek: ta sama kolumna odwraca kierunek, nowa zaczyna od malejącego (najnowsze/największe). */
-    fun onSortClick(column: SortColumn) = _filters.update {
-        if (it.sort == column) it.copy(ascending = !it.ascending) else it.copy(sort = column, ascending = false)
-    }
-}
+    fun setSort(column: SortColumn) = _filters.update { it.copy(sort = column) }
 
-private val DATE_W = 100.dp
-private val DOT_W = 28.dp
-private val TIME_W = 76.dp
-private val DIST_W = 84.dp
-private val KCAL_W = 88.dp
-private val SPEED_W = 108.dp
-private val HR_W = 84.dp
-private val TABLE_W = DATE_W + DOT_W + TIME_W + DIST_W + KCAL_W + SPEED_W + HR_W
+    fun setAscending(ascending: Boolean) = _filters.update { it.copy(ascending = ascending) }
+
+    fun clearFilters() {
+        _filters.value = WorkoutFilters()
+    }
+
+    fun toggleMonth(key: String) = _collapsed.update { if (key in it) it - key else it + key }
+}
 
 @Composable
 fun WorkoutsScreen(onOpenWorkout: (String) -> Unit, vm: WorkoutsViewModel = viewModel()) {
     val filters by vm.filters.collectAsStateWithLifecycle()
+    val collapsed by vm.collapsed.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
+    var sortSheet by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        FilterBar(filters, vm::toggleDiscipline, vm::setPeriod)
+        FilterBar(
+            filters = filters,
+            count = result?.workouts?.size,
+            onToggleDiscipline = vm::toggleDiscipline,
+            onPeriod = vm::setPeriod,
+            onOpenSort = { sortSheet = true },
+        )
         val r = result
         when {
-            r == null -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            r.workouts.isEmpty() -> Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
-                Text(stringResource(R.string.list_empty), style = MaterialTheme.typography.bodyLarge)
-            }
+            r == null -> ListSkeleton()
+            r.workouts.isEmpty() -> EmptyList(onClear = vm::clearFilters)
             else -> {
-                val scroll = rememberScrollState()
-                Box(Modifier.weight(1f).horizontalScroll(scroll)) {
-                    Column(Modifier.width(TABLE_W)) {
-                        HeaderRow(filters, vm::onSortClick)
-                        HorizontalDivider()
-                        LazyColumn(Modifier.weight(1f)) {
-                            if (r.groups.isNotEmpty()) {
-                                r.groups.forEach { group ->
-                                    item(key = "h-${group.month}") { GroupHeader(group) }
-                                    items(group.workouts, key = { it.id }) { WorkoutRow(it) { onOpenWorkout(it.id) } }
-                                }
-                            } else {
-                                items(r.workouts, key = { it.id }) { WorkoutRow(it) { onOpenWorkout(it.id) } }
-                            }
-                        }
-                    }
-                }
+                WorkoutList(
+                    result = r,
+                    collapsed = collapsed,
+                    onToggleMonth = vm::toggleMonth,
+                    onOpenWorkout = onOpenWorkout,
+                    modifier = Modifier.weight(1f),
+                )
                 SummaryBar(r)
             }
         }
     }
+
+    if (sortSheet) {
+        SortSheet(
+            filters = filters,
+            onDismiss = { sortSheet = false },
+            onSort = vm::setSort,
+            onAscending = vm::setAscending,
+        )
+    }
 }
 
+/** Chipy dyscyplin, menu okresu, chip sortowania i licznik treningów. */
 @Composable
 private fun FilterBar(
     filters: WorkoutFilters,
+    count: Int?,
     onToggleDiscipline: (Discipline) -> Unit,
     onPeriod: (PeriodFilter) -> Unit,
+    onOpenSort: () -> Unit,
 ) {
-    Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        DisciplineChips(filters.disciplines, onToggleDiscipline)
-        PeriodChips(filters.period, onPeriod)
-    }
-}
-
-@Composable
-private fun HeaderRow(filters: WorkoutFilters, onSort: (SortColumn) -> Unit) {
-    Row(Modifier.width(TABLE_W).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        HeaderCell(R.string.col_date, DATE_W, SortColumn.DATE, filters, onSort)
-        Spacer(Modifier.width(DOT_W))
-        HeaderCell(R.string.col_time, TIME_W, SortColumn.DURATION, filters, onSort)
-        HeaderCell(R.string.col_distance, DIST_W, SortColumn.DISTANCE, filters, onSort)
-        HeaderCell(R.string.col_calories, KCAL_W, SortColumn.CALORIES, filters, onSort)
-        HeaderCell(R.string.col_speed, SPEED_W, SortColumn.SPEED, filters, onSort)
-        HeaderCell(R.string.col_hr, HR_W, SortColumn.HEART_RATE, filters, onSort)
-    }
-}
-
-@Composable
-private fun HeaderCell(
-    labelRes: Int,
-    width: Dp,
-    column: SortColumn,
-    filters: WorkoutFilters,
-    onSort: (SortColumn) -> Unit,
-) {
-    val arrow = if (filters.sort == column) (if (filters.ascending) " ▲" else " ▼") else ""
-    Text(
-        stringResource(labelRes) + arrow,
-        modifier = Modifier.width(width).clickable { onSort(column) }.padding(horizontal = 6.dp, vertical = 4.dp),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = if (filters.sort == column) FontWeight.Bold else FontWeight.Normal,
-        maxLines = 1,
-    )
-}
-
-@Composable
-private fun GroupHeader(group: MonthGroup) {
-    Row(
-        Modifier.width(TABLE_W).background(MaterialTheme.colorScheme.surfaceVariant).padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    val colors = LocalTtColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = TtSpace.screenMargin, end = TtSpace.screenMargin, top = TtSpace.x2, bottom = TtSpace.x1),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.x3),
     ) {
-        Text(
-            stringResource(R.string.list_group_total, formatMonth(group.month), group.totals.count),
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.width(DATE_W + DOT_W + TIME_W),
-        )
-        Text(group.totals.summaryText(), style = MaterialTheme.typography.labelMedium)
-    }
-}
-
-@Composable
-private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
-    val zone = ZoneId.systemDefault()
-    Row(
-        Modifier.width(TABLE_W).clickable(onClick = onClick).padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Cell(formatDate(w.startLocal(zone).toLocalDate()), DATE_W)
-        Box(Modifier.width(DOT_W), Alignment.Center) { DisciplineDot(w.discipline) }
-        Cell(w.durationText(), TIME_W)
-        // Brakujące dane zostają puste, bez zer.
-        Cell(w.distanceText().orEmpty(), DIST_W)
-        Cell(w.caloriesText().orEmpty(), KCAL_W)
-        Cell(w.paceOrSpeedText().orEmpty(), SPEED_W)
-        Cell(w.avgHeartRateText().orEmpty(), HR_W)
-    }
-}
-
-@Composable
-private fun Cell(text: String, width: Dp) {
-    Text(text, Modifier.width(width).padding(horizontal = 6.dp), style = MaterialTheme.typography.bodySmall, maxLines = 1)
-}
-
-@Composable
-private fun SummaryBar(r: WorkoutListResult) {
-    Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text(
-                stringResource(R.string.list_sum, r.totals.count) + ": " + r.totals.summaryText(),
-                style = MaterialTheme.typography.labelLarge,
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            DisciplineFilterChips(filters.disciplines, onToggleDiscipline, modifier = Modifier.weight(1f))
+            PeriodMenuChip(filters.period, onPeriod)
+        }
+        Row(
+            Modifier.fillMaxWidth().defaultMinSize(minHeight = 36.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TtChip(
+                label = stringResource(filters.sort.labelRes()),
+                onClick = onOpenSort,
+                paddingEnd = 10.dp,
+                trailing = {
+                    Icon(
+                        if (filters.ascending) TtIcons.Up else TtIcons.Down,
+                        contentDescription = null,
+                        tint = colors.ink,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
             )
-            r.averageDuration?.let {
-                Text(stringResource(R.string.list_average, formatDuration(it)), style = MaterialTheme.typography.bodySmall)
+            Box(Modifier.weight(1f))
+            if (count != null) {
+                Text(workoutsCountText(count), style = TtType.bodyS, color = colors.ink2)
             }
         }
+    }
+}
+
+/** `299 treningów`, `1 trening`, `3 treningi`. */
+@Composable
+private fun workoutsCountText(count: Int): String = pluralPl(
+    count,
+    stringResource(R.string.unit_workout_one),
+    stringResource(R.string.unit_workout_few),
+    stringResource(R.string.unit_workout_many),
+)
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun WorkoutList(
+    result: WorkoutListResult,
+    collapsed: Set<String>,
+    onToggleMonth: (String) -> Unit,
+    onOpenWorkout: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(modifier.fillMaxSize()) {
+        if (result.groups.isNotEmpty()) {
+            result.groups.forEach { group ->
+                val key = group.month.toString()
+                stickyHeader(key = "h-$key") {
+                    MonthHeader(
+                        group = group,
+                        collapsed = key in collapsed,
+                        onClick = { onToggleMonth(key) },
+                    )
+                }
+                if (key !in collapsed) {
+                    items(group.workouts, key = { it.id }) { workout ->
+                        WorkoutRow(workout) { onOpenWorkout(workout.id) }
+                    }
+                }
+            }
+        } else {
+            items(result.workouts, key = { it.id }) { workout ->
+                WorkoutRow(workout) { onOpenWorkout(workout.id) }
+            }
+        }
+    }
+}
+
+/** Przyklejony nagłówek miesiąca: nazwa, liczba treningów, sumy i strzałka zwijania. */
+@Composable
+private fun MonthHeader(group: MonthGroup, collapsed: Boolean, onClick: () -> Unit) {
+    val colors = LocalTtColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(colors.bg)
+            .ttClickable(onClick = onClick)
+            .padding(start = TtSpace.screenMargin, end = TtSpace.screenMargin, top = 14.dp, bottom = TtSpace.x2),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+            Text(formatMonth(group.month), style = TtType.title, color = colors.ink, modifier = Modifier.weight(1f))
+            LabelText(group.totals.count.toString())
+            Icon(
+                if (collapsed) TtIcons.ExpandMore else TtIcons.ExpandLess,
+                contentDescription = null,
+                tint = colors.ink2,
+            )
+        }
+        Text(group.totals.summaryText(), style = TtType.bodyS, color = colors.ink2)
+        TtDivider()
+    }
+}
+
+/**
+ * Wiersz listy: pasek dyscypliny, data z dniem tygodnia, czas, dystans i tempo albo prędkość.
+ * Druga linia to kalorie i tętno. Brakujące wartości zostawiają puste miejsce, bez zer.
+ */
+@Composable
+private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
+    val colors = LocalTtColors.current
+    val zone = ZoneId.systemDefault()
+    val date = workout.startLocal(zone)
+    val second = listOfNotNull(workout.caloriesText(), workout.avgHeartRateText()).joinToString(" · ")
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 60.dp)
+            .ttClickable(onClick = onClick)
+            .padding(horizontal = TtSpace.screenMargin, vertical = TtSpace.x3)
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(TtSpace.x3),
+    ) {
+        Box(
+            Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(colors.of(workout.discipline), RoundedCornerShape(2.dp)),
+        )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(TtSpace.x3)) {
+                Column(Modifier.width(64.dp)) {
+                    Text(
+                        formatDayMonth(date.toLocalDate()),
+                        style = TtType.body.copy(fontWeight = FontWeight.Medium),
+                        color = colors.ink,
+                        maxLines = 1,
+                    )
+                    Text(
+                        "${formatDayOfWeekShort(date.toLocalDate())} ${formatTime(date.toLocalTime())}",
+                        style = TtType.caption,
+                        color = colors.ink2,
+                        maxLines = 1,
+                    )
+                }
+                Text(
+                    workout.durationText(),
+                    style = TtType.body.copy(fontWeight = FontWeight.Medium),
+                    color = colors.ink,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    workout.distanceText().orEmpty(),
+                    style = TtType.body,
+                    color = colors.ink,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    workout.paceOrSpeedText().orEmpty(),
+                    style = TtType.body,
+                    color = colors.ink,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1.2f),
+                )
+            }
+            if (second.isNotEmpty()) Text(second, style = TtType.bodyS, color = colors.ink2, maxLines = 1)
+        }
+    }
+}
+
+/** Przyklejony pasek sumy: liczba treningów, sumy i średni czas treningu. */
+@Composable
+private fun SummaryBar(result: WorkoutListResult) {
+    val colors = LocalTtColors.current
+    Column(Modifier.fillMaxWidth().background(colors.surface)) {
+        TtDivider()
+        Column(
+            Modifier.padding(horizontal = TtSpace.screenMargin, vertical = TtSpace.x3),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+                LabelText(stringResource(R.string.list_sum, result.totals.count), color = colors.ink)
+                Box(Modifier.weight(1f))
+                result.averageDuration?.let {
+                    Text(
+                        stringResource(R.string.list_avg_short, formatDuration(it)),
+                        style = TtType.bodyS,
+                        color = colors.ink2,
+                    )
+                }
+            }
+            Text(
+                result.totals.summaryText(),
+                style = TtType.body.copy(fontWeight = FontWeight.Medium),
+                color = colors.ink,
+            )
+        }
+    }
+}
+
+/** Arkusz sortowania: klucz i kierunek. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun SortSheet(
+    filters: WorkoutFilters,
+    onDismiss: () -> Unit,
+    onSort: (SortColumn) -> Unit,
+    onAscending: (Boolean) -> Unit,
+) {
+    val colors = LocalTtColors.current
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        shape = TtShape.sheet,
+        containerColor = colors.surface,
+        dragHandle = {
+            Box(Modifier.fillMaxWidth().padding(top = TtSpace.x3), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(36.dp).height(4.dp).background(colors.line, RoundedCornerShape(2.dp)))
+            }
+        },
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = TtSpace.screenMargin)
+                .padding(top = TtSpace.x4, bottom = TtSpace.x8)
+                .navigationBarsPadding(),
+        ) {
+            Text(stringResource(R.string.sort_title), style = TtType.title, color = colors.ink)
+            Box(Modifier.height(TtSpace.x2))
+            SortColumn.entries.forEach { column ->
+                val selected = column == filters.sort
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(TtSpace.minTouch)
+                        .clip(TtShape.field)
+                        .ttClickable { onSort(column) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Box(
+                        Modifier
+                            .size(20.dp)
+                            .border(2.dp, if (selected) colors.ink else colors.line, TtShape.full),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (selected) {
+                            Box(Modifier.size(10.dp).background(colors.ink, TtShape.full))
+                        }
+                    }
+                    Text(stringResource(column.labelRes()), style = TtType.body, color = colors.ink)
+                }
+            }
+            Box(Modifier.height(TtSpace.x4))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+                listOf(true, false).forEach { ascending ->
+                    val selected = filters.ascending == ascending
+                    TtChip(
+                        label = stringResource(
+                            if (ascending) R.string.sort_ascending else R.string.sort_descending,
+                        ),
+                        onClick = { onAscending(ascending) },
+                        selected = selected,
+                        background = if (selected) colors.accent else Color.Transparent,
+                        border = if (selected) colors.accent else colors.line,
+                        textColor = if (selected) colors.onAccent else colors.ink,
+                        leading = {
+                            Icon(
+                                if (ascending) TtIcons.Up else TtIcons.Down,
+                                contentDescription = null,
+                                tint = if (selected) colors.onAccent else colors.ink,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        modifier = Modifier.weight(1f).height(44.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun SortColumn.labelRes() = when (this) {
+    SortColumn.DATE -> R.string.col_date
+    SortColumn.DISCIPLINE -> R.string.col_discipline
+    SortColumn.DURATION -> R.string.col_time
+    SortColumn.DISTANCE -> R.string.col_distance
+    SortColumn.CALORIES -> R.string.col_calories
+    SortColumn.SPEED -> R.string.col_speed
+    SortColumn.HEART_RATE -> R.string.col_hr
+}
+
+@Composable
+private fun EmptyList(onClear: () -> Unit) {
+    val colors = LocalTtColors.current
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = TtSpace.screenMargin).padding(top = 72.dp),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.x4),
+    ) {
+        Text(stringResource(R.string.list_empty), style = TtType.body, color = colors.ink2)
+        SecondaryButton(text = stringResource(R.string.list_clear_filters), onClick = onClear)
+    }
+}
+
+@Composable
+private fun ListSkeleton() {
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x3),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.x4),
+    ) {
+        SkeletonBlock(height = 18.dp, width = 160.dp)
+        repeat(7) { SkeletonBlock(height = 44.dp) }
     }
 }

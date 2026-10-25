@@ -1,7 +1,6 @@
 package io.github.albertrzad18.treningtracker.ui.detail
 
 import android.app.Application
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,23 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
@@ -49,34 +41,44 @@ import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.compareToAverage
 import io.github.albertrzad18.treningtracker.domain.heartRateZones
 import io.github.albertrzad18.treningtracker.domain.timeInZones
-import io.github.albertrzad18.treningtracker.ui.charts.ChartCard
-import io.github.albertrzad18.treningtracker.ui.charts.ChartLine
-import io.github.albertrzad18.treningtracker.ui.charts.MultiLineChart
+import io.github.albertrzad18.treningtracker.ui.charts.LineSpec
+import io.github.albertrzad18.treningtracker.ui.charts.ReferenceLine
 import io.github.albertrzad18.treningtracker.ui.charts.RouteMap
+import io.github.albertrzad18.treningtracker.ui.charts.TtLineChart
+import io.github.albertrzad18.treningtracker.ui.charts.ZoneBars
+import io.github.albertrzad18.treningtracker.ui.common.BigValue
+import io.github.albertrzad18.treningtracker.ui.common.DeltaBadge
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
-import io.github.albertrzad18.treningtracker.ui.common.color
-import io.github.albertrzad18.treningtracker.ui.common.avgHeartRateText
-import io.github.albertrzad18.treningtracker.ui.common.caloriesText
-import io.github.albertrzad18.treningtracker.ui.common.distanceText
-import io.github.albertrzad18.treningtracker.ui.common.durationText
+import io.github.albertrzad18.treningtracker.ui.common.LabelText
+import io.github.albertrzad18.treningtracker.ui.common.MetricGrid
+import io.github.albertrzad18.treningtracker.ui.common.MetricItem
+import io.github.albertrzad18.treningtracker.ui.common.Panel
+import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
+import io.github.albertrzad18.treningtracker.ui.common.TtTopBar
+import io.github.albertrzad18.treningtracker.ui.common.deltaAverageText
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
-import io.github.albertrzad18.treningtracker.ui.common.paceOrSpeedText
+import io.github.albertrzad18.treningtracker.ui.format.ValueUnit
+import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
+import io.github.albertrzad18.treningtracker.ui.format.distanceParts
+import io.github.albertrzad18.treningtracker.ui.format.elevationParts
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
-import io.github.albertrzad18.treningtracker.ui.format.formatDecimalShort
-import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
-import io.github.albertrzad18.treningtracker.ui.format.formatHeartRate
-import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
+import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatKmShort
-import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
-import io.github.albertrzad18.treningtracker.ui.format.formatPercentChange
-import io.github.albertrzad18.treningtracker.ui.format.formatSpeedKmh
+import io.github.albertrzad18.treningtracker.ui.format.heartRateParts
+import io.github.albertrzad18.treningtracker.ui.format.paceParts
+import io.github.albertrzad18.treningtracker.ui.format.speedParts
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtShape
+import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
+import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.Duration
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 sealed interface DetailState {
     data object Loading : DetailState
@@ -136,68 +138,153 @@ class WorkoutDetailViewModel(app: Application, handle: SavedStateHandle) : Andro
 @Composable
 fun WorkoutDetailScreen(onBack: () -> Unit, vm: WorkoutDetailViewModel = viewModel()) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val colors = LocalTtColors.current
     Column(Modifier.fillMaxSize()) {
-        IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-        }
+        TtTopBar(title = "", onBack = onBack)
         when (val s = state) {
-            DetailState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            DetailState.NotFound -> Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
-                Text(stringResource(R.string.detail_not_found))
-            }
+            DetailState.Loading -> DetailSkeleton()
+            DetailState.NotFound -> Text(
+                stringResource(R.string.detail_not_found),
+                style = TtType.body,
+                color = colors.ink2,
+                modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = 56.dp),
+            )
             is DetailState.Found -> DetailContent(s)
         }
     }
 }
 
-private data class Metric(val label: Int, val value: String)
-
-/** Tylko metryki, które mają wartość; reszta jest ukryta. */
-private fun metricsOf(w: Workout): List<Metric> = listOfNotNull(
-    Metric(R.string.metric_time, w.durationText()),
-    w.distanceText()?.let { Metric(R.string.metric_distance, it) },
-    w.caloriesText()?.let { Metric(R.string.metric_calories, it) },
-    w.avgHeartRateText()?.let { Metric(R.string.metric_avg_hr, it) },
-    w.maxHeartRate?.let { Metric(R.string.metric_max_hr, formatHeartRate(it)) },
-    w.paceOrSpeedText()?.let { Metric(if (w.discipline == Discipline.POOL) R.string.metric_pace else R.string.metric_avg_speed, it) },
-    if (w.discipline == Discipline.POOL) null else w.maxSpeedMps?.let { Metric(R.string.metric_max_speed, formatSpeedKmh(it * 3.6)) },
-    w.elevationGainM?.let { Metric(R.string.metric_elevation, "%.0f m".format(it)) },
-)
-
 @Composable
 private fun DetailContent(state: DetailState.Found) {
-    val w = state.workout
-    val comparison = state.comparison
+    val colors = LocalTtColors.current
+    val workout = state.workout
     val zone = ZoneId.systemDefault()
     Column(
-        Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = TtSpace.x6),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            DisciplineDot(w.discipline, size = 18.dp)
-            Spacer(Modifier.width(10.dp))
-            Column {
-                Text(w.title ?: stringResource(w.discipline.labelRes()), style = MaterialTheme.typography.headlineSmall)
+        Column(
+            Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x1),
+            verticalArrangement = Arrangement.spacedBy(TtSpace.x1),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                DisciplineDot(workout.discipline, size = 10.dp)
                 Text(
-                    formatDateTime(w.localDateTime(zone)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    workout.title ?: stringResource(workout.discipline.labelRes()),
+                    style = TtType.headline,
+                    color = colors.ink,
+                )
+            }
+            Text(formatDateTime(workout.localDateTime(zone)), style = TtType.bodyS, color = colors.ink2)
+        }
+
+        Box(Modifier.padding(horizontal = TtSpace.screenMargin)) { HeroPanel(workout, state.comparison) }
+
+        val metrics = metricsOf(workout)
+        if (metrics.isNotEmpty()) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin)) {
+                Panel { MetricGrid(metrics) }
+            }
+        }
+
+        if (state.heartRate.size >= 2) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin)) { HeartRatePanel(state.heartRate, workout) }
+        }
+        if (state.timeInZones.any { !it.isZero }) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin)) {
+                Panel {
+                    Text(stringResource(R.string.detail_zones), style = TtType.title, color = colors.ink)
+                    Spacer(Modifier.height(TtSpace.x2))
+                    Text(stringResource(R.string.detail_zones_desc), style = TtType.bodyS, color = colors.ink2)
+                    Spacer(Modifier.height(TtSpace.x3))
+                    ZoneBars(state.zones, state.timeInZones)
+                }
+            }
+        }
+        if (state.speed.size >= 2 && workout.discipline != Discipline.POOL) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin)) { SpeedPanel(state.speed, workout) }
+        }
+        if (!state.route.isEmpty) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin)) {
+                Panel {
+                    Text(stringResource(R.string.detail_route), style = TtType.title, color = colors.ink)
+                    Spacer(Modifier.height(TtSpace.x3))
+                    RouteMap(state.route, workout.discipline)
+                }
+            }
+            val profile = state.route.elevationProfile
+            if (profile.size >= 2) {
+                Box(Modifier.padding(horizontal = TtSpace.screenMargin)) {
+                    ElevationPanel(profile, workout.elevationGainM)
+                }
+            }
+        }
+    }
+}
+
+/** Dwie najważniejsze liczby: czas i dystans, każda z porównaniem do średniej z tej dyscypliny. */
+@Composable
+private fun HeroPanel(workout: Workout, comparison: AverageComparison?) {
+    Panel {
+        Row(horizontalArrangement = Arrangement.spacedBy(TtSpace.x5)) {
+            HeroValue(
+                label = stringResource(R.string.metric_time),
+                parts = ValueUnit(formatDuration(workout.duration), null),
+                change = comparison?.durationChangePercent,
+                modifier = Modifier.weight(1f),
+            )
+            workout.distanceM?.let { meters ->
+                HeroValue(
+                    label = stringResource(R.string.metric_distance),
+                    parts = distanceParts(meters),
+                    change = comparison?.distanceChangePercent,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
-        metricsOf(w).chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                row.forEach { MetricCard(it, Modifier.weight(1f)) }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-        if (state.heartRate.size >= 2) HeartRateCard(state.heartRate)
-        if (state.timeInZones.any { !it.isZero }) ZonesCard(state.zones, state.timeInZones)
-        if (state.speed.size >= 2) SpeedCard(state.speed, w.discipline)
-        if (!state.route.isEmpty) RouteCard(state.route, w.discipline)
-        comparison?.let { ComparisonCard(it) }
     }
 }
+
+@Composable
+private fun HeroValue(
+    label: String,
+    parts: ValueUnit,
+    change: Double?,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+        LabelText(label)
+        BigValue(parts, style = TtType.hero)
+        if (change != null) DeltaBadge(change, text = deltaAverageText(change))
+    }
+}
+
+/** Tylko metryki, które mają wartość; reszta jest ukryta. Czas i dystans są wyżej, więc tu ich nie ma. */
+@Composable
+private fun metricsOf(w: Workout): List<MetricItem> = listOfNotNull(
+    w.caloriesKcal?.let { MetricItem(stringResource(R.string.metric_calories), caloriesParts(it).value, "kcal") },
+    w.avgHeartRate?.let { MetricItem(stringResource(R.string.metric_avg_hr), heartRateParts(it).value, "bpm") },
+    w.maxHeartRate?.let { MetricItem(stringResource(R.string.metric_max_hr), heartRateParts(it).value, "bpm") },
+    if (w.discipline == Discipline.POOL) {
+        w.pacePer100mSec?.let {
+            val parts = paceParts(it)
+            MetricItem(stringResource(R.string.metric_pace), parts.value, parts.unit)
+        }
+    } else {
+        w.avgSpeedKmh?.let { MetricItem(stringResource(R.string.metric_avg_speed), speedParts(it).value, "km/h") }
+    },
+    if (w.discipline == Discipline.POOL) {
+        null
+    } else {
+        w.maxSpeedMps?.let {
+            MetricItem(stringResource(R.string.metric_max_speed), speedParts(it * 3.6).value, "km/h")
+        }
+    },
+    w.elevationGainM?.let { MetricItem(stringResource(R.string.metric_elevation), elevationParts(it).value, "m") },
+)
 
 /** Minuty od startu treningu: wspólna oś X dla wykresów przebiegu. */
 private fun minutesFromStart(points: List<SamplePoint>): List<Pair<Double, Double>> {
@@ -205,120 +292,106 @@ private fun minutesFromStart(points: List<SamplePoint>): List<Pair<Double, Doubl
     return points.map { (it.timeMillis - start) / 60_000.0 to it.value }
 }
 
+/** Tętno w czasie: linia w akcencie z wypełnieniem 12% i kropką na końcu. */
 @Composable
-private fun HeartRateCard(samples: List<SamplePoint>) {
-    ChartCard(title = stringResource(R.string.detail_hr_chart)) {
-        MultiLineChart(
-            lines = listOf(ChartLine(MaterialTheme.colorScheme.error, minutesFromStart(samples))),
-            xLabel = { x -> "${x.toInt()} min" },
-            yLabel = ::formatNumberShort,
-            height = 160.dp,
-        )
-    }
-}
+private fun HeartRatePanel(samples: List<SamplePoint>, workout: Workout) {
+    val colors = LocalTtColors.current
+    val points = remember(samples) { minutesFromStart(samples) }
+    var selected by remember { mutableStateOf<Int?>(null) }
+    val selectedPoint = selected?.let { points.getOrNull(it) }
 
-@Composable
-private fun SpeedCard(samples: List<SamplePoint>, discipline: Discipline) {
-    val inKmh = minutesFromStart(samples).map { (x, v) -> x to v * 3.6 }
-    ChartCard(title = stringResource(R.string.detail_speed_chart)) {
-        MultiLineChart(
-            lines = listOf(ChartLine(discipline.color(), inKmh)),
-            xLabel = { x -> "${x.toInt()} min" },
-            yLabel = ::formatDecimalShort,
-            height = 160.dp,
-        )
-    }
-}
-
-/** Czas w strefach tętna: pięć słupków z opisem zakresu bpm. */
-@Composable
-private fun ZonesCard(zones: List<HeartRateZone>, times: List<Duration>) {
-    ChartCard(
-        title = stringResource(R.string.detail_zones),
-        description = stringResource(R.string.detail_zones_desc),
+    ChartPanel(
+        title = stringResource(R.string.detail_hr_chart),
+        value = selectedPoint?.let { ValueUnit(it.second.roundToInt().toString(), minuteUnit(it.first)) }
+            ?: workout.avgHeartRate?.let { ValueUnit(it.toString(), stringResource(R.string.detail_hr_avg_unit)) },
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            val longest = times.maxOf { it.seconds }.coerceAtLeast(1)
-            zones.forEachIndexed { i, zone ->
-                val seconds = times[i].seconds
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        stringResource(R.string.detail_zone_label, zone.index, zone.fromBpm),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.width(96.dp),
-                    )
-                    Box(
-                        Modifier
-                            .weight(seconds.toFloat() / longest + 0.001f)
-                            .height(16.dp)
-                            .background(zoneColor(zone.index), RoundedCornerShape(4.dp)),
-                    )
-                    Spacer(Modifier.weight((1f - seconds.toFloat() / longest).coerceAtLeast(0.001f)))
-                    Text(
-                        formatHoursAndMinutes(times[i]),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.width(80.dp),
-                    )
-                }
-            }
-        }
+        TtLineChart(
+            lines = listOf(
+                LineSpec(points, colors.accent, width = 2.5.dp, areaAlpha = 0.12f, endDot = true),
+            ),
+            xLabels = minuteLabels(points),
+            selectedIndex = selected,
+            onSelect = { selected = it },
+        )
     }
 }
 
-/** Strefy od spokojnej do najcięższej: zielona, żółta, pomarańczowa, czerwona, bordowa. */
-private fun zoneColor(index: Int) = when (index) {
-    1 -> Color(0xFF66BB6A)
-    2 -> Color(0xFFD4E157)
-    3 -> Color(0xFFFFB300)
-    4 -> Color(0xFFF4511E)
-    else -> Color(0xFFB71C1C)
-}
-
+/** Prędkość w czasie: linia w kolorze dyscypliny i pozioma linia średniej. */
 @Composable
-private fun RouteCard(track: RouteTrack, discipline: Discipline) {
-    ChartCard(title = stringResource(R.string.detail_route)) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            RouteMap(track, discipline)
-            val profile = track.elevationProfile
-            if (profile.size >= 2) {
-                Text(stringResource(R.string.detail_elevation_chart), style = MaterialTheme.typography.labelLarge)
-                MultiLineChart(
-                    lines = listOf(ChartLine(MaterialTheme.colorScheme.tertiary, profile)),
-                    xLabel = { x -> formatKmShort(x) },
-                    yLabel = { v -> "${v.toInt()} m" },
-                    height = 140.dp,
-                )
-            }
-        }
+private fun SpeedPanel(samples: List<SamplePoint>, workout: Workout) {
+    val colors = LocalTtColors.current
+    val points = remember(samples) { minutesFromStart(samples).map { (x, value) -> x to value * 3.6 } }
+    var selected by remember { mutableStateOf<Int?>(null) }
+    val selectedPoint = selected?.let { points.getOrNull(it) }
+    val average = workout.avgSpeedKmh
+
+    ChartPanel(
+        title = stringResource(R.string.detail_speed_chart),
+        value = selectedPoint?.let { ValueUnit(speedParts(it.second).value, minuteUnit(it.first)) }
+            ?: average?.let { ValueUnit(speedParts(it).value, "km/h") },
+    ) {
+        TtLineChart(
+            lines = listOf(LineSpec(points, colors.of(workout.discipline), width = 2.5.dp)),
+            reference = average?.let { ReferenceLine(it, speedParts(it).let { p -> "${p.value} ${p.unit}" }) },
+            xLabels = minuteLabels(points),
+            selectedIndex = selected,
+            onSelect = { selected = it },
+        )
     }
 }
 
+/** Profil wysokości: linia z wypełnieniem 12%, oś X w kilometrach. */
 @Composable
-private fun MetricCard(m: Metric, modifier: Modifier = Modifier) {
-    Card(modifier) {
-        Column(Modifier.fillMaxWidth().padding(12.dp)) {
-            Text(stringResource(m.label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(m.value, style = MaterialTheme.typography.titleLarge)
-        }
+private fun ElevationPanel(profile: List<Pair<Double, Double>>, gain: Double?) {
+    val colors = LocalTtColors.current
+    ChartPanel(
+        title = stringResource(R.string.detail_elevation_chart),
+        value = gain?.let { ValueUnit(elevationParts(it).value, "m") },
+    ) {
+        TtLineChart(
+            lines = listOf(LineSpec(profile, colors.ink2, width = 2.dp, areaAlpha = 0.12f)),
+            xLabels = profile.takeIf { it.size >= 2 }?.let { list ->
+                val last = list.last().first
+                listOf(0.0, last / 2, last).map(::formatKmShort)
+            }.orEmpty(),
+        )
     }
 }
 
+/** Panel wykresu: tytuł po lewej, kluczowa liczba po prawej, pod nimi wykres. */
 @Composable
-private fun ComparisonCard(c: AverageComparison) {
-    val lines = listOfNotNull(
-        c.durationChangePercent?.let { stringResource(R.string.detail_compare_duration, formatPercentChange(it)) },
-        c.distanceChangePercent?.let { stringResource(R.string.detail_compare_distance, formatPercentChange(it)) },
-    )
-    if (lines.isEmpty()) return
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(stringResource(R.string.detail_compare_title), style = MaterialTheme.typography.titleMedium)
-            lines.forEach { Text(it, style = MaterialTheme.typography.bodyLarge) }
-            Text(
-                stringResource(R.string.detail_compare_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+private fun ChartPanel(title: String, value: ValueUnit?, content: @Composable () -> Unit) {
+    val colors = LocalTtColors.current
+    Panel {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+            Text(title, style = TtType.title, color = colors.ink, modifier = Modifier.weight(1f))
+            if (value != null) BigValue(value, style = TtType.value)
         }
+        Spacer(Modifier.height(10.dp))
+        content()
+    }
+}
+
+/** `· 12 min` — podpis wybranego punktu obok wartości. */
+private fun minuteUnit(minutes: Double): String = "· ${minutes.roundToInt()} min"
+
+/** Trzy podpisy osi X: start, połowa i koniec treningu. */
+private fun minuteLabels(points: List<Pair<Double, Double>>): List<String> {
+    if (points.size < 2) return emptyList()
+    val last = points.last().first
+    return listOf(0.0, last / 2, last).map { "${it.roundToInt()} min" }
+}
+
+@Composable
+private fun DetailSkeleton() {
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = TtSpace.screenMargin),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.x4),
+    ) {
+        SkeletonBlock(height = 24.dp, width = 160.dp)
+        SkeletonBlock(height = 14.dp, width = 120.dp)
+        SkeletonBlock(height = 120.dp, shape = TtShape.panel)
+        SkeletonBlock(height = 180.dp, shape = TtShape.panel)
+        SkeletonBlock(height = 180.dp, shape = TtShape.panel)
     }
 }

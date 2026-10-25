@@ -325,7 +325,14 @@ private fun TtNavBar(selectedRoute: (String) -> Boolean, onSelect: (String) -> U
                     selected = selectedRoute(item.route),
                     onClick = { onSelect(item.route) },
                     icon = { Icon(item.icon, contentDescription = null) },
-                    label = { Text(stringResource(item.labelRes), style = TtType.labelPlain) },
+                    label = {
+                        Text(
+                            stringResource(item.labelRes),
+                            style = TtType.labelPlain.copy(fontSize = 11.sp, letterSpacing = 0.sp),
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = colors.ink,
                         selectedTextColor = colors.ink,

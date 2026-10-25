@@ -282,7 +282,7 @@ private fun MainScaffold() {
                 )
             }
             composable(Routes.DETAIL) { WorkoutDetailScreen(onBack = { nav.popBackStack() }) }
-            composable(Routes.DEBUG) { DebugScreen() }
+            composable(Routes.DEBUG) { DebugScreen(onBack = { nav.popBackStack() }) }
         }
     }
 }

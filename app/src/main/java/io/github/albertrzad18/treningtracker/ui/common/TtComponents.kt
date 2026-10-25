@@ -473,7 +473,7 @@ fun LinkRow(
     }
 }
 
-/** Wiersz listy: ikona, tytuł z podtytułem, chevron. Minimum 64 dp, pod spodem linia 1 dp. */
+/** Wiersz listy: ikona, tytuł z podtytułem, chevron. Minimum 64 dp, nad nim linia 1 dp. */
 @Composable
 fun ListRow(
     title: String,
@@ -487,6 +487,7 @@ fun ListRow(
 ) {
     val colors = LocalTtColors.current
     Column(modifier.fillMaxWidth()) {
+        if (divider) TtDivider()
         Row(
             Modifier
                 .fillMaxWidth()
@@ -494,7 +495,7 @@ fun ListRow(
                 .ttClickable(onClick = onClick)
                 .padding(vertical = TtSpace.x3),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TtSpace.x3),
+            horizontalArrangement = Arrangement.spacedBy(TtSpace.x4),
         ) {
             if (icon != null) {
                 Icon(icon, contentDescription = null, tint = colors.ink2, modifier = Modifier.size(24.dp))
@@ -508,7 +509,6 @@ fun ListRow(
                 Icon(trailingIcon, contentDescription = null, tint = colors.ink2, modifier = Modifier.size(24.dp))
             }
         }
-        if (divider) TtDivider()
     }
 }
 

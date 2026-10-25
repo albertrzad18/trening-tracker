@@ -276,4 +276,53 @@
     <string name="chart_weekday_unit_sat">h w soboty</string>
     <string name="chart_weekday_unit_sun">h w niedziele</string>
     <string name="heatmap_legend">dłuższy trening = ciemniejszy</string>
+
+    <!-- Podsumowania (redesign) -->
+    <string name="summary_best_label">Najlepszy trening</string>
+    <string name="summary_active_days_short">%1$d dni z treningiem</string>
+    <string name="summary_streak_short">seria %1$s</string>
+
+    <!-- Rekordy (redesign) -->
+    <string name="records_new">Nowy rekord</string>
+
+    <!-- Więcej (redesign) -->
+    <string name="more_group_overview">Przegląd</string>
+    <string name="more_group_app">Aplikacja</string>
+    <string name="more_sync_label">Ostatnia synchronizacja:</string>
+    <string name="more_sync_button">Synchronizuj</string>
+    <string name="more_summaries_sub">Ten tydzień: %1$s</string>
+    <string name="more_settings_sub">Tętno maks. %1$d · basen %2$d m</string>
+    <string name="more_diagnostics_title">Diagnostyka</string>
+    <string name="more_diagnostics_sub">Dane z Health Connect</string>
+    <string name="unit_record_one">rekord</string>
+    <string name="unit_record_few">rekordy</string>
+    <string name="unit_record_many">rekordów</string>
+    <string name="unit_goal_one">aktywny cel</string>
+    <string name="unit_goal_few">aktywne cele</string>
+    <string name="unit_goal_many">aktywnych celów</string>
+
+    <!-- Ustawienia (redesign) -->
+    <string name="settings_done">Gotowe</string>
+    <string name="settings_pool_unit">%1$d m</string>
+    <string name="settings_max_hr_value">%1$d bpm</string>
+    <string name="settings_step_1">Zainstaluj Health Sync.</string>
+    <string name="settings_step_2">Wybierz Huawei Health jako źródło, a Health Connect jako cel.</string>
+    <string name="settings_step_3">Zaznacz treningi, tętno, dystans i kalorie.</string>
+    <string name="settings_step_4">Włącz automatyczną synchronizację.</string>
+    <string name="settings_step_5">W tej apce nadaj uprawnienia i naciśnij „Synchronizuj teraz”.</string>
+
+    <!-- Diagnostyka (redesign) -->
+    <string name="debug_intro">Co przyszło z Health Connect: liczba rekordów na typ danych.</string>
+    <string name="debug_range">Okres: %1$s – %2$s</string>
+    <string name="debug_debug_only">Tylko wersja debug</string>
+
+    <!-- Ekrany powitalne -->
+    <string name="onboarding_wordmark">trening-tracker</string>
+    <string name="onboarding_headline">Twoje treningi z zegarka, na telefonie.</string>
+    <string name="onboarding_step_watch">Zegarek Huawei</string>
+    <string name="onboarding_step_huawei_health">Huawei Health</string>
+    <string name="onboarding_step_health_sync">Health Sync</string>
+    <string name="onboarding_step_health_connect">Health Connect</string>
+    <string name="onboarding_step_app">trening-tracker</string>
+    <string name="onboarding_loading">Wczytuję treningi…</string>
 </resources>

@@ -1,35 +1,37 @@
 package io.github.albertrzad18.treningtracker.ui.summaries
 
 import android.app.Application
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,16 +44,36 @@ import io.github.albertrzad18.treningtracker.domain.DisciplineTotals
 import io.github.albertrzad18.treningtracker.domain.PeriodSummary
 import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.domain.summaries
+import io.github.albertrzad18.treningtracker.ui.common.DeltaBadge
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
+import io.github.albertrzad18.treningtracker.ui.common.LabelText
+import io.github.albertrzad18.treningtracker.ui.common.Panel
+import io.github.albertrzad18.treningtracker.ui.common.SegmentedToggle
+import io.github.albertrzad18.treningtracker.ui.common.ShareBar
+import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
+import io.github.albertrzad18.treningtracker.ui.common.TtDivider
+import io.github.albertrzad18.treningtracker.ui.common.TtIcons
+import io.github.albertrzad18.treningtracker.ui.common.TtTopBar
 import io.github.albertrzad18.treningtracker.ui.common.daysText
-import io.github.albertrzad18.treningtracker.ui.common.durationText
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
 import io.github.albertrzad18.treningtracker.ui.common.summaryText
+import io.github.albertrzad18.treningtracker.ui.common.ttClickable
+import io.github.albertrzad18.treningtracker.ui.format.formatCalories
 import io.github.albertrzad18.treningtracker.ui.format.formatDate
-import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
+import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
+import io.github.albertrzad18.treningtracker.ui.format.formatDuration
+import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.formatMonth
-import io.github.albertrzad18.treningtracker.ui.format.formatPercentChange
+import io.github.albertrzad18.treningtracker.ui.format.formatPercentAbs
+import io.github.albertrzad18.treningtracker.ui.format.formatRangeFull
+import io.github.albertrzad18.treningtracker.ui.format.pluralPl
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtMotion
+import io.github.albertrzad18.treningtracker.ui.theme.TtShape
+import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
+import io.github.albertrzad18.treningtracker.ui.theme.TtType
+import io.github.albertrzad18.treningtracker.ui.theme.ttDuration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -84,32 +106,44 @@ fun SummariesScreen(
 ) {
     val granularity by vm.granularity.collectAsStateWithLifecycle()
     val list by vm.data.collectAsStateWithLifecycle()
+    // Rozwinięty jest jeden okres naraz; po zmianie zakładki znów najnowszy.
+    var openIndex by remember(granularity) { mutableStateOf(0) }
 
     Column(Modifier.fillMaxSize()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-            }
-            Text(stringResource(R.string.summaries_title), style = MaterialTheme.typography.titleLarge)
-        }
-        PrimaryTabRow(selectedTabIndex = SummaryGranularity.entries.indexOf(granularity)) {
-            SummaryGranularity.entries.forEach { g ->
-                Tab(
-                    selected = g == granularity,
-                    onClick = { vm.setGranularity(g) },
-                    text = { Text(stringResource(g.labelRes())) },
-                )
-            }
-        }
+        TtTopBar(stringResource(R.string.summaries_title), onBack)
+        SegmentedToggle(
+            options = SummaryGranularity.entries,
+            selected = granularity,
+            label = { stringResource(it.labelRes()) },
+            onSelect = vm::setGranularity,
+            modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x4),
+        )
         val periods = list
         if (periods == null) {
-            Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+            Column(
+                Modifier.padding(horizontal = TtSpace.screenMargin),
+                verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
+            ) {
+                SkeletonBlock(height = 220.dp, shape = TtShape.panel)
+                repeat(3) { SkeletonBlock(height = 72.dp, shape = TtShape.panel) }
+            }
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(
+                    start = TtSpace.screenMargin,
+                    end = TtSpace.screenMargin,
+                    bottom = TtSpace.x6,
+                ),
+                verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
             ) {
-                items(periods, key = { it.range.start.toString() }) { SummaryCard(it, onOpenWorkout) }
+                itemsIndexed(periods, key = { _, item -> item.range.start.toString() }) { index, summary ->
+                    SummaryPanel(
+                        summary = summary,
+                        open = index == openIndex,
+                        onToggle = { openIndex = if (openIndex == index) -1 else index },
+                        onOpenWorkout = onOpenWorkout,
+                    )
+                }
             }
         }
     }
@@ -122,75 +156,184 @@ private fun SummaryGranularity.labelRes() = when (this) {
 }
 
 /** Nagłówek okresu: `19 paź 2026 – 25 paź 2026`, `październik 2026` albo `2026`. */
-@Composable
 private fun PeriodSummary.title(): String = when (granularity) {
-    SummaryGranularity.WEEK -> stringResource(
-        R.string.summary_week_label,
-        formatDate(range.start),
-        formatDate(range.endExclusive.minusDays(1)),
-    )
+    SummaryGranularity.WEEK -> formatRangeFull(range.start, range.endExclusive.minusDays(1))
     SummaryGranularity.MONTH -> formatMonth(YearMonth.from(range.start))
     SummaryGranularity.YEAR -> range.start.year.toString()
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SummaryCard(s: PeriodSummary, onOpenWorkout: (String) -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(s.title(), style = MaterialTheme.typography.titleMedium)
-            if (s.count == 0) {
-                Text(
-                    stringResource(R.string.summary_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                Text(s.totals.summaryText(), style = MaterialTheme.typography.headlineSmall)
-                Text(stringResource(R.string.summary_count, s.count), style = MaterialTheme.typography.bodyMedium)
-                Text(stringResource(R.string.summary_active_days, s.activeDays), style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    stringResource(R.string.summary_streak, daysText(s.longestStreakDays)),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Changes(s)
-                HorizontalDivider()
-                s.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineRow(it) }
-                s.best?.let { best ->
-                    HorizontalDivider()
-                    val label = stringResource(best.discipline.labelRes()) +
-                        ", ${formatDate(best.localDateTime(ZoneId.systemDefault()).toLocalDate())} · ${best.durationText()}"
+private fun SummaryPanel(
+    summary: PeriodSummary,
+    open: Boolean,
+    onToggle: () -> Unit,
+    onOpenWorkout: (String) -> Unit,
+) {
+    val colors = LocalTtColors.current
+    val duration = ttDuration(TtMotion.BASE)
+    Panel {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = TtSpace.minTouch)
+                .ttClickable(onClick = onToggle),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(TtSpace.x3),
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                if (open) {
+                    LabelText(summary.title())
+                } else {
+                    Text(summary.title(), style = TtType.body, color = colors.ink)
                     Text(
-                        stringResource(R.string.summary_best, label),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.clickable { onOpenWorkout(best.id) },
+                        formatHoursAndMinutes(summary.totals.duration),
+                        style = TtType.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.ink,
                     )
+                }
+            }
+            if (!open) {
+                ShareBar(
+                    parts = summary.perDiscipline
+                        .filter { it.totals.duration.seconds > 0 }
+                        .map { colors.of(it.discipline) to it.totals.duration.seconds.toFloat() },
+                    modifier = Modifier.width(48.dp),
+                    height = 6.dp,
+                )
+                summary.durationChangePercent?.let { change ->
+                    Row(
+                        Modifier.width(56.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.End),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            if (change < 0) TtIcons.Down else TtIcons.Up,
+                            contentDescription = null,
+                            tint = colors.ink,
+                            modifier = Modifier.height(16.dp),
+                        )
+                        Text(formatPercentAbs(change), style = TtType.bodyS, color = colors.ink, maxLines = 1)
+                    }
+                }
+                Icon(TtIcons.ExpandMore, contentDescription = null, tint = colors.ink2)
+            }
+        }
+        if (summary.count == 0) {
+            Text(stringResource(R.string.summary_empty), style = TtType.bodyS, color = colors.ink2)
+            return@Panel
+        }
+        AnimatedVisibility(
+            visible = open,
+            enter = fadeIn(tween(duration, easing = FastOutSlowInEasing)),
+            exit = fadeOut(tween(duration, easing = FastOutSlowInEasing)),
+        ) {
+            Column(
+                Modifier.fillMaxWidth().padding(top = TtSpace.x2),
+                verticalArrangement = Arrangement.spacedBy(TtSpace.x4),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(TtSpace.x1)) {
+                    Text(
+                        formatHoursAndMinutes(summary.totals.duration),
+                        style = TtType.hero,
+                        color = colors.ink,
+                    )
+                    val extra = listOfNotNull(
+                        summary.totals.distanceM?.let(::formatDistanceKm),
+                        summary.totals.caloriesKcal?.let(::formatCalories),
+                    )
+                    if (extra.isNotEmpty()) {
+                        Text(extra.joinToString(" · "), style = TtType.body, color = colors.ink2)
+                    }
+                }
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
+                    verticalArrangement = Arrangement.spacedBy(TtSpace.x2),
+                ) {
+                    summary.durationChangePercent?.let {
+                        DeltaBadge(it, text = stringResource(R.string.metric_time))
+                    }
+                    summary.distanceChangePercent?.let {
+                        DeltaBadge(it, text = stringResource(R.string.metric_distance))
+                    }
+                    summary.caloriesChangePercent?.let {
+                        DeltaBadge(it, text = stringResource(R.string.metric_calories))
+                    }
+                }
+                ShareBar(
+                    parts = summary.perDiscipline
+                        .filter { it.totals.duration.seconds > 0 }
+                        .map { colors.of(it.discipline) to it.totals.duration.seconds.toFloat() },
+                    height = 10.dp,
+                    gap = 2.dp,
+                )
+                Column {
+                    summary.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineRow(it) }
+                }
+                Text(facts(summary), style = TtType.bodyS, color = colors.ink2)
+                summary.best?.let { best ->
+                    TtDivider()
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 52.dp)
+                            .ttClickable { onOpenWorkout(best.id) },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            LabelText(stringResource(R.string.summary_best_label))
+                            Text(
+                                "${stringResource(best.discipline.labelRes())}, " +
+                                    "${formatDate(best.localDateTime(ZoneId.systemDefault()).toLocalDate())} · " +
+                                    formatDuration(best.duration),
+                                style = TtType.body,
+                                color = colors.ink,
+                            )
+                        }
+                        Icon(TtIcons.ChevronRight, contentDescription = null, tint = colors.ink2)
+                    }
                 }
             }
         }
     }
 }
 
+/** `3 treningi · 3 dni z treningiem · seria 2 dni` */
 @Composable
-private fun Changes(s: PeriodSummary) {
-    val lines = listOfNotNull(
-        s.durationChangePercent?.let { stringResource(R.string.summary_change_duration, formatPercentChange(it)) },
-        s.distanceChangePercent?.let { stringResource(R.string.summary_change_distance, formatPercentChange(it)) },
-        s.caloriesChangePercent?.let { stringResource(R.string.summary_change_calories, formatPercentChange(it)) },
-    )
-    if (lines.isEmpty()) return
-    Text(
-        stringResource(R.string.summary_vs_previous) + ": " + lines.joinToString(" · "),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
+private fun facts(summary: PeriodSummary): String = listOf(
+    pluralPl(
+        summary.count,
+        stringResource(R.string.unit_workout_one),
+        stringResource(R.string.unit_workout_few),
+        stringResource(R.string.unit_workout_many),
+    ),
+    stringResource(R.string.summary_active_days_short, summary.activeDays),
+    stringResource(R.string.summary_streak_short, daysText(summary.longestStreakDays)),
+).joinToString(" · ")
 
 @Composable
-private fun DisciplineRow(d: DisciplineTotals) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        DisciplineDot(d.discipline, size = 10.dp)
-        Spacer(Modifier.width(8.dp))
-        Text(stringResource(d.discipline.labelRes()), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(90.dp))
-        Text(d.totals.summaryText(), style = MaterialTheme.typography.bodySmall)
+private fun DisciplineRow(item: DisciplineTotals) {
+    val colors = LocalTtColors.current
+    TtDivider()
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(TtSpace.x3),
+    ) {
+        DisciplineDot(item.discipline)
+        Text(
+            stringResource(item.discipline.labelRes()),
+            style = TtType.body,
+            color = colors.ink,
+            modifier = Modifier.width(76.dp),
+        )
+        Text(
+            item.totals.summaryText(),
+            style = TtType.bodyS,
+            color = colors.ink2,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f),
+        )
     }
 }

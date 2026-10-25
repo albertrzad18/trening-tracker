@@ -8,7 +8,10 @@ import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
 import io.github.albertrzad18.treningtracker.data.demo.demoSeries
 import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
+import io.github.albertrzad18.treningtracker.data.healthconnect.DataKind
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
+import io.github.albertrzad18.treningtracker.data.healthconnect.RouteState
+import io.github.albertrzad18.treningtracker.data.healthconnect.SessionProbe
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +26,17 @@ sealed interface DebugState {
     data object Loading : DebugState
     data object Unavailable : DebugState
     data class NeedsPermissions(val toRequest: Set<String>) : DebugState
-    data class Report(val text: String) : DebugState
+    data class Report(
+        val text: String,
+        val rows: List<DebugRow>,
+        val from: LocalDate?,
+        val to: LocalDate?,
+    ) : DebugState
     data class Error(val message: String) : DebugState
 }
+
+/** Jeden wiersz tabeli diagnostyki: nazwa typu danych i liczba rekordów. */
+data class DebugRow(val label: String, val count: Int)
 
 sealed interface DemoMessage {
     data class Added(val count: Int) : DemoMessage
@@ -93,6 +104,27 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         val now = Instant.now()
         val sessions = gateway.readSessions(now.minus(days.toLong(), ChronoUnit.DAYS), now)
         val probes = sessions.map { gateway.probe(it, granted) }
-        return DebugState.Report(buildReport(probes, days, getApplication<Application>().resources))
+        val zone = ZoneId.systemDefault()
+        return DebugState.Report(
+            text = buildReport(probes, days, getApplication<Application>().resources),
+            rows = reportRows(probes),
+            from = probes.minByOrNull { it.start }?.start?.atZone(zone)?.toLocalDate(),
+            to = probes.maxByOrNull { it.start }?.let { it.start.plusSeconds(it.durationSeconds) }
+                ?.atZone(zone)?.toLocalDate(),
+        )
+    }
+
+    /**
+     * Tabela diagnostyki: nazwa typu danych z Health Connect i liczba rekordów.
+     * Typy bez ani jednego rekordu też pokazujemy — to właśnie one mówią, czego brakuje.
+     */
+    private fun reportRows(probes: List<SessionProbe>): List<DebugRow> = buildList {
+        add(DebugRow("ExerciseSessionRecord", probes.size))
+        DataKind.entries.forEach { kind ->
+            add(DebugRow(kind.recordClass.simpleName ?: kind.name, probes.sumOf { it.recordCounts[kind] ?: 0 }))
+        }
+        add(DebugRow("ExerciseSegment", probes.sumOf { it.segments }))
+        add(DebugRow("ExerciseLap", probes.sumOf { it.laps }))
+        add(DebugRow("ExerciseRoute", probes.count { it.route == RouteState.DATA }))
     }
 }

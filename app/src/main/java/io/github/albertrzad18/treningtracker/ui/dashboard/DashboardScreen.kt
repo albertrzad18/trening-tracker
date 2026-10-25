@@ -105,6 +105,7 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** `null` = jeszcze się wczytuje. Tydzień i miesiąc to ten sam ekran w dwóch skalach. */
     val day: StateFlow<DashboardData?> = stateFor(SummaryGranularity.DAY)
+    val week: StateFlow<DashboardData?> = stateFor(SummaryGranularity.WEEK)
     val month: StateFlow<DashboardData?> = stateFor(SummaryGranularity.MONTH)
     val state get() = day
 }
@@ -118,7 +119,12 @@ fun DashboardScreen(
     vm: DashboardViewModel = viewModel(),
 ) {
     val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.day).collectAsStateWithLifecycle()
-    DashboardContent(data, period, onOpenWorkout, onOpenSummaries, onOpenGoals)
+    // Pod kartą dnia zostaje karta całego tygodnia (bez kroków, te są w karcie dnia).
+    val week by vm.week.collectAsStateWithLifecycle()
+    DashboardContent(
+        data, period, onOpenWorkout, onOpenSummaries, onOpenGoals,
+        weekCard = week?.takeIf { period == SummaryGranularity.DAY }?.copy(passive = null),
+    )
 }
 
 @Composable
@@ -128,6 +134,7 @@ internal fun DashboardContent(
     onOpenWorkout: (String) -> Unit,
     onOpenSummaries: () -> Unit,
     onOpenGoals: () -> Unit,
+    weekCard: DashboardData? = null,
 ) {
     when {
         data == null -> DashboardSkeleton()
@@ -143,6 +150,9 @@ internal fun DashboardContent(
             verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
         ) {
             item { WeekPanel(data, period) }
+            weekCard?.takeIf { it.week.count > 0 || it.previousWeek.count > 0 }?.let { week ->
+                item { WeekPanel(week, SummaryGranularity.WEEK) }
+            }
             item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
             item { GoalsPanel(onOpenGoals) }
         }
@@ -157,8 +167,13 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
         LabelText(
             if (period == SummaryGranularity.MONTH) {
                 stringResource(R.string.dashboard_month_label, formatMonth(java.time.YearMonth.from(d.range.start)))
-            } else {
+            } else if (period == SummaryGranularity.DAY) {
                 stringResource(R.string.dashboard_day_label, formatDayMonth(d.range.start))
+            } else {
+                stringResource(
+                    R.string.dashboard_week_label,
+                    formatRangeShort(d.range.start, d.range.endExclusive.minusDays(1)),
+                )
             },
         )
         Spacer(Modifier.height(10.dp))

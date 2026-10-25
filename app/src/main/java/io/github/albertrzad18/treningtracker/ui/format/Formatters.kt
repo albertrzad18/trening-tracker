@@ -167,9 +167,16 @@ private fun monthAbbr(date: LocalDate): String = date.format(DateTimeFormatter.o
 /** `22 paź` (bez roku, do wiersza listy). */
 fun formatDayMonth(date: LocalDate): String = "${date.dayOfMonth} ${monthAbbr(date)}"
 
-/** `czw` */
-fun formatDayOfWeekShort(date: LocalDate): String =
-    date.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, PL)
+/** `pn`, `wt`, `śr`, `czw`, `pt`, `sob`, `nd` — własne skróty, bo systemowe (`niedz.`) są za długie na wąską kolumnę. */
+fun formatDayOfWeekShort(date: LocalDate): String = when (date.dayOfWeek) {
+    java.time.DayOfWeek.MONDAY -> "pn"
+    java.time.DayOfWeek.TUESDAY -> "wt"
+    java.time.DayOfWeek.WEDNESDAY -> "śr"
+    java.time.DayOfWeek.THURSDAY -> "czw"
+    java.time.DayOfWeek.FRIDAY -> "pt"
+    java.time.DayOfWeek.SATURDAY -> "sob"
+    java.time.DayOfWeek.SUNDAY -> "nd"
+}
 
 /** `19–25 paź`, a przy przełomie miesiąca `28 wrz – 4 paź`. */
 fun formatRangeShort(start: LocalDate, endInclusive: LocalDate): String =

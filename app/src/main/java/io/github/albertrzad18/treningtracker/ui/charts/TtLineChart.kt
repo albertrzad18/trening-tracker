@@ -46,6 +46,8 @@ data class LineSpec(
     val endDot: Boolean = false,
     val endLabel: String? = null,
     val dotsOnly: Boolean = false,
+    /** Etykieta końca linii pod punktem zamiast nad nim (gdy dwie linie kończą się blisko siebie). */
+    val labelBelow: Boolean = false,
 )
 
 /** Pozioma linia odniesienia, np. średnia prędkość z opisem. */
@@ -175,7 +177,8 @@ fun TtLineChart(
                         layout,
                         topLeft = Offset(
                             x = (last.x - layout.size.width).coerceIn(0f, size.width - layout.size.width),
-                            y = (last.y - layout.size.height - 4.dp.toPx()).coerceIn(0f, size.height - layout.size.height),
+                            y = (if (spec.labelBelow) last.y + 4.dp.toPx() else last.y - layout.size.height - 4.dp.toPx())
+                                .coerceIn(0f, size.height - layout.size.height),
                         ),
                     )
                 }

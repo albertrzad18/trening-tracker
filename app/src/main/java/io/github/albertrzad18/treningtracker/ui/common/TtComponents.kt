@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -666,10 +667,9 @@ fun CaptionText(
 
 
 /**
- * Pasek filtrów: chipy dyscyplin i menu okresu w jednym zawijanym rzędzie.
- * Na wąskim ekranie menu okresu przechodzi do drugiej linii zamiast ucinać nazwy chipów.
+ * Pasek filtrów: chipy dyscyplin i menu okresu w jednym wierszu.
+ * Gdy ekran jest zbyt wąski, wiersz przewija się poziomo (nic nie przechodzi do drugiej linii ani nie jest ucinane).
  */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun FilterBar(
     disciplines: Set<Discipline>,
@@ -679,10 +679,12 @@ fun FilterBar(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalTtColors.current
-    androidx.compose.foundation.layout.FlowRow(
-        modifier.fillMaxWidth(),
+    Row(
+        modifier
+            .fillMaxWidth()
+            .horizontalScroll(androidx.compose.foundation.rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
-        verticalArrangement = Arrangement.spacedBy(TtSpace.x2),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Discipline.entries.forEach { discipline ->
             val isSelected = discipline in disciplines
@@ -693,8 +695,8 @@ fun FilterBar(
                 background = if (isSelected) colors.container(discipline) else Color.Transparent,
                 border = if (isSelected) colors.of(discipline) else colors.line,
                 leading = { DisciplineDot(discipline) },
-                paddingStart = TtSpace.x3,
-                paddingEnd = TtSpace.x3,
+                paddingStart = 10.dp,
+                paddingEnd = 10.dp,
             )
         }
         PeriodMenuChip(period, onPeriod)

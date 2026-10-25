@@ -78,15 +78,12 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private var todayCount = 0
-
     /** Dodaje kolejny demo trening z dzisiaj (basen, potem trenażer), żeby zobaczyć kartę dnia. */
     fun addTodayWorkout() {
         viewModelScope.launch {
-            val workout = demoTodayWorkout(todayCount, LocalDate.now(), ZoneId.systemDefault(), System.currentTimeMillis())
+            val workout = demoTodayWorkout(dao.countDemoToday(), LocalDate.now(), ZoneId.systemDefault(), System.currentTimeMillis())
             if (workout != null) {
                 dao.upsertAll(listOf(workout))
-                todayCount++
             }
         }
     }
@@ -94,7 +91,6 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
     fun clearDemoData() {
         viewModelScope.launch {
             dao.deleteByOrigin(DEMO_ORIGIN)
-            todayCount = 0
             dailyDao.deleteByOrigin(DEMO_ORIGIN)
             _demoMessage.value = DemoMessage.Removed
         }

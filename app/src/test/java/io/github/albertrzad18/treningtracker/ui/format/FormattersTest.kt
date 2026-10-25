@@ -55,6 +55,12 @@ class FormattersTest {
     }
 
     @Test
+    fun dayOfWeekShortIsShortEnoughForNarrowColumns() {
+        assertEquals("nd", formatDayOfWeekShort(LocalDate.of(2026, 10, 25)))
+        assertEquals("czw", formatDayOfWeekShort(LocalDate.of(2026, 10, 22)))
+    }
+
+    @Test
     fun timeAndDateTime() {
         assertEquals("07:05", formatTime(java.time.LocalTime.of(7, 5)))
         assertEquals(

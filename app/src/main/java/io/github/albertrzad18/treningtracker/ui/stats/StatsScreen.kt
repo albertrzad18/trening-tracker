@@ -490,6 +490,7 @@ private fun CumulativePanel(d: StatsData) {
                             color = colors.ink2,
                             width = 1.5.dp,
                             endLabel = "${d.thisYear - 1} · ${formatNumberShort(points.last().km)}",
+                            labelBelow = points.last().km <= (current.lastOrNull()?.km ?: 0.0),
                         )
                     },
                     current.takeIf { it.size >= 2 }?.let { points ->

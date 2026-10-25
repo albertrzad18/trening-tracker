@@ -204,17 +204,21 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
             Spacer(Modifier.height(TtSpace.x1))
             DeltaBadge(change, text = deltaPeriodText(change, period))
         }
-        if (d.week.count > 0) {
+        // Dzień z treningiem tylko jednej dyscypliny: paski i kolumny powtarzałyby wiersz wyżej, więc ich nie ma.
+        val singleDiscipline = period == SummaryGranularity.DAY && d.perDiscipline.count { it.totals.count > 0 } <= 1
+        if (d.week.count > 0 && !singleDiscipline) {
             Spacer(Modifier.height(TtSpace.x3))
             TtDivider()
             Spacer(Modifier.height(TtSpace.x4))
             WeekBars(d, period)
         }
-        if (d.week.count > 0) {
+        // Tydzień i miesiąc pokazują wszystkie dyscypliny (też z zerem), dzień tylko te, w których był trening.
+        val columns = if (period == SummaryGranularity.DAY) d.perDiscipline.filter { it.totals.count > 0 } else d.perDiscipline
+        if (columns.isNotEmpty() && !singleDiscipline) {
             Spacer(Modifier.height(TtSpace.x3))
             TtDivider()
             Spacer(Modifier.height(TtSpace.x4))
-            DisciplineColumns(d.perDiscipline)
+            DisciplineColumns(columns)
         }
         d.passive?.let { passive ->
             Spacer(Modifier.height(TtSpace.x3))

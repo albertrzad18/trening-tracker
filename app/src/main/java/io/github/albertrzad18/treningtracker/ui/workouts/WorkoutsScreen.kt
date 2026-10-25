@@ -400,6 +400,7 @@ private fun SummaryCard(result: WorkoutListResult) {
                     perWeek(result)?.let { MetricItem(stringResource(R.string.list_per_week_label), it, stringResource(R.string.list_per_week_unit)) },
                     result.passive?.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
                     result.passive?.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
+                    result.passive?.averageBasalKcal?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
                 ),
             )
         }

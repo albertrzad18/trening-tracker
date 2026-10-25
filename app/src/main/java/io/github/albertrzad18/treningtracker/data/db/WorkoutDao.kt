@@ -23,6 +23,10 @@ interface WorkoutDao {
     @Query("SELECT id FROM workouts WHERE startMillis >= :sinceMillis")
     suspend fun idsSince(sinceMillis: Long): List<String>
 
+    /** Ile demo treningów z dzisiaj już jest (przycisk debug dodaje kolejny). */
+    @Query("SELECT COUNT(*) FROM workouts WHERE id LIKE 'demo-today-%'")
+    suspend fun countDemoToday(): Int
+
     /** Używane przez dane demo w buildzie debug: usuwa wszystko z jednego źródła. */
     @Query("DELETE FROM workouts WHERE dataOrigin = :origin")
     suspend fun deleteByOrigin(origin: String)

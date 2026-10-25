@@ -63,7 +63,7 @@ fun MoreScreen(
     val app = context.applicationContext as TreningApp
     val status by app.syncPrefs.status.collectAsStateWithLifecycle()
     val settings by app.settings.state.collectAsStateWithLifecycle()
-    val dashboard by dashboardVm.state.collectAsStateWithLifecycle()
+    val dashboard by dashboardVm.week.collectAsStateWithLifecycle()
     val records by recordsVm.data.collectAsStateWithLifecycle()
     val goals by goalsVm.rows.collectAsStateWithLifecycle()
     val colors = LocalTtColors.current

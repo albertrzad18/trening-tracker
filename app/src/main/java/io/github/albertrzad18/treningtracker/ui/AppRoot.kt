@@ -5,7 +5,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -13,21 +20,25 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import io.github.albertrzad18.treningtracker.ui.common.PrimaryButton
 import io.github.albertrzad18.treningtracker.ui.common.TtDivider
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtMotion
+import io.github.albertrzad18.treningtracker.ui.theme.TtShape
+import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
 import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import io.github.albertrzad18.treningtracker.ui.theme.ttDuration
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -40,7 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -114,20 +127,26 @@ fun AppRoot(gate: GateViewModel = viewModel()) {
         PermissionController.createRequestPermissionResultContract(),
     ) { gate.refresh() }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    val context = LocalContext.current
+    Surface(modifier = Modifier.fillMaxSize(), color = LocalTtColors.current.bg) {
         when (val s = state) {
-            GateState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            GateState.Unavailable -> {
-                val context = LocalContext.current
-                Message(stringResource(R.string.gate_unavailable)) {
-                    Button(onClick = { openHealthConnectInStore(context) }) {
-                        Text(stringResource(R.string.gate_install))
-                    }
-                }
-            }
-            is GateState.NeedsPermissions -> Message(stringResource(R.string.gate_needs_permissions)) {
-                Button(onClick = { permissionLauncher.launch(s.toRequest) }) { Text(stringResource(R.string.gate_grant)) }
-            }
+            GateState.Loading -> WelcomeScreen(
+                currentStep = CHAIN_APP,
+                text = stringResource(R.string.onboarding_loading),
+                loading = true,
+            )
+            GateState.Unavailable -> WelcomeScreen(
+                currentStep = CHAIN_HEALTH_CONNECT,
+                text = stringResource(R.string.gate_unavailable),
+                buttonText = stringResource(R.string.gate_install),
+                onButton = { openHealthConnectInStore(context) },
+            )
+            is GateState.NeedsPermissions -> WelcomeScreen(
+                currentStep = CHAIN_APP,
+                text = stringResource(R.string.gate_needs_permissions),
+                buttonText = stringResource(R.string.gate_grant),
+                onButton = { permissionLauncher.launch(s.toRequest) },
+            )
             GateState.Ready -> MainScaffold()
         }
     }
@@ -145,15 +164,103 @@ private fun openHealthConnectInStore(context: android.content.Context) {
     runCatching { context.startActivity(intent) }
 }
 
+/** Który krok łańcucha danych jest bieżący na ekranie powitalnym. */
+private const val CHAIN_HEALTH_CONNECT = 3
+private const val CHAIN_APP = 4
+
+/**
+ * Ekran powitalny (brak uprawnień, brak Health Connect, ładowanie): to pierwsze, co widzi nowy
+ * użytkownik, więc ma wyglądać jak powitanie, a nie jak błąd. Łańcuch kroków pokazuje,
+ * skąd biorą się dane i na czym stoimy.
+ */
 @Composable
-private fun Message(text: String, action: @Composable () -> Unit = {}) {
+private fun WelcomeScreen(
+    currentStep: Int,
+    text: String,
+    buttonText: String? = null,
+    onButton: (() -> Unit)? = null,
+    loading: Boolean = false,
+) {
+    val colors = LocalTtColors.current
+    val steps = listOf(
+        stringResource(R.string.onboarding_step_watch),
+        stringResource(R.string.onboarding_step_huawei_health),
+        stringResource(R.string.onboarding_step_health_sync),
+        stringResource(R.string.onboarding_step_health_connect),
+        stringResource(R.string.onboarding_step_app),
+    )
     Column(
-        Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(horizontal = TtSpace.screenMargin)
+            .padding(top = TtSpace.x5, bottom = TtSpace.x6),
     ) {
-        Text(text, style = MaterialTheme.typography.bodyLarge)
-        action()
+        Text(
+            stringResource(R.string.onboarding_wordmark),
+            style = TtType.label.copy(letterSpacing = 0.5.sp),
+            color = colors.ink2,
+        )
+        Spacer(Modifier.height(40.dp))
+        Text(
+            stringResource(R.string.onboarding_headline),
+            style = TtType.headline.copy(fontSize = 32.sp, lineHeight = 37.sp),
+            color = colors.ink,
+        )
+        Spacer(Modifier.height(28.dp))
+        Column(Modifier.fillMaxWidth()) {
+            steps.forEachIndexed { index, step ->
+                val done = index < currentStep
+                val now = index == currentStep
+                Row(
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp),
+                    horizontalArrangement = Arrangement.spacedBy(TtSpace.x4),
+                ) {
+                    Column(Modifier.width(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            Modifier
+                                .size(24.dp)
+                                .background(if (now) colors.ink else Color.Transparent, TtShape.full)
+                                .border(1.5.dp, if (now) colors.ink else colors.line, TtShape.full),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (done) {
+                                Icon(
+                                    TtIcons.Check,
+                                    contentDescription = null,
+                                    tint = colors.ink2,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                        }
+                        if (index < steps.lastIndex) {
+                            Box(Modifier.width(1.5.dp).fillMaxHeight().background(colors.line))
+                        }
+                    }
+                    Text(
+                        step,
+                        style = TtType.body.copy(fontWeight = if (now) FontWeight.SemiBold else FontWeight.Normal),
+                        color = if (now) colors.ink else colors.ink2,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Column(verticalArrangement = Arrangement.spacedBy(TtSpace.x5)) {
+            Text(text, style = TtType.body, color = colors.ink2)
+            if (buttonText != null && onButton != null) {
+                PrimaryButton(text = buttonText, onClick = onButton, modifier = Modifier.fillMaxWidth())
+            }
+            if (loading) {
+                // Pasek postępu 2 dp zamiast kręciołka: ekran ma wyglądać jak powitanie.
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().height(2.dp).clip(TtShape.full),
+                    color = colors.ink,
+                    trackColor = colors.track,
+                )
+            }
+        }
     }
 }
 

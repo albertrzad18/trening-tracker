@@ -23,14 +23,10 @@
     <string name="gate_grant">Nadaj uprawnienia</string>
     <string name="gate_install">Zainstaluj Health Connect</string>
 
-    <string name="dashboard_week">Ten tydzień</string>
-    <string name="dashboard_vs_prev">%1$s vs poprzedni tydzień</string>
     <string name="dashboard_latest">Ostatnie treningi</string>
     <string name="dashboard_empty_title">Brak treningów</string>
     <string name="dashboard_empty_body">Treningi pojawią się tutaj po synchronizacji z Health Connect. Upewnij się, że Health Sync przesyła treningi z Huawei Health.</string>
     <string name="sync_now">Synchronizuj teraz</string>
-    <string name="tile_count">Treningi: %1$d</string>
-    <string name="week_no_workouts">Brak treningów w tym tygodniu</string>
 
     <string name="metric_time">Czas</string>
     <string name="metric_distance">Dystans</string>
@@ -55,30 +51,20 @@
     <string name="col_hr">Tętno</string>
     <string name="list_empty">Brak treningów dla wybranych filtrów.</string>
     <string name="list_sum">Suma (%1$d)</string>
-    <string name="list_average">Średni czas: %1$s</string>
-    <string name="list_group_total">%1$s · %2$d</string>
 
     <string name="detail_not_found">Nie znaleziono treningu.</string>
-    <string name="detail_compare_title">Na tle Twojej średniej</string>
-    <string name="detail_compare_duration">Czas: %1$s</string>
-    <string name="detail_compare_distance">Dystans: %1$s</string>
-    <string name="detail_compare_hint">Średnia z innych treningów tej dyscypliny</string>
     <string name="detail_hr_chart">Tętno w czasie</string>
     <string name="detail_hr_avg_unit">bpm śr.</string>
     <string name="detail_speed_chart">Prędkość</string>
     <string name="detail_zones">Strefy tętna</string>
     <string name="detail_zones_desc">Ile czasu trening spędził w każdej strefie. Granice liczymy z tętna maksymalnego z ustawień.</string>
-    <string name="detail_zone_label">Strefa %1$d · %2$d+</string>
     <string name="detail_route">Trasa</string>
     <string name="detail_route_start">Start</string>
     <string name="detail_route_finish">Meta</string>
     <string name="detail_elevation_chart">Profil wysokości</string>
 
-    <string name="more_sync_title">Synchronizacja</string>
-    <string name="more_last_sync">Ostatnia synchronizacja: %1$s</string>
     <string name="more_never">Jeszcze nie synchronizowano</string>
     <string name="more_error">Ostatni błąd: %1$s</string>
-    <string name="more_diagnostics">Diagnostyka danych z Health Connect</string>
 
     <string name="debug_title">Dane z Health Connect</string>
     <string name="debug_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji.</string>
@@ -99,8 +85,6 @@
     <!-- Statystyki -->
     <string name="chart_no_data">Brak danych w tym okresie.</string>
     <string name="chart_need_two">Potrzebne są co najmniej dwa treningi z tymi danymi.</string>
-    <string name="heatmap_less">mniej</string>
-    <string name="heatmap_more">więcej</string>
     <string name="metric_label_time">Czas</string>
     <string name="metric_label_distance">Dystans</string>
     <string name="metric_label_calories">Kalorie</string>
@@ -139,17 +123,7 @@
     <string name="summary_tab_week">Tygodnie</string>
     <string name="summary_tab_month">Miesiące</string>
     <string name="summary_tab_year">Lata</string>
-    <string name="summary_week_label">%1$s – %2$s</string>
-    <string name="summary_count">Treningi: %1$d</string>
-    <string name="summary_active_days">Dni z treningiem: %1$d</string>
-    <string name="summary_streak">Najdłuższa seria: %1$s</string>
-    <string name="summary_best">Najlepszy trening: %1$s</string>
     <string name="summary_empty">Brak treningów w tym okresie.</string>
-    <string name="summary_change_duration">Czas: %1$s</string>
-    <string name="summary_change_distance">Dystans: %1$s</string>
-    <string name="summary_change_calories">Kalorie: %1$s</string>
-    <string name="summary_vs_previous">Na tle poprzedniego okresu</string>
-    <string name="more_summaries">Podsumowania tygodni, miesięcy i lat</string>
 
     <!--
       Odmianę liczymy sami (Formatters.pluralPl), bo reguły Androida idą za językiem telefonu,
@@ -163,10 +137,7 @@
     <string name="unit_period_many">okresów</string>
 
     <!-- Pulpit -->
-    <string name="dashboard_last_seven">Ostatnie 7 dni</string>
     <string name="dashboard_open_summaries">Zobacz podsumowania</string>
-    <string name="dashboard_new_records">Nowe rekordy</string>
-    <string name="dashboard_record_line">🏆 %1$s: %2$s</string>
 
     <!-- Rekordy -->
     <string name="records_title">Rekordy</string>
@@ -186,12 +157,10 @@
 
     <!-- Cele -->
     <string name="goals_title">Cele</string>
-    <string name="more_goals">Cele</string>
     <string name="goals_empty">Nie masz jeszcze żadnego celu. Dodaj pierwszy przyciskiem poniżej.</string>
     <string name="goals_add">Dodaj cel</string>
     <string name="goals_new">Nowy cel</string>
     <string name="goals_save">Zapisz cel</string>
-    <string name="goals_cancel">Anuluj</string>
     <string name="goals_delete">Usuń cel</string>
     <string name="goals_target">Wartość celu</string>
     <string name="goals_group_discipline">Dyscyplina</string>
@@ -205,17 +174,14 @@
     <string name="goals_period_week">Tygodniowy</string>
     <string name="goals_period_month">Miesięczny</string>
     <string name="goals_period_year">Roczny</string>
-    <string name="goals_progress">%1$s z %2$s</string>
     <string name="goals_projection">W tym tempie wyjdzie %1$s</string>
     <string name="goals_done">Cel osiągnięty</string>
     <string name="goals_days_left">Zostało %1$s</string>
-    <string name="goals_history">Historia: %1$s</string>
     <string name="goals_streak">Seria: %1$s pod rząd</string>
     <string name="dashboard_goals">Cele</string>
 
     <!-- Ustawienia -->
     <string name="settings_title">Ustawienia</string>
-    <string name="more_settings">Ustawienia</string>
     <string name="settings_max_hr">Tętno maksymalne</string>
     <string name="settings_max_hr_desc">Potrzebne do stref tętna w szczegółach treningu.</string>
     <string name="settings_pool">Długość basenu</string>
@@ -224,10 +190,8 @@
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_dark">Ciemny</string>
     <string name="settings_howto">Jak ustawić Health Sync</string>
-    <string name="settings_howto_body">1. Zainstaluj Health Sync.\n2. Wybierz Huawei Health jako źródło, a Health Connect jako cel.\n3. Zaznacz treningi, tętno, dystans i kalorie.\n4. Włącz automatyczną synchronizację.\n5. W tej apce nadaj uprawnienia i naciśnij „Synchronizuj teraz”.</string>
 
     <!-- Dane demo (tylko build debug) -->
-    <string name="debug_demo_title">Dane demo</string>
     <string name="debug_demo_desc">Sztuczne treningi do sprawdzenia wykresów i tabeli. Nie są wysyłane do Health Connect i nie mieszają się z Twoimi danymi.</string>
     <string name="debug_demo_fill">Wczytaj dane demo</string>
     <string name="debug_demo_clear">Usuń dane demo</string>

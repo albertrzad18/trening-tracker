@@ -137,6 +137,9 @@ object TtType {
     /** WERSALIKI: tekst podajemy już wielkimi literami. */
     val label = style(12, 16, FontWeight.Medium, 0.7f)
 
+    /** Ten sam stopień co [label], ale bez wersalików: segmenty, chipy, podpisy nawigacji. */
+    val labelPlain = style(12, 16, FontWeight.Medium, 0.1f)
+
     /** Osie wykresów i daty pomocnicze. */
     val caption = style(12, 14, FontWeight.Medium, 0.1f)
 

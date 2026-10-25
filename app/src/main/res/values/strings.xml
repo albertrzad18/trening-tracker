@@ -12,6 +12,12 @@
     <string name="nav_more">Więcej</string>
     <string name="back">Wróć</string>
 
+    <!-- Zmiany: strzałka i procent, bez koloru (zielony znaczy „rower”) -->
+    <string name="delta_more_week">więcej niż poprzedni tydzień</string>
+    <string name="delta_less_week">mniej niż poprzedni tydzień</string>
+    <string name="delta_above_average">powyżej średniej</string>
+    <string name="delta_below_average">poniżej średniej</string>
+
     <string name="gate_unavailable">Health Connect jest niedostępny lub wymaga aktualizacji. Zainstaluj go albo zaktualizuj w Sklepie Play.</string>
     <string name="gate_needs_permissions">Apka potrzebuje uprawnień do odczytu treningów z Health Connect. Dane zostają na Twoim telefonie.</string>
     <string name="gate_grant">Nadaj uprawnienia</string>
@@ -181,10 +187,13 @@
     <string name="goals_empty">Nie masz jeszcze żadnego celu. Dodaj pierwszy przyciskiem poniżej.</string>
     <string name="goals_add">Dodaj cel</string>
     <string name="goals_new">Nowy cel</string>
-    <string name="goals_save">Zapisz</string>
+    <string name="goals_save">Zapisz cel</string>
     <string name="goals_cancel">Anuluj</string>
-    <string name="goals_delete">Usuń</string>
+    <string name="goals_delete">Usuń cel</string>
     <string name="goals_target">Wartość celu</string>
+    <string name="goals_group_discipline">Dyscyplina</string>
+    <string name="goals_group_period">Okres</string>
+    <string name="goals_group_metric">Metryka</string>
     <string name="goals_all_disciplines">Wszystko</string>
     <string name="goals_metric_distance">Dystans (km)</string>
     <string name="goals_metric_duration">Czas (godziny)</string>
@@ -195,7 +204,7 @@
     <string name="goals_period_year">Roczny</string>
     <string name="goals_progress">%1$s z %2$s</string>
     <string name="goals_projection">W tym tempie wyjdzie %1$s</string>
-    <string name="goals_done">Cel zrobiony 🎉</string>
+    <string name="goals_done">Cel osiągnięty</string>
     <string name="goals_days_left">Zostało %1$s</string>
     <string name="goals_history">Historia: %1$s</string>
     <string name="goals_streak">Seria: %1$s pod rząd</string>
@@ -221,4 +230,28 @@
     <string name="debug_demo_clear">Usuń dane demo</string>
     <string name="debug_demo_added">Dodano treningów demo: %1$d</string>
     <string name="debug_demo_removed">Dane demo usunięte</string>
+
+    <!-- Pulpit (redesign) -->
+    <string name="dashboard_week_label">Ostatni tydzień · %1$s</string>
+    <string name="dashboard_burned">Przepalone</string>
+    <string name="dashboard_this_week">Ten tydzień</string>
+    <string name="dashboard_prev_week">Poprzedni tydzień</string>
+    <string name="dashboard_all_goals">Wszystkie cele</string>
+    <string name="dashboard_empty_step_1">Health Sync przesyła treningi z Huawei Health</string>
+    <string name="dashboard_empty_step_2">Health Connect zbiera je na telefonie</string>
+    <string name="dashboard_empty_step_3">trening-tracker je czyta i pokazuje</string>
+
+    <!-- Lista treningów (redesign) -->
+    <string name="unit_workout_one">trening</string>
+    <string name="unit_workout_few">treningi</string>
+    <string name="unit_workout_many">treningów</string>
+    <string name="list_avg_short">śr. %1$s</string>
+    <string name="list_clear_filters">Wyczyść filtry</string>
+    <string name="sort_title">Sortuj według</string>
+    <string name="sort_ascending">Rosnąco</string>
+    <string name="sort_descending">Malejąco</string>
+    <string name="col_discipline">Dyscyplina</string>
+
+    <!-- Cele (redesign) -->
+    <string name="goals_of">z %1$s</string>
 </resources>

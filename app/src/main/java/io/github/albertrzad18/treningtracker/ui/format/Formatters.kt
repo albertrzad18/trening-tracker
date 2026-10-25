@@ -130,3 +130,58 @@ fun formatMonthShort(month: java.time.YearMonth): String = month.format(DateTime
 /** `paź 26` dla osi, gdzie mieszają się różne lata. */
 fun formatMonthWithYear(month: java.time.YearMonth): String =
     month.format(DateTimeFormatter.ofPattern("LLL yy", PL))
+
+// --- Liczba i jednostka osobno (duża liczba + mała jednostka obok) ---
+
+/** Liczba i jej jednostka osobno: wartość rysujemy dużym stopniem, jednostkę małym i w ink2. */
+data class ValueUnit(val value: String, val unit: String?)
+
+/** `3,8` + `km` */
+fun distanceParts(meters: Double) = ValueUnit(number("#,##0.0", meters / 1000.0), "km")
+
+/** `1 793` + `kcal` */
+fun caloriesParts(kcal: Double) = ValueUnit(number("#,##0", kcal), "kcal")
+
+/** `138` + `bpm` */
+fun heartRateParts(bpm: Long) = ValueUnit(bpm.toString(), "bpm")
+
+/** `26,8` + `km/h` */
+fun speedParts(kmh: Double) = ValueUnit(number("0.0", kmh), "km/h")
+
+/** `2:15` + `/100 m` */
+fun paceParts(secondsPer100m: Double): ValueUnit {
+    val total = secondsPer100m.roundToInt()
+    return ValueUnit("%d:%02d".format(total / 60, total % 60), "/100\u00a0m")
+}
+
+/** `326` + `m` */
+fun elevationParts(meters: Double) = ValueUnit(number("#,##0", meters), "m")
+
+/** `326 m` */
+fun formatElevation(meters: Double): String = number("#,##0", meters) + "\u00a0m"
+
+// --- Krótkie daty ---
+
+private fun monthAbbr(date: LocalDate): String = date.format(DateTimeFormatter.ofPattern("LLL", PL))
+
+/** `22 paź` (bez roku, do wiersza listy). */
+fun formatDayMonth(date: LocalDate): String = "${date.dayOfMonth} ${monthAbbr(date)}"
+
+/** `czw` */
+fun formatDayOfWeekShort(date: LocalDate): String =
+    date.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, PL)
+
+/** `19–25 paź`, a przy przełomie miesiąca `28 wrz – 4 paź`. */
+fun formatRangeShort(start: LocalDate, endInclusive: LocalDate): String =
+    if (start.month == endInclusive.month && start.year == endInclusive.year) {
+        "${start.dayOfMonth}–${endInclusive.dayOfMonth} ${monthAbbr(endInclusive)}"
+    } else {
+        "${formatDayMonth(start)} – ${formatDayMonth(endInclusive)}"
+    }
+
+/** `19 paź 2026 – 25 paź 2026` */
+fun formatRangeFull(start: LocalDate, endInclusive: LocalDate): String =
+    "${formatDate(start)} – ${formatDate(endInclusive)}"
+
+/** `37%` — sama wielkość zmiany; znak pokazuje strzałka. */
+fun formatPercentAbs(percent: Double): String = "${kotlin.math.abs(percent).roundToInt()}%"

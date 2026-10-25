@@ -8,11 +8,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.graphics.compositeOver
+import io.github.albertrzad18.treningtracker.ui.common.TtDivider
+import io.github.albertrzad18.treningtracker.ui.common.TtIcons
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtMotion
+import io.github.albertrzad18.treningtracker.ui.theme.TtType
+import io.github.albertrzad18.treningtracker.ui.theme.ttDuration
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -163,11 +174,45 @@ private object Routes {
 private data class TopLevel(val route: String, val labelRes: Int, val icon: ImageVector)
 
 private val topLevel = listOf(
-    TopLevel(Routes.DASHBOARD, R.string.nav_dashboard, Icons.Filled.Home),
-    TopLevel(Routes.WORKOUTS, R.string.nav_workouts, Icons.AutoMirrored.Filled.List),
-    TopLevel(Routes.STATS, R.string.nav_stats, Icons.Filled.DateRange),
-    TopLevel(Routes.MORE, R.string.nav_more, Icons.Filled.MoreVert),
+    TopLevel(Routes.DASHBOARD, R.string.nav_dashboard, TtIcons.Home),
+    TopLevel(Routes.WORKOUTS, R.string.nav_workouts, TtIcons.Workouts),
+    TopLevel(Routes.STATS, R.string.nav_stats, TtIcons.Stats),
+    TopLevel(Routes.MORE, R.string.nav_more, TtIcons.More),
 )
+
+/**
+ * Dolna nawigacja: cztery zakładki na płycie `surface`, nad nią linia 1 dp.
+ * Wybrana pozycja ma wskaźnik w akcencie z kryciem 18% i tekst w kolorze `ink`.
+ */
+@Composable
+private fun TtNavBar(selectedRoute: (String) -> Boolean, onSelect: (String) -> Unit) {
+    val colors = LocalTtColors.current
+    Column(Modifier.background(colors.surface).navigationBarsPadding()) {
+        TtDivider()
+        NavigationBar(
+            containerColor = colors.surface,
+            tonalElevation = 0.dp,
+            windowInsets = WindowInsets(0),
+            modifier = Modifier.height(72.dp),
+        ) {
+            topLevel.forEach { item ->
+                NavigationBarItem(
+                    selected = selectedRoute(item.route),
+                    onClick = { onSelect(item.route) },
+                    icon = { Icon(item.icon, contentDescription = null) },
+                    label = { Text(stringResource(item.labelRes), style = TtType.labelPlain) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = colors.ink,
+                        selectedTextColor = colors.ink,
+                        unselectedIconColor = colors.ink2,
+                        unselectedTextColor = colors.ink2,
+                        indicatorColor = colors.accent.copy(alpha = 0.18f).compositeOver(colors.surface),
+                    ),
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun MainScaffold() {
@@ -177,28 +222,33 @@ private fun MainScaffold() {
     val showBar = topLevel.any { item -> destination?.hierarchy?.any { it.route == item.route } == true }
 
     Scaffold(
+        containerColor = LocalTtColors.current.bg,
         bottomBar = {
             if (showBar) {
-                NavigationBar {
-                    topLevel.forEach { item ->
-                        NavigationBarItem(
-                            selected = destination?.hierarchy?.any { it.route == item.route } == true,
-                            onClick = {
-                                nav.navigate(item.route) {
-                                    popUpTo(Routes.DASHBOARD) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(item.icon, contentDescription = null) },
-                            label = { Text(stringResource(item.labelRes)) },
-                        )
-                    }
-                }
+                TtNavBar(
+                    selectedRoute = { route -> destination?.hierarchy?.any { it.route == route } == true },
+                    onSelect = { route ->
+                        nav.navigate(route) {
+                            popUpTo(Routes.DASHBOARD) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
             }
         },
     ) { padding ->
-        NavHost(nav, startDestination = Routes.DASHBOARD, modifier = Modifier.padding(padding)) {
+        // Przejście między ekranami: samo przygaszenie, bez przesuwania (250 ms).
+        val fade = tween<Float>(ttDuration(TtMotion.BASE), easing = FastOutSlowInEasing)
+        NavHost(
+            nav,
+            startDestination = Routes.DASHBOARD,
+            modifier = Modifier.padding(padding),
+            enterTransition = { fadeIn(fade) },
+            exitTransition = { fadeOut(fade) },
+            popEnterTransition = { fadeIn(fade) },
+            popExitTransition = { fadeOut(fade) },
+        ) {
             composable(Routes.DASHBOARD) {
                 DashboardScreen(
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },

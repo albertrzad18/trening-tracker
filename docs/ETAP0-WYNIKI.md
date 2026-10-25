@@ -19,8 +19,7 @@ Raport zawiera tylko informację, jakie dane są obecne. Nie ma w nim wartości 
 | Segmenty, okrążenia (długości basenu) | ❌ | ❌ | ❌ |
 | Trasa GPS | – | – | jest, ale **wymaga zgody** (Health Connect: ConsentRequired) |
 
-Źródłem wszystkich danych jest Health Sync (`nl.appyhapps.healthsync`). Do Health Connect nie dotarł żaden trening
-innego typu niż basen i trenażer.
+Trzy dyscypliny, które obsługuje apka, dotarły do Health Connect.
 
 ## Wnioski dla projektu
 - Basen: nie planujemy tabeli odcinków ani długości (brak segmentów i okrążeń). Pokazujemy dystans, czas, kalorie, tętno i tempo /100 m liczone z dystansu i czasu.

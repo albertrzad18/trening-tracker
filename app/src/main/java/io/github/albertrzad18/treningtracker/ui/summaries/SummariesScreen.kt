@@ -43,6 +43,7 @@ import io.github.albertrzad18.treningtracker.data.db.toDomain
 import io.github.albertrzad18.treningtracker.domain.DisciplineTotals
 import io.github.albertrzad18.treningtracker.domain.PeriodSummary
 import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
+import io.github.albertrzad18.treningtracker.domain.passiveTotals
 import io.github.albertrzad18.treningtracker.domain.summaries
 import io.github.albertrzad18.treningtracker.ui.common.DeltaBadge
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
@@ -65,6 +66,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.formatMonth
+import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.format.formatPercentAbs
 import io.github.albertrzad18.treningtracker.ui.format.formatRangeFull
 import io.github.albertrzad18.treningtracker.ui.format.pluralPl
@@ -85,12 +87,15 @@ import java.time.ZoneId
 
 class SummariesViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = (app as TreningApp).database.workoutDao()
+    private val dailyDao = (app as TreningApp).database.dailyStatsDao()
     private val _granularity = MutableStateFlow(SummaryGranularity.WEEK)
     val granularity: StateFlow<SummaryGranularity> = _granularity
 
     /** `null` = jeszcze się wczytuje. */
-    val data: StateFlow<List<PeriodSummary>?> = combine(dao.observeAll(), _granularity) { entities, g ->
+    val data: StateFlow<List<PeriodSummary>?> = combine(dao.observeAll(), dailyDao.observeAll(), _granularity) { entities, daily, g ->
+        val stats = daily.map { it.toDomain() }
         summaries(entities.map { it.toDomain() }, g, LocalDate.now(), ZoneId.systemDefault())
+            .map { it.copy(passive = stats.passiveTotals(it.range).takeUnless { p -> p.isEmpty }) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun setGranularity(g: SummaryGranularity) {
@@ -288,6 +293,13 @@ private fun SummaryPanel(
                     summary.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineRow(it) }
                 }
                 Text(facts(summary), style = TtType.bodyS, color = colors.ink2)
+                summary.passive?.let { passive ->
+                    val parts = listOfNotNull(
+                        passive.steps?.let { stringResource(R.string.summary_steps, formatNumberShort(it.toDouble())) },
+                        passive.basalKcal?.let { stringResource(R.string.summary_basal, formatCalories(it)) },
+                    )
+                    if (parts.isNotEmpty()) Text(parts.joinToString(" · "), style = TtType.bodyS, color = colors.ink2)
+                }
                 summary.best?.let { best ->
                     TtDivider()
                     Row(

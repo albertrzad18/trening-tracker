@@ -20,6 +20,8 @@ data class WorkoutListResult(
     val groups: List<MonthGroup>,
     val totals: Totals,
     val averageDuration: Duration?,
+    /** Kroki i kalorie spalane naturalnie w wybranym okresie; `null`, gdy brak danych dziennych. */
+    val passive: PassiveTotals? = null,
 )
 
 fun periodRange(period: PeriodFilter, today: LocalDate): DateRange? = when (period) {

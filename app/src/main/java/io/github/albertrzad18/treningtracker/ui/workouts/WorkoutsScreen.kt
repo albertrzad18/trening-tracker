@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -52,7 +53,10 @@ import io.github.albertrzad18.treningtracker.domain.PeriodFilter
 import io.github.albertrzad18.treningtracker.domain.SortColumn
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.WorkoutListResult
+import io.github.albertrzad18.treningtracker.domain.DateRange
 import io.github.albertrzad18.treningtracker.domain.buildWorkoutList
+import io.github.albertrzad18.treningtracker.domain.passiveTotals
+import io.github.albertrzad18.treningtracker.domain.periodRange
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineFilterChips
 import io.github.albertrzad18.treningtracker.ui.common.BigValue
 import io.github.albertrzad18.treningtracker.ui.common.LabelText
@@ -61,6 +65,7 @@ import io.github.albertrzad18.treningtracker.ui.common.MetricItem
 import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
 import io.github.albertrzad18.treningtracker.ui.format.distanceParts
+import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.common.PeriodMenuChip
 import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
@@ -106,6 +111,7 @@ data class WorkoutFilters(
 
 class WorkoutsViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = (app as TreningApp).database.workoutDao()
+    private val dailyDao = (app as TreningApp).database.dailyStatsDao()
     private val _filters = MutableStateFlow(WorkoutFilters())
     val filters: StateFlow<WorkoutFilters> = _filters
 
@@ -114,16 +120,22 @@ class WorkoutsViewModel(app: Application) : AndroidViewModel(app) {
     val collapsed: StateFlow<Set<String>> = _collapsed
 
     /** `null` = jeszcze się wczytuje. */
-    val result: StateFlow<WorkoutListResult?> = combine(dao.observeAll(), _filters) { entities, f ->
-        buildWorkoutList(
+    val result: StateFlow<WorkoutListResult?> = combine(dao.observeAll(), dailyDao.observeAll(), _filters) { entities, daily, f ->
+        val today = LocalDate.now()
+        val result = buildWorkoutList(
             all = entities.map { it.toDomain() },
             disciplines = f.disciplines,
             period = f.period,
             sort = f.sort,
             ascending = f.ascending,
-            today = LocalDate.now(),
+            today = today,
             zone = ZoneId.systemDefault(),
         )
+        // Zakres kroków: wybrany okres, a dla „Wszystko” od pierwszego treningu do dziś.
+        val range = periodRange(f.period, today)
+            ?: DateRange(entities.minOfOrNull { it.startMillis }?.let { java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() } ?: today, today.plusDays(1))
+        val passive = daily.map { it.toDomain() }.passiveTotals(range).takeUnless { it.isEmpty }
+        result.copy(passive = passive)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun toggleDiscipline(d: Discipline) = _filters.update {
@@ -311,8 +323,8 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
                 .background(colors.of(workout.discipline), RoundedCornerShape(2.dp)),
         )
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(TtSpace.x3)) {
-                Column(Modifier.width(64.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.width(62.dp)) {
                     Text(
                         formatDayMonth(date.toLocalDate()),
                         style = TtType.body.copy(fontWeight = FontWeight.Medium),
@@ -324,6 +336,7 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
                         style = TtType.caption,
                         color = colors.ink2,
                         maxLines = 1,
+                        softWrap = false,
                     )
                 }
                 Text(
@@ -331,22 +344,25 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
                     style = TtType.body.copy(fontWeight = FontWeight.Medium),
                     color = colors.ink,
                     maxLines = 1,
-                    modifier = Modifier.weight(0.9f),
+                    softWrap = false,
+                    modifier = Modifier.width(62.dp),
                 )
                 Text(
                     workout.distanceText().orEmpty(),
                     style = TtType.body,
                     color = colors.ink,
                     maxLines = 1,
-                    modifier = Modifier.weight(0.9f),
+                    softWrap = false,
+                    modifier = Modifier.width(58.dp),
                 )
                 Text(
                     workout.paceOrSpeedText().orEmpty(),
-                    style = TtType.body,
+                    style = TtType.body.copy(fontSize = 14.sp),
                     color = colors.ink,
                     textAlign = TextAlign.End,
                     maxLines = 1,
-                    modifier = Modifier.weight(1.4f),
+                    softWrap = false,
+                    modifier = Modifier.weight(1f),
                 )
             }
             if (second.isNotEmpty()) Text(second, style = TtType.bodyS, color = colors.ink2, maxLines = 1)
@@ -382,6 +398,8 @@ private fun SummaryCard(result: WorkoutListResult) {
                         MetricItem(stringResource(R.string.list_longest_label), formatDuration(it.duration))
                     },
                     perWeek(result)?.let { MetricItem(stringResource(R.string.list_per_week_label), it, stringResource(R.string.list_per_week_unit)) },
+                    result.passive?.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
+                    result.passive?.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
                 ),
             )
         }

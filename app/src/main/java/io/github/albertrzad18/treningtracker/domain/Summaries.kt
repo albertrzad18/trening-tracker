@@ -22,6 +22,8 @@ data class PeriodSummary(
     val perDiscipline: List<DisciplineTotals>,
     val best: Workout?,
     val longestStreakDays: Int,
+    /** Kroki i kalorie spalane naturalnie w okresie; `null`, gdy brak danych dziennych. */
+    val passive: PassiveTotals? = null,
 )
 
 /** Zakres okresu, w którym leży [day]. */

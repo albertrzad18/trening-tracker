@@ -205,13 +205,15 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TtSpace.x3),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             DisciplineDot(item.discipline)
             Text(
                 stringResource(item.discipline.labelRes()),
                 style = TtType.body.copy(fontWeight = FontWeight.Medium),
                 color = colors.ink,
+                maxLines = 1,
+                softWrap = false,
                 modifier = Modifier.weight(1f),
             )
             // Stałe szerokości, żeby liczby w kolejnych wierszach stały w jednej kolumnie.
@@ -222,7 +224,6 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.widthIn(min = 60.dp),
             )
             Text(
                 item.totals.distanceM?.let(::formatDistanceKm).orEmpty(),
@@ -231,7 +232,6 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.widthIn(min = 48.dp),
             )
             Text(
                 item.totals.caloriesKcal?.let(::formatCalories).orEmpty(),
@@ -240,7 +240,6 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.widthIn(min = 56.dp),
             )
         }
     }

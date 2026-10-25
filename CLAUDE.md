@@ -6,7 +6,7 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 ## Architektura
 - Dane: Huawei Health → Health Sync → **Health Connect** → apka. Nie używamy Huawei Health Kit.
 - Bez backendu i kont. Health Connect jest źródłem, Room lokalnym cache i historią. Ekrany czytają tylko z Room.
-- Stack: Kotlin, Jetpack Compose, Material 3, Room, WorkManager, Vico (wykresy), mapa na OSM bez klucza API.
+- Stack: Kotlin, Jetpack Compose, Material 3, Room, WorkManager, mapa na OSM (osmdroid) bez klucza API. Wykresy rysujemy sami na `Canvas` (Vico usunięte).
 - Warstwy: `data` (Health Connect, Room, sync), `domain` (agregacje, rekordy, cele: czysty Kotlin z testami), `ui` (Compose + ViewModel).
 - Logika liczenia (sumy, % zmiany, rekordy, serie, cele) siedzi w `domain` i ma testy jednostkowe.
 
@@ -28,7 +28,10 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 - `local.properties` (poza gitem) ma `sdk.dir=C\:/Users/Albert/AppData/Local/Android/Sdk`.
 - Pierwszy build trwa kilka minut (pobieranie zależności), kolejne są szybsze.
 - Struktura `app/src/main/java/io/github/albertrzad18/treningtracker/`: `data/` (`db` Room, `healthconnect`, `sync`, `demo` dane testowe tylko w debug), `domain/` (czysty Kotlin: agregacje, lista, pulpit, porównanie, statystyki, podsumowania), `ui/` (`dashboard`, `workouts`, `detail`, `stats`, `summaries`, `more`, `debug`, `charts`, `common`, `format`, `theme`), `TreningApp` (współdzielone obiekty).
-- Wykresy: Vico 3 (słupki i linie) plus własne rysunki na `Canvas` (heatmapa, pierścień). Kolory wykresów biorą się z motywu przez `ProvideVicoTheme` w `Theme.kt`.
+- Wykresy: własne `Canvas` (`ui/charts`: `TtBarChart`, `TtLineChart`, `ActivityHeatmap`, `ZoneBars`). Kolory z `LocalTtColors`.
+- Motyw: stała paleta bez dynamic color, tokeny w `ui/theme/TtTheme.kt` (kolory, typografia IBM Plex, kształty, odstępy, ruch). Wspólne komponenty w `ui/common/TtComponents.kt`, ikony w `TtIcons.kt`.
+- Nawigacja: dolny pasek Tydzień · Miesiąc · Treningi · Wykresy; „Więcej” (synchronizacja, podsumowania, rekordy, cele, ustawienia, diagnostyka) otwiera ikona w górnym pasku.
+- Podglądy `@Preview` i dane przykładowe: `app/src/debug/.../ui/preview`. Testy UI na urządzeniu: `app/src/androidTest` (`./gradlew connectedDebugAndroidTest`). Źródło projektu graficznego: `docs/redesign`.
 - Dane demo: w buildzie debug ekran diagnostyki wczytuje sztuczne treningi (`dataOrigin = "demo"`), żeby dało się sprawdzić ekrany bez zegarka.
 - Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację (`data/db/Migrations.kt`).
   Baza jest w wersji 2: `workouts`, `samples` (tętno i prędkość), `route_points`, `goals`.

@@ -237,3 +237,14 @@ spina warstwy, a `<monochrome>` daje wersję jednokolorową pod motywowane ikony
 Każdy APK musi być podpisany kluczem z pliku keystore. Android pozwala na aktualizację apki tylko tym samym
 kluczem, więc keystore trzeba zachować (kopia zapasowa!). Hasła trzymamy w `keystore.properties` poza repo
 (wpis w `.gitignore`), a `build.gradle.kts` czyta je przy budowaniu wydania.
+
+## Redesign: motyw i wykresy
+
+### `CompositionLocal` (`LocalTtColors`)
+Sposób na przekazanie wartości (u nas palety kolorów) w dół drzewa composable bez podawania jej jako parametr każdej funkcji. Motyw ustawia ją raz w `TtTheme`, a ekran czyta `LocalTtColors.current.ink`.
+
+### `Canvas`
+Composable do rysowania własnych kształtów: `drawCircle`, `drawRoundRect`, `drawPath`. Na nim zrobiliśmy wszystkie wykresy (`TtBarChart`, `TtLineChart`), więc mamy pełną kontrolę nad wyglądem.
+
+### Stateless composable i `@Preview`
+Ekran dzielimy na wersję z ViewModelem (`DashboardScreen`) i wersję tylko z danymi w parametrach (`DashboardContent`). Tę drugą można pokazać w `@Preview` z danymi przykładowymi, bez bazy.

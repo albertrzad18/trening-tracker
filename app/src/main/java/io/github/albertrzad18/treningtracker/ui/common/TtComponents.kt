@@ -226,10 +226,16 @@ fun DeltaBadge(
     }
 }
 
-/** Opis zmiany dla pigułki: „mniej / więcej niż poprzedni tydzień”. */
+/** Opis zmiany dla pigułki: „mniej / więcej niż poprzedni tydzień” (albo miesiąc). */
 @Composable
-fun deltaWeekText(percent: Double): String =
-    stringResource(if (percent < 0) R.string.delta_less_week else R.string.delta_more_week)
+fun deltaPeriodText(percent: Double, month: Boolean): String = stringResource(
+    when {
+        month && percent < 0 -> R.string.delta_less_month
+        month -> R.string.delta_more_month
+        percent < 0 -> R.string.delta_less_week
+        else -> R.string.delta_more_week
+    },
+)
 
 /** Opis zmiany dla pigułki w szczegółach treningu: „poniżej / powyżej średniej”. */
 @Composable

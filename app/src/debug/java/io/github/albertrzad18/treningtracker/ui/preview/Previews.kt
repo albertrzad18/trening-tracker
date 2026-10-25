@@ -38,25 +38,25 @@ private fun PreviewFrame(dark: Boolean, content: @Composable () -> Unit) {
 @Preview(name = "Pulpit · dane · jasny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun DashboardLight() = PreviewFrame(dark = false) {
-    DashboardContent(Sample.dashboard, {}, {}, {})
+    DashboardContent(Sample.dashboard, SummaryGranularity.WEEK, {}, {}, {})
 }
 
 @Preview(name = "Pulpit · dane · ciemny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun DashboardDark() = PreviewFrame(dark = true) {
-    DashboardContent(Sample.dashboard, {}, {}, {})
+    DashboardContent(Sample.dashboard, SummaryGranularity.WEEK, {}, {}, {})
 }
 
 @Preview(name = "Pulpit · ładowanie", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun DashboardLoading() = PreviewFrame(dark = false) {
-    DashboardContent(null, {}, {}, {})
+    DashboardContent(null, SummaryGranularity.WEEK, {}, {}, {})
 }
 
 @Preview(name = "Pulpit · pusto · ciemny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun DashboardEmptyPreview() = PreviewFrame(dark = true) {
-    DashboardContent(Sample.dashboard.copy(isEmpty = true), {}, {}, {})
+    DashboardContent(Sample.dashboard.copy(isEmpty = true), SummaryGranularity.WEEK, {}, {}, {})
 }
 
 // --- Treningi ---

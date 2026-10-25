@@ -56,7 +56,8 @@ import io.github.albertrzad18.treningtracker.ui.common.ShareBar
 import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
 import io.github.albertrzad18.treningtracker.ui.common.TtDivider
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
-import io.github.albertrzad18.treningtracker.ui.common.deltaWeekText
+import io.github.albertrzad18.treningtracker.ui.common.deltaPeriodText
+import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
 import io.github.albertrzad18.treningtracker.ui.common.ttClickable
@@ -66,6 +67,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
+import io.github.albertrzad18.treningtracker.ui.format.formatMonth
 import io.github.albertrzad18.treningtracker.ui.format.formatRangeShort
 import io.github.albertrzad18.treningtracker.ui.goals.GoalProgressBlock
 import io.github.albertrzad18.treningtracker.ui.goals.GoalsViewModel
@@ -83,26 +85,32 @@ import java.time.ZoneId
 class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = (app as TreningApp).database.workoutDao()
 
-    /** `null` = jeszcze się wczytuje. */
-    val state: StateFlow<DashboardData?> = dao.observeAll()
-        .map { list -> buildDashboard(list.map { it.toDomain() }, LocalDate.now(), ZoneId.systemDefault()) }
+    private fun stateFor(period: SummaryGranularity): StateFlow<DashboardData?> = dao.observeAll()
+        .map { list -> buildDashboard(list.map { it.toDomain() }, LocalDate.now(), ZoneId.systemDefault(), granularity = period) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** `null` = jeszcze się wczytuje. Tydzień i miesiąc to ten sam ekran w dwóch skalach. */
+    val week: StateFlow<DashboardData?> = stateFor(SummaryGranularity.WEEK)
+    val month: StateFlow<DashboardData?> = stateFor(SummaryGranularity.MONTH)
+    val state get() = week
 }
 
 @Composable
 fun DashboardScreen(
+    period: SummaryGranularity,
     onOpenWorkout: (String) -> Unit,
     onOpenSummaries: () -> Unit,
     onOpenGoals: () -> Unit,
     vm: DashboardViewModel = viewModel(),
 ) {
-    val data by vm.state.collectAsStateWithLifecycle()
-    DashboardContent(data, onOpenWorkout, onOpenSummaries, onOpenGoals)
+    val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.week).collectAsStateWithLifecycle()
+    DashboardContent(data, period, onOpenWorkout, onOpenSummaries, onOpenGoals)
 }
 
 @Composable
 internal fun DashboardContent(
     data: DashboardData?,
+    period: SummaryGranularity,
     onOpenWorkout: (String) -> Unit,
     onOpenSummaries: () -> Unit,
     onOpenGoals: () -> Unit,
@@ -120,7 +128,7 @@ internal fun DashboardContent(
             ),
             verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
         ) {
-            item { WeekPanel(data) }
+            item { WeekPanel(data, period) }
             item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
             item { GoalsPanel(onOpenGoals) }
         }
@@ -129,14 +137,18 @@ internal fun DashboardContent(
 
 /** Najważniejszy kafelek: ile przepalonych kalorii, podział na dyscypliny i porównanie z poprzednim tygodniem. */
 @Composable
-private fun WeekPanel(d: DashboardData) {
+private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
     val colors = LocalTtColors.current
     Panel {
         LabelText(
-            stringResource(
-                R.string.dashboard_week_label,
-                formatRangeShort(d.weekRange.start, d.weekRange.endExclusive.minusDays(1)),
-            ),
+            if (period == SummaryGranularity.MONTH) {
+                stringResource(R.string.dashboard_month_label, formatMonth(java.time.YearMonth.from(d.range.start)))
+            } else {
+                stringResource(
+                    R.string.dashboard_week_label,
+                    formatRangeShort(d.range.start, d.range.endExclusive.minusDays(1)),
+                )
+            },
         )
         Spacer(Modifier.height(10.dp))
         Text(
@@ -157,12 +169,12 @@ private fun WeekPanel(d: DashboardData) {
         val change = d.caloriesChangePercent ?: d.durationChangePercent
         if (change != null) {
             Spacer(Modifier.height(TtSpace.x1))
-            DeltaBadge(change, text = deltaWeekText(change))
+            DeltaBadge(change, text = deltaPeriodText(change, period == SummaryGranularity.MONTH))
         }
         Spacer(Modifier.height(TtSpace.x3))
         TtDivider()
         Spacer(Modifier.height(TtSpace.x4))
-        WeekBars(d)
+        WeekBars(d, period)
         Spacer(Modifier.height(TtSpace.x3))
         TtDivider()
         Spacer(Modifier.height(TtSpace.x4))
@@ -222,7 +234,7 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
  * Krótszy tydzień jest węższy, więc od razu widać, czy było więcej czy mniej.
  */
 @Composable
-private fun WeekBars(d: DashboardData) {
+private fun WeekBars(d: DashboardData, period: SummaryGranularity) {
     val colors = LocalTtColors.current
     val current = d.week.duration.seconds.toFloat()
     val previous = d.previousWeek.duration.seconds.toFloat()
@@ -236,7 +248,7 @@ private fun WeekBars(d: DashboardData) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 Text(
-                    stringResource(R.string.dashboard_this_week),
+                    stringResource(if (period == SummaryGranularity.MONTH) R.string.dashboard_this_month else R.string.dashboard_this_week),
                     style = TtType.bodyS.copy(fontWeight = FontWeight.Medium),
                     color = colors.ink,
                     modifier = Modifier.weight(1f),
@@ -253,7 +265,7 @@ private fun WeekBars(d: DashboardData) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(Modifier.fillMaxWidth()) {
                     Text(
-                        stringResource(R.string.dashboard_prev_week),
+                        stringResource(if (period == SummaryGranularity.MONTH) R.string.dashboard_prev_month else R.string.dashboard_prev_week),
                         style = TtType.bodyS,
                         color = colors.ink2,
                         modifier = Modifier.weight(1f),

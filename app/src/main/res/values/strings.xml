@@ -6,15 +6,18 @@
     <string name="discipline_road">Rower</string>
     <string name="discipline_trainer">Trenażer</string>
 
-    <string name="nav_dashboard">Pulpit</string>
+    <string name="nav_dashboard">Tydzień</string>
+    <string name="nav_month">Miesiąc</string>
     <string name="nav_workouts">Treningi</string>
-    <string name="nav_stats">Statystyki</string>
+    <string name="nav_stats">Wykresy</string>
     <string name="nav_more">Więcej</string>
     <string name="back">Wróć</string>
 
     <!-- Zmiany: strzałka i procent, bez koloru (zielony znaczy „rower”) -->
     <string name="delta_more_week">więcej niż poprzedni tydzień</string>
     <string name="delta_less_week">mniej niż poprzedni tydzień</string>
+    <string name="delta_more_month">więcej niż poprzedni miesiąc</string>
+    <string name="delta_less_month">mniej niż poprzedni miesiąc</string>
     <string name="delta_above_average">powyżej średniej</string>
     <string name="delta_below_average">poniżej średniej</string>
 
@@ -200,6 +203,9 @@
 
     <!-- Pulpit (redesign) -->
     <string name="dashboard_week_label">Ostatni tydzień · %1$s</string>
+    <string name="dashboard_month_label">Ten miesiąc · %1$s</string>
+    <string name="dashboard_this_month">Ten miesiąc</string>
+    <string name="dashboard_prev_month">Poprzedni miesiąc</string>
     <string name="dashboard_burned">Przepalone</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>

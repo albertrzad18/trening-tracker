@@ -29,6 +29,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import io.github.albertrzad18.treningtracker.ui.common.PrimaryButton
+import io.github.albertrzad18.treningtracker.ui.common.ttClickable
+import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
+import androidx.compose.foundation.layout.statusBarsPadding
 import io.github.albertrzad18.treningtracker.ui.common.TtDivider
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
@@ -268,6 +271,7 @@ private object Routes {
     const val DASHBOARD = "dashboard"
     const val WORKOUTS = "workouts"
     const val STATS = "stats"
+    const val MONTH = "month"
     const val MORE = "more"
     const val DEBUG = "debug"
     const val SUMMARIES = "summaries"
@@ -282,10 +286,30 @@ private data class TopLevel(val route: String, val labelRes: Int, val icon: Imag
 
 private val topLevel = listOf(
     TopLevel(Routes.DASHBOARD, R.string.nav_dashboard, TtIcons.Home),
+    TopLevel(Routes.MONTH, R.string.nav_month, TtIcons.Month),
     TopLevel(Routes.WORKOUTS, R.string.nav_workouts, TtIcons.Workouts),
     TopLevel(Routes.STATS, R.string.nav_stats, TtIcons.Stats),
-    TopLevel(Routes.MORE, R.string.nav_more, TtIcons.More),
 )
+
+/**
+ * Górny pasek ekranów głównych: po prawej ikona ustawień, która otwiera „Więcej”
+ * (synchronizacja, podsumowania, rekordy, cele, ustawienia, diagnostyka).
+ */
+@Composable
+private fun TopStrip(onOpenMore: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().statusBarsPadding().height(48.dp).padding(end = TtSpace.x2),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.size(TtSpace.minTouch).clip(TtShape.full).ttClickable(onClick = onOpenMore),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(TtIcons.Settings, contentDescription = stringResource(R.string.nav_more), tint = LocalTtColors.current.ink)
+        }
+    }
+}
 
 /**
  * Dolna nawigacja: cztery zakładki na płycie `surface`, nad nią linia 1 dp.
@@ -330,6 +354,11 @@ private fun MainScaffold() {
 
     Scaffold(
         containerColor = LocalTtColors.current.bg,
+        topBar = {
+            if (showBar) {
+                TopStrip(onOpenMore = { nav.navigate(Routes.MORE) })
+            }
+        },
         bottomBar = {
             if (showBar) {
                 TtNavBar(
@@ -358,6 +387,15 @@ private fun MainScaffold() {
         ) {
             composable(Routes.DASHBOARD) {
                 DashboardScreen(
+                    period = SummaryGranularity.WEEK,
+                    onOpenWorkout = { nav.navigate(Routes.detail(it)) },
+                    onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
+                    onOpenGoals = { nav.navigate(Routes.GOALS) },
+                )
+            }
+            composable(Routes.MONTH) {
+                DashboardScreen(
+                    period = SummaryGranularity.MONTH,
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenGoals = { nav.navigate(Routes.GOALS) },
@@ -367,6 +405,7 @@ private fun MainScaffold() {
             composable(Routes.STATS) { StatsScreen() }
             composable(Routes.MORE) {
                 MoreScreen(
+                    onBack = { nav.popBackStack() },
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenRecords = { nav.navigate(Routes.RECORDS) },

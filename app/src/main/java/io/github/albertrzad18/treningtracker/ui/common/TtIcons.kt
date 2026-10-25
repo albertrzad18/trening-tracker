@@ -9,6 +9,7 @@ import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CalendarViewWeek
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -34,6 +35,7 @@ object TtIcons {
     val Workouts: ImageVector get() = Icons.AutoMirrored.Rounded.FormatListBulleted
     val Stats: ImageVector get() = Icons.Rounded.BarChart
     val More: ImageVector get() = Icons.Rounded.MoreHoriz
+    val Month: ImageVector get() = Icons.Rounded.CalendarMonth
 
     val Summaries: ImageVector get() = Icons.Rounded.CalendarViewWeek
     val Trophy: ImageVector get() = Icons.Rounded.EmojiEvents

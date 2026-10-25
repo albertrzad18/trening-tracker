@@ -30,6 +30,7 @@ import io.github.albertrzad18.treningtracker.ui.common.ListRow
 import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
+import io.github.albertrzad18.treningtracker.ui.common.TtTopBar
 import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardViewModel
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
@@ -48,6 +49,7 @@ import java.time.ZoneId
  */
 @Composable
 fun MoreScreen(
+    onBack: () -> Unit,
     onOpenDiagnostics: () -> Unit,
     onOpenSummaries: () -> Unit,
     onOpenRecords: () -> Unit,
@@ -66,6 +68,8 @@ fun MoreScreen(
     val goals by goalsVm.rows.collectAsStateWithLifecycle()
     val colors = LocalTtColors.current
 
+    Column(Modifier.fillMaxSize()) {
+    TtTopBar(stringResource(R.string.nav_more), onBack)
     Column(
         Modifier
             .fillMaxSize()
@@ -164,5 +168,6 @@ fun MoreScreen(
             )
         }
         Spacer(Modifier.height(TtSpace.x1))
+    }
     }
 }

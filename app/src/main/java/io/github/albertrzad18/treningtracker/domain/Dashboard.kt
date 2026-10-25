@@ -9,7 +9,7 @@ import java.time.ZoneId
  */
 data class DashboardData(
     val isEmpty: Boolean,
-    val weekRange: DateRange,
+    val range: DateRange,
     val week: Totals,
     val previousWeek: Totals,
     val durationChangePercent: Double?,
@@ -19,15 +19,22 @@ data class DashboardData(
     val latest: List<Workout>,
 )
 
-fun buildDashboard(workouts: List<Workout>, today: LocalDate, zone: ZoneId, latestCount: Int = 3): DashboardData {
-    val currentRange = weekOf(today)
+fun buildDashboard(
+    workouts: List<Workout>,
+    today: LocalDate,
+    zone: ZoneId,
+    latestCount: Int = 3,
+    granularity: SummaryGranularity = SummaryGranularity.WEEK,
+): DashboardData {
+    // Okres to tydzień albo miesiąc: ten sam ekran w dwóch skalach.
+    val currentRange = granularity.rangeOf(today)
     val thisWeek = workouts.inRange(currentRange, zone)
-    val lastWeek = workouts.inRange(currentRange.previous(), zone)
+    val lastWeek = workouts.inRange(granularity.previous(currentRange), zone)
     val week = thisWeek.totals()
     val previous = lastWeek.totals()
     return DashboardData(
         isEmpty = workouts.isEmpty(),
-        weekRange = currentRange,
+        range = currentRange,
         week = week,
         previousWeek = previous,
         durationChangePercent = percentChange(week.duration.seconds.toDouble(), previous.duration.seconds.toDouble()),

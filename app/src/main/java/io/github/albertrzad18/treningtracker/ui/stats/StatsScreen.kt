@@ -208,16 +208,13 @@ internal fun StatsContent(
     val d = data
 
     Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = TtSpace.screenMargin)
-                .padding(top = TtSpace.x2, bottom = TtSpace.x4),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            DisciplineFilterChips(filters.disciplines, onToggleDiscipline, modifier = Modifier.weight(1f))
-            PeriodMenuChip(filters.period, onPeriod)
-        }
+        io.github.albertrzad18.treningtracker.ui.common.FilterBar(
+            disciplines = filters.disciplines,
+            onToggleDiscipline = onToggleDiscipline,
+            period = filters.period,
+            onPeriod = onPeriod,
+            modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x2, bottom = TtSpace.x4),
+        )
         TabRow(filters.tab, onTab)
         Spacer(Modifier.height(TtSpace.panelGap))
         when {

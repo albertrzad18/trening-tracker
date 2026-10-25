@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
+import io.github.albertrzad18.treningtracker.data.demo.demoDailyStats
 import io.github.albertrzad18.treningtracker.data.demo.demoSeries
 import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
 import io.github.albertrzad18.treningtracker.data.healthconnect.DataKind
@@ -47,6 +48,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
     private val gateway = HealthConnectGateway(app)
     private val dao = (app as TreningApp).database.workoutDao()
     private val sampleDao = (app as TreningApp).database.sampleDao()
+    private val dailyDao = (app as TreningApp).database.dailyStatsDao()
     private val _state = MutableStateFlow<DebugState>(DebugState.Loading)
     val state: StateFlow<DebugState> = _state.asStateFlow()
 
@@ -63,6 +65,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val demo = demoWorkouts(LocalDate.now(), ZoneId.systemDefault())
             dao.upsertAll(demo)
+            dailyDao.upsertAll(demoDailyStats(LocalDate.now()))
             // Przebiegi tylko dla ostatnich treningów (plus kilka rowerowych, żeby była trasa na mapie).
             val newest = demo.sortedByDescending { it.startMillis }
             val withSeries = (newest.take(40) + newest.filter { it.discipline == Discipline.ROAD }.take(10)).distinct()
@@ -77,6 +80,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
     fun clearDemoData() {
         viewModelScope.launch {
             dao.deleteByOrigin(DEMO_ORIGIN)
+            dailyDao.deleteByOrigin(DEMO_ORIGIN)
             _demoMessage.value = DemoMessage.Removed
         }
     }
@@ -97,7 +101,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
 
         val granted = gateway.grantedPermissions()
         val wanted = gateway.readPermissions + if (gateway.isHistoryAvailable()) setOf(gateway.historyPermission) else emptySet()
-        if (!granted.containsAll(gateway.readPermissions)) return DebugState.NeedsPermissions(wanted)
+        if (!granted.containsAll(gateway.readPermissions - gateway.dailyPermissions)) return DebugState.NeedsPermissions(wanted)
 
         // Bez uprawnienia do historii Health Connect pozwala czytać tylko 30 dni wstecz.
         val days = if (gateway.historyPermission in granted) 365 else 30

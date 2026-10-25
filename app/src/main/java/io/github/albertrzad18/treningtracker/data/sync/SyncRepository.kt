@@ -3,6 +3,8 @@ package io.github.albertrzad18.treningtracker.data.sync
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import io.github.albertrzad18.treningtracker.data.db.DailyStatsDao
+import io.github.albertrzad18.treningtracker.data.db.DailyStatsEntity
 import io.github.albertrzad18.treningtracker.data.db.RoutePointEntity
 import io.github.albertrzad18.treningtracker.data.db.SampleDao
 import io.github.albertrzad18.treningtracker.data.db.SampleEntity
@@ -31,6 +33,7 @@ class SyncRepository(
     private val gateway: HealthConnectGateway,
     private val dao: WorkoutDao,
     private val sampleDao: SampleDao,
+    private val dailyDao: DailyStatsDao,
     private val prefs: SyncPrefs,
     private val clock: () -> Instant = Instant::now,
 ) {
@@ -78,7 +81,21 @@ class SyncRepository(
             // Tętno i kalorie mogą dojść po zakończeniu sesji, a Changes API śledzi tylko same sesje.
             changed += upsertSessions(now.minus(RECENT_DAYS, ChronoUnit.DAYS), now, granted)
         }
+        // Kroki i kalorie podstawowe to osobne dane dzienne; ich brak lub błąd nie psuje synchronizacji treningów.
+        runCatching { syncDaily(now, granted) }
         return SyncResult.Success(changed)
+    }
+
+    /** Dane dzienne z ostatnich dni (pełny zakres tylko z uprawnieniem do historii). */
+    private suspend fun syncDaily(now: Instant, granted: Set<String>) {
+        val days = if (gateway.historyPermission in granted) FULL_HISTORY_DAYS.coerceAtMost(DAILY_MAX_DAYS) else LIMITED_DAYS
+        val zone = java.time.ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val stats = gateway.readDailyStats(today.minusDays(days), today, granted)
+        val entities = stats
+            .filter { it.steps != null || it.basalKcal != null }
+            .map { DailyStatsEntity(it.date.toString(), it.steps, it.basalKcal, "healthconnect") }
+        if (entities.isNotEmpty()) dailyDao.upsertAll(entities)
     }
 
     /** Zwraca liczbę zmienionych treningów albo [EXPIRED], gdy trzeba zrobić pełny odczyt. */
@@ -142,6 +159,7 @@ class SyncRepository(
         const val EXPIRED = -1
         const val RECENT_DAYS = 2L
         const val LIMITED_DAYS = 30L
+        const val DAILY_MAX_DAYS = 800L
         const val FULL_HISTORY_DAYS = 365L * 5
         const val SERIES_PER_SYNC = 25
     }

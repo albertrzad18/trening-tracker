@@ -662,3 +662,39 @@ fun CaptionText(
     Text(text, style = TtType.caption, color = color, textAlign = textAlign, maxLines = 1, modifier = modifier)
 }
 
+
+/**
+ * Pasek filtrów: chipy dyscyplin i menu okresu w jednym zawijanym rzędzie.
+ * Na wąskim ekranie menu okresu przechodzi do drugiej linii zamiast ucinać nazwy chipów.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun FilterBar(
+    disciplines: Set<Discipline>,
+    onToggleDiscipline: (Discipline) -> Unit,
+    period: PeriodFilter,
+    onPeriod: (PeriodFilter) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalTtColors.current
+    androidx.compose.foundation.layout.FlowRow(
+        modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
+        verticalArrangement = Arrangement.spacedBy(TtSpace.x2),
+    ) {
+        Discipline.entries.forEach { discipline ->
+            val isSelected = discipline in disciplines
+            TtChip(
+                label = stringResource(discipline.labelRes()),
+                onClick = { onToggleDiscipline(discipline) },
+                selected = isSelected,
+                background = if (isSelected) colors.container(discipline) else Color.Transparent,
+                border = if (isSelected) colors.of(discipline) else colors.line,
+                leading = { DisciplineDot(discipline) },
+                paddingStart = TtSpace.x3,
+                paddingEnd = TtSpace.x3,
+            )
+        }
+        PeriodMenuChip(period, onPeriod)
+    }
+}

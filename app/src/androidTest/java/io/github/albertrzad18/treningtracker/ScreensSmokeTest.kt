@@ -56,7 +56,7 @@ class ScreensSmokeTest {
                 WorkoutsContent(
                     Sample.workoutFilters, emptySet(),
                     Sample.workoutList.copy(workouts = emptyList(), groups = emptyList()),
-                    {}, {}, {}, {}, { cleared = true }, {}, {},
+                    {}, {}, { cleared = true }, {}, {},
                 )
             }
         }

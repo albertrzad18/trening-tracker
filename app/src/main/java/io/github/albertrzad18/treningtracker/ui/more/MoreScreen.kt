@@ -49,7 +49,7 @@ import java.time.ZoneId
  */
 @Composable
 fun MoreScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
     onOpenDiagnostics: () -> Unit,
     onOpenSummaries: () -> Unit,
     onOpenRecords: () -> Unit,
@@ -69,7 +69,16 @@ fun MoreScreen(
     val colors = LocalTtColors.current
 
     Column(Modifier.fillMaxSize()) {
-    TtTopBar(stringResource(R.string.nav_more), onBack)
+    if (onBack != null) {
+        TtTopBar(stringResource(R.string.nav_more), onBack)
+    } else {
+        androidx.compose.material3.Text(
+            stringResource(R.string.nav_more),
+            style = TtType.headline,
+            color = LocalTtColors.current.ink,
+            modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x4, bottom = TtSpace.x2),
+        )
+    }
     Column(
         Modifier
             .fillMaxSize()

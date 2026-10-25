@@ -13,7 +13,7 @@ class TreningApp : Application() {
     val database by lazy { AppDatabase.get(this) }
     val gateway by lazy { HealthConnectGateway(this) }
     val syncPrefs by lazy { SyncPrefs(this) }
-    val syncRepository by lazy { SyncRepository(gateway, database.workoutDao(), database.sampleDao(), syncPrefs) }
+    val syncRepository by lazy { SyncRepository(gateway, database.workoutDao(), database.sampleDao(), database.dailyStatsDao(), syncPrefs) }
     val settings by lazy { AppSettings(this) }
 
     override fun onCreate() {

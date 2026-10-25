@@ -43,3 +43,20 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         )
     }
 }
+
+/**
+ * Wersja 3: dochodzi tabela `daily_stats` (kroki i kalorie spalane naturalnie, dzień po dniu).
+ * Istniejące tabele zostają bez zmian, więc zapisane treningi i cele przeżywają aktualizację.
+ */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `daily_stats` (" +
+                "`date` TEXT NOT NULL, " +
+                "`steps` INTEGER, " +
+                "`basalKcal` REAL, " +
+                "`dataOrigin` TEXT NOT NULL, " +
+                "PRIMARY KEY(`date`))",
+        )
+    }
+}

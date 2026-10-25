@@ -206,6 +206,10 @@
     <string name="dashboard_month_label">Ten miesiąc · %1$s</string>
     <string name="dashboard_this_month">Ten miesiąc</string>
     <string name="dashboard_prev_month">Poprzedni miesiąc</string>
+    <string name="passive_title">Aktywność dzienna</string>
+    <string name="passive_steps">Kroki</string>
+    <string name="passive_steps_avg">Śr. kroków dziennie</string>
+    <string name="passive_basal">Spalane naturalnie</string>
     <string name="dashboard_burned">Przepalone</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
@@ -219,6 +223,11 @@
     <string name="unit_workout_few">treningi</string>
     <string name="unit_workout_many">treningów</string>
     <string name="list_avg_short">śr. %1$s</string>
+    <string name="list_avg_label">Średni czas</string>
+    <string name="list_longest_label">Najdłuższy trening</string>
+    <string name="list_per_week_label">Częstotliwość</string>
+    <string name="list_per_week_unit">/ tydz.</string>
+    <string name="list_sum_label">Suma</string>
     <string name="list_clear_filters">Wyczyść filtry</string>
     <string name="sort_title">Sortuj według</string>
     <string name="sort_ascending">Rosnąco</string>

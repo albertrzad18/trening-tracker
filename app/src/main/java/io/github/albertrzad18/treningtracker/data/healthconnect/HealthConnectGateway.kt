@@ -11,6 +11,10 @@ import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import io.github.albertrzad18.treningtracker.data.db.WorkoutEntity
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
+import io.github.albertrzad18.treningtracker.domain.DailyStats
 import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ElevationGainedRecord
@@ -86,9 +90,40 @@ class HealthConnectGateway(private val context: Context) {
 
     /** Uprawnienia do odczytu treningów i danych dodatkowych. */
     val readPermissions: Set<String> =
-        (listOf(ExerciseSessionRecord::class) + DataKind.entries.map { it.recordClass })
+        (listOf(ExerciseSessionRecord::class) + DataKind.entries.map { it.recordClass } + DAILY_KINDS)
             .map { HealthPermission.getReadPermission(it) }
             .toSet()
+
+    /** Uprawnienia do danych dziennych (kroki, przemiana podstawowa); bez nich apka działa, tylko bez tych liczb. */
+    val dailyPermissions: Set<String> = DAILY_KINDS.map { HealthPermission.getReadPermission(it) }.toSet()
+
+    /**
+     * Kroki i kalorie spalane naturalnie dzień po dniu. Agregacja Health Connect sama łączy źródła
+     * (telefon i zegarek) bez podwójnego liczenia. Metryki bez uprawnienia pomijamy.
+     */
+    suspend fun readDailyStats(from: java.time.LocalDate, toInclusive: java.time.LocalDate, granted: Set<String>): List<DailyStats> {
+        val steps = HealthPermission.getReadPermission(StepsRecord::class) in granted
+        val basal = HealthPermission.getReadPermission(BasalMetabolicRateRecord::class) in granted
+        if (!steps && !basal) return emptyList()
+        val metrics = buildSet {
+            if (steps) add(StepsRecord.COUNT_TOTAL)
+            if (basal) add(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL)
+        }
+        val result = client.aggregateGroupByPeriod(
+            AggregateGroupByPeriodRequest(
+                metrics = metrics,
+                timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), toInclusive.plusDays(1).atStartOfDay()),
+                timeRangeSlicer = java.time.Period.ofDays(1),
+            ),
+        )
+        return result.map { day ->
+            DailyStats(
+                date = day.startTime.toLocalDate(),
+                steps = day.result[StepsRecord.COUNT_TOTAL],
+                basalKcal = day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories,
+            )
+        }
+    }
 
     val historyPermission = "android.permission.health.READ_HEALTH_DATA_HISTORY"
 
@@ -239,3 +274,6 @@ class HealthConnectGateway(private val context: Context) {
         )
     }
 }
+
+/** Rekordy dzienne czytane osobno od treningów. */
+private val DAILY_KINDS = listOf(StepsRecord::class, BasalMetabolicRateRecord::class)

@@ -166,3 +166,17 @@ private fun trainerMetrics(r: Random, minutes: Long): DemoMetrics = DemoMetrics(
     kcal = (minutes * r.nextInt(8, 12)).toDouble(),
     avgHr = r.nextInt(128, 158).toLong(),
 )
+
+/** Sztuczne kroki i kalorie spalane naturalnie z ostatnich [months] miesięcy; tylko build debug. */
+fun demoDailyStats(today: LocalDate, months: Long = 18, seed: Int = 2026): List<io.github.albertrzad18.treningtracker.data.db.DailyStatsEntity> {
+    val random = Random(seed + 1)
+    val start = today.minusMonths(months)
+    return generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(today) }.map { day ->
+        io.github.albertrzad18.treningtracker.data.db.DailyStatsEntity(
+            date = day.toString(),
+            steps = 4_000L + random.nextInt(9_000),
+            basalKcal = 1_650.0 + random.nextInt(60),
+            dataOrigin = DEMO_ORIGIN,
+        )
+    }.toList()
+}

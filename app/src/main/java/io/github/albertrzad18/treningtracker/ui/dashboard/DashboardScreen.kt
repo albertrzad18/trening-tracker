@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.db.toDomain
+import io.github.albertrzad18.treningtracker.domain.passiveTotals
 import io.github.albertrzad18.treningtracker.data.sync.SyncScheduler
 import io.github.albertrzad18.treningtracker.domain.DashboardData
 import io.github.albertrzad18.treningtracker.domain.Discipline
@@ -46,6 +48,10 @@ import io.github.albertrzad18.treningtracker.domain.buildDashboard
 import io.github.albertrzad18.treningtracker.ui.common.BigValue
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
 import io.github.albertrzad18.treningtracker.ui.common.DeltaBadge
+import io.github.albertrzad18.treningtracker.domain.PassiveTotals
+import io.github.albertrzad18.treningtracker.ui.common.MetricGrid
+import io.github.albertrzad18.treningtracker.ui.common.MetricItem
+import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.common.LabelText
 import io.github.albertrzad18.treningtracker.ui.common.LinkRow
 import io.github.albertrzad18.treningtracker.ui.common.NumberedSteps
@@ -77,6 +83,7 @@ import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
 import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
@@ -84,9 +91,15 @@ import java.time.ZoneId
 
 class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     private val dao = (app as TreningApp).database.workoutDao()
+    private val dailyDao = (app as TreningApp).database.dailyStatsDao()
 
-    private fun stateFor(period: SummaryGranularity): StateFlow<DashboardData?> = dao.observeAll()
-        .map { list -> buildDashboard(list.map { it.toDomain() }, LocalDate.now(), ZoneId.systemDefault(), granularity = period) }
+    private fun stateFor(period: SummaryGranularity): StateFlow<DashboardData?> =
+        combine(dao.observeAll(), dailyDao.observeAll()) { list, daily ->
+            val today = LocalDate.now()
+            val data = buildDashboard(list.map { it.toDomain() }, today, ZoneId.systemDefault(), granularity = period)
+            val passive = daily.map { it.toDomain() }.passiveTotals(data.range)
+            data.copy(passive = passive.takeUnless { it.isEmpty })
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** `null` = jeszcze się wczytuje. Tydzień i miesiąc to ten sam ekran w dwóch skalach. */
@@ -129,6 +142,7 @@ internal fun DashboardContent(
             verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
         ) {
             item { WeekPanel(data, period) }
+            data.passive?.let { passive -> item { PassivePanel(passive, period) } }
             item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
             item { GoalsPanel(onOpenGoals) }
         }
@@ -207,7 +221,8 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 color = colors.ink,
                 textAlign = TextAlign.End,
                 maxLines = 1,
-                modifier = Modifier.width(68.dp),
+                softWrap = false,
+                modifier = Modifier.widthIn(min = 60.dp),
             )
             Text(
                 item.totals.distanceM?.let(::formatDistanceKm).orEmpty(),
@@ -215,7 +230,8 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 color = colors.ink2,
                 textAlign = TextAlign.End,
                 maxLines = 1,
-                modifier = Modifier.width(48.dp),
+                softWrap = false,
+                modifier = Modifier.widthIn(min = 48.dp),
             )
             Text(
                 item.totals.caloriesKcal?.let(::formatCalories).orEmpty(),
@@ -223,7 +239,8 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 color = colors.ink2,
                 textAlign = TextAlign.End,
                 maxLines = 1,
-                modifier = Modifier.width(56.dp),
+                softWrap = false,
+                modifier = Modifier.widthIn(min = 56.dp),
             )
         }
     }
@@ -323,7 +340,7 @@ private fun DisciplineColumns(items: List<DisciplineTotals>) {
  */
 @Composable
 private fun columnValue(item: DisciplineTotals): String = when (item.discipline) {
-    Discipline.ROAD -> formatDistanceKm(item.totals.distanceM ?: 0.0)
+    Discipline.ROAD -> item.totals.distanceM?.let(::formatDistanceKm) ?: "0 km"
     Discipline.POOL -> item.totals.distanceM?.let(::formatDistanceKm).orEmpty()
     Discipline.TRAINER -> if (item.totals.duration.isZero) "" else formatHoursAndMinutes(item.totals.duration)
 }
@@ -448,5 +465,21 @@ private fun DashboardEmpty() {
             ),
             modifier = Modifier.padding(top = TtSpace.x4),
         )
+    }
+}
+
+/** Kroki i kalorie spalane naturalnie: pokazujemy tylko to, co Health Connect faktycznie podał. */
+@Composable
+private fun PassivePanel(passive: PassiveTotals, period: SummaryGranularity) {
+    val items = listOfNotNull(
+        passive.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
+        passive.averageSteps?.takeIf { period == SummaryGranularity.MONTH || passive.steps != passive.averageSteps }
+            ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
+        passive.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
+    )
+    Panel {
+        SectionHeader(stringResource(R.string.passive_title))
+        Spacer(Modifier.height(TtSpace.x3))
+        MetricGrid(items)
     }
 }

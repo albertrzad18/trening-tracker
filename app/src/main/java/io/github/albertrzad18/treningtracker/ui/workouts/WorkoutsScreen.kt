@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,7 +54,14 @@ import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.WorkoutListResult
 import io.github.albertrzad18.treningtracker.domain.buildWorkoutList
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineFilterChips
+import io.github.albertrzad18.treningtracker.ui.common.BigValue
 import io.github.albertrzad18.treningtracker.ui.common.LabelText
+import io.github.albertrzad18.treningtracker.ui.common.MetricGrid
+import io.github.albertrzad18.treningtracker.ui.common.MetricItem
+import io.github.albertrzad18.treningtracker.ui.common.Panel
+import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
+import io.github.albertrzad18.treningtracker.ui.format.distanceParts
+import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.common.PeriodMenuChip
 import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
 import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
@@ -146,8 +154,6 @@ fun WorkoutsScreen(onOpenWorkout: (String) -> Unit, vm: WorkoutsViewModel = view
         result = result,
         onToggleDiscipline = vm::toggleDiscipline,
         onPeriod = vm::setPeriod,
-        onSort = vm::setSort,
-        onAscending = vm::setAscending,
         onClear = vm::clearFilters,
         onToggleMonth = vm::toggleMonth,
         onOpenWorkout = onOpenWorkout,
@@ -162,21 +168,15 @@ internal fun WorkoutsContent(
     result: WorkoutListResult?,
     onToggleDiscipline: (Discipline) -> Unit,
     onPeriod: (PeriodFilter) -> Unit,
-    onSort: (SortColumn) -> Unit,
-    onAscending: (Boolean) -> Unit,
     onClear: () -> Unit,
     onToggleMonth: (String) -> Unit,
     onOpenWorkout: (String) -> Unit,
 ) {
-    var sortSheet by remember { mutableStateOf(false) }
-
     Column(Modifier.fillMaxSize()) {
         FilterBar(
             filters = filters,
-            count = result?.workouts?.size,
             onToggleDiscipline = onToggleDiscipline,
             onPeriod = onPeriod,
-            onOpenSort = { sortSheet = true },
         )
         when {
             result == null -> ListSkeleton()
@@ -189,29 +189,18 @@ internal fun WorkoutsContent(
                     onOpenWorkout = onOpenWorkout,
                     modifier = Modifier.weight(1f),
                 )
-                SummaryBar(result)
             }
         }
     }
 
-    if (sortSheet) {
-        SortSheet(
-            filters = filters,
-            onDismiss = { sortSheet = false },
-            onSort = onSort,
-            onAscending = onAscending,
-        )
-    }
 }
 
-/** Chipy dyscyplin, menu okresu, chip sortowania i licznik treningów. */
+/** Chipy dyscyplin i menu okresu. */
 @Composable
 private fun FilterBar(
     filters: WorkoutFilters,
-    count: Int?,
     onToggleDiscipline: (Discipline) -> Unit,
     onPeriod: (PeriodFilter) -> Unit,
-    onOpenSort: () -> Unit,
 ) {
     val colors = LocalTtColors.current
     Column(
@@ -220,32 +209,9 @@ private fun FilterBar(
             .padding(start = TtSpace.screenMargin, end = TtSpace.screenMargin, top = TtSpace.x2, bottom = TtSpace.x1),
         verticalArrangement = Arrangement.spacedBy(TtSpace.x3),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            DisciplineFilterChips(filters.disciplines, onToggleDiscipline, modifier = Modifier.weight(1f))
-            PeriodMenuChip(filters.period, onPeriod)
-        }
-        Row(
-            Modifier.fillMaxWidth().defaultMinSize(minHeight = 36.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TtChip(
-                label = stringResource(filters.sort.labelRes()),
-                onClick = onOpenSort,
-                paddingEnd = 10.dp,
-                trailing = {
-                    Icon(
-                        if (filters.ascending) TtIcons.Up else TtIcons.Down,
-                        contentDescription = null,
-                        tint = colors.ink,
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-            )
-            Box(Modifier.weight(1f))
-            if (count != null) {
-                Text(workoutsCountText(count), style = TtType.bodyS, color = colors.ink2)
-            }
-        }
+        io.github.albertrzad18.treningtracker.ui.common.FilterBar(
+            filters.disciplines, onToggleDiscipline, filters.period, onPeriod,
+        )
     }
 }
 
@@ -267,7 +233,8 @@ private fun WorkoutList(
     onOpenWorkout: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier.fillMaxSize()) {
+    LazyColumn(modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = TtSpace.x6)) {
+        item(key = "summary") { SummaryCard(result) }
         if (result.groups.isNotEmpty()) {
             result.groups.forEach { group ->
                 val key = group.month.toString()
@@ -364,14 +331,14 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
                     style = TtType.body.copy(fontWeight = FontWeight.Medium),
                     color = colors.ink,
                     maxLines = 1,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.9f),
                 )
                 Text(
                     workout.distanceText().orEmpty(),
                     style = TtType.body,
                     color = colors.ink,
                     maxLines = 1,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.9f),
                 )
                 Text(
                     workout.paceOrSpeedText().orEmpty(),
@@ -379,7 +346,7 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
                     color = colors.ink,
                     textAlign = TextAlign.End,
                     maxLines = 1,
-                    modifier = Modifier.weight(1.2f),
+                    modifier = Modifier.weight(1.4f),
                 )
             }
             if (second.isNotEmpty()) Text(second, style = TtType.bodyS, color = colors.ink2, maxLines = 1)
@@ -387,126 +354,47 @@ private fun WorkoutRow(workout: Workout, onClick: () -> Unit) {
     }
 }
 
-/** Przyklejony pasek sumy: liczba treningów, sumy i średni czas treningu. */
+/**
+ * Karta z sumami dla widocznych treningów (po filtrach): czas, dystans, kalorie i średni czas.
+ * Zastępuje dawny pasek na dole ekranu. Dystans i kalorie znikają, gdy nie ma z czego ich policzyć.
+ */
 @Composable
-private fun SummaryBar(result: WorkoutListResult) {
+private fun SummaryCard(result: WorkoutListResult) {
     val colors = LocalTtColors.current
-    Column(Modifier.fillMaxWidth().background(colors.surface)) {
-        TtDivider()
-        Column(
-            Modifier.padding(horizontal = TtSpace.screenMargin, vertical = TtSpace.x3),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                LabelText(stringResource(R.string.list_sum, result.totals.count), color = colors.ink)
-                Box(Modifier.weight(1f))
-                result.averageDuration?.let {
-                    Text(
-                        stringResource(R.string.list_avg_short, formatDuration(it)),
-                        style = TtType.bodyS,
-                        color = colors.ink2,
-                    )
-                }
+    val totals = result.totals
+    Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x2, bottom = TtSpace.x1)) {
+        Panel {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                LabelText(stringResource(R.string.list_sum_label), modifier = Modifier.weight(1f))
+                Text(workoutsCountText(totals.count), style = TtType.bodyS, color = colors.ink2)
             }
-            Text(
-                result.totals.summaryText(),
-                style = TtType.body.copy(fontWeight = FontWeight.Medium),
-                color = colors.ink,
+            Spacer(Modifier.height(TtSpace.x2))
+            BigValue(formatHoursAndMinutes(totals.duration), null, style = TtType.hero, color = colors.ink)
+            Spacer(Modifier.height(TtSpace.x3))
+            TtDivider()
+            Spacer(Modifier.height(TtSpace.x3))
+            MetricGrid(
+                listOfNotNull(
+                    totals.distanceM?.let { MetricItem(stringResource(R.string.metric_distance), distanceParts(it).value, "km") },
+                    totals.caloriesKcal?.let { MetricItem(stringResource(R.string.metric_calories), caloriesParts(it).value, "kcal") },
+                    result.averageDuration?.let { MetricItem(stringResource(R.string.list_avg_label), formatDuration(it)) },
+                    result.workouts.maxByOrNull { it.duration }?.let {
+                        MetricItem(stringResource(R.string.list_longest_label), formatDuration(it.duration))
+                    },
+                    perWeek(result)?.let { MetricItem(stringResource(R.string.list_per_week_label), it, stringResource(R.string.list_per_week_unit)) },
+                ),
             )
         }
     }
 }
 
-/** Arkusz sortowania: klucz i kierunek. */
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-@Composable
-private fun SortSheet(
-    filters: WorkoutFilters,
-    onDismiss: () -> Unit,
-    onSort: (SortColumn) -> Unit,
-    onAscending: (Boolean) -> Unit,
-) {
-    val colors = LocalTtColors.current
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        shape = TtShape.sheet,
-        containerColor = colors.surface,
-        dragHandle = {
-            Box(Modifier.fillMaxWidth().padding(top = TtSpace.x3), contentAlignment = Alignment.Center) {
-                Box(Modifier.width(36.dp).height(4.dp).background(colors.line, RoundedCornerShape(2.dp)))
-            }
-        },
-    ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = TtSpace.screenMargin)
-                .padding(top = TtSpace.x4, bottom = TtSpace.x8)
-                .navigationBarsPadding(),
-        ) {
-            Text(stringResource(R.string.sort_title), style = TtType.title, color = colors.ink)
-            Box(Modifier.height(TtSpace.x2))
-            SortColumn.entries.forEach { column ->
-                val selected = column == filters.sort
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(TtSpace.minTouch)
-                        .clip(TtShape.field)
-                        .ttClickable { onSort(column) },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    Box(
-                        Modifier
-                            .size(20.dp)
-                            .border(2.dp, if (selected) colors.ink else colors.line, TtShape.full),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (selected) {
-                            Box(Modifier.size(10.dp).background(colors.ink, TtShape.full))
-                        }
-                    }
-                    Text(stringResource(column.labelRes()), style = TtType.body, color = colors.ink)
-                }
-            }
-            Box(Modifier.height(TtSpace.x4))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
-                listOf(true, false).forEach { ascending ->
-                    val selected = filters.ascending == ascending
-                    TtChip(
-                        label = stringResource(
-                            if (ascending) R.string.sort_ascending else R.string.sort_descending,
-                        ),
-                        onClick = { onAscending(ascending) },
-                        selected = selected,
-                        background = if (selected) colors.accent else Color.Transparent,
-                        border = if (selected) colors.accent else colors.line,
-                        textColor = if (selected) colors.onAccent else colors.ink,
-                        leading = {
-                            Icon(
-                                if (ascending) TtIcons.Up else TtIcons.Down,
-                                contentDescription = null,
-                                tint = if (selected) colors.onAccent else colors.ink,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        },
-                        modifier = Modifier.weight(1f).height(44.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun SortColumn.labelRes() = when (this) {
-    SortColumn.DATE -> R.string.col_date
-    SortColumn.DISCIPLINE -> R.string.col_discipline
-    SortColumn.DURATION -> R.string.col_time
-    SortColumn.DISTANCE -> R.string.col_distance
-    SortColumn.CALORIES -> R.string.col_calories
-    SortColumn.SPEED -> R.string.col_speed
-    SortColumn.HEART_RATE -> R.string.col_hr
+/** Ile treningów tygodniowo w widocznym zakresie dat, z jednym miejscem po przecinku; `null` przy jednym dniu. */
+private fun perWeek(result: WorkoutListResult): String? {
+    val first = result.workouts.minOfOrNull { it.start } ?: return null
+    val last = result.workouts.maxOfOrNull { it.start } ?: return null
+    val weeks = java.time.Duration.between(first, last).toDays() / 7.0
+    if (weeks < 1.0) return null
+    return "%.1f".format(java.util.Locale.forLanguageTag("pl-PL"), result.workouts.size / weeks)
 }
 
 @Composable

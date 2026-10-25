@@ -64,19 +64,19 @@ private fun DashboardEmptyPreview() = PreviewFrame(dark = true) {
 @Preview(name = "Treningi · dane · jasny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun WorkoutsLight() = PreviewFrame(dark = false) {
-    WorkoutsContent(Sample.workoutFilters, emptySet(), Sample.workoutList, {}, {}, {}, {}, {}, {}, {})
+    WorkoutsContent(Sample.workoutFilters, emptySet(), Sample.workoutList, {}, {}, {}, {}, {})
 }
 
 @Preview(name = "Treningi · dane · ciemny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun WorkoutsDark() = PreviewFrame(dark = true) {
-    WorkoutsContent(Sample.workoutFilters, emptySet(), Sample.workoutList, {}, {}, {}, {}, {}, {}, {})
+    WorkoutsContent(Sample.workoutFilters, emptySet(), Sample.workoutList, {}, {}, {}, {}, {})
 }
 
 @Preview(name = "Treningi · ładowanie", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun WorkoutsLoading() = PreviewFrame(dark = false) {
-    WorkoutsContent(Sample.workoutFilters, emptySet(), null, {}, {}, {}, {}, {}, {}, {})
+    WorkoutsContent(Sample.workoutFilters, emptySet(), null, {}, {}, {}, {}, {})
 }
 
 @Preview(name = "Treningi · pusto", widthDp = WIDTH, heightDp = HEIGHT)
@@ -86,7 +86,7 @@ private fun WorkoutsEmpty() = PreviewFrame(dark = false) {
         Sample.workoutFilters,
         emptySet(),
         Sample.workoutList.copy(workouts = emptyList(), groups = emptyList()),
-        {}, {}, {}, {}, {}, {}, {},
+        {}, {}, {}, {}, {},
     )
 }
 

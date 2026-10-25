@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -103,6 +104,15 @@ class GateViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow<GateState>(GateState.Loading)
     val state: StateFlow<GateState> = _state.asStateFlow()
 
+    private val gatePrefs = app.getSharedPreferences("gate", android.content.Context.MODE_PRIVATE)
+    private fun dailyAsked() = gatePrefs.getBoolean("daily_asked", false)
+
+    /** Wywoływane po odpowiedzi użytkownika na prośbę o uprawnienia. */
+    fun onPermissionResult() {
+        gatePrefs.edit().putBoolean("daily_asked", true).apply()
+        refresh()
+    }
+
     fun refresh() {
         viewModelScope.launch {
             val gateway = treningApp.gateway
@@ -111,7 +121,10 @@ class GateViewModel(app: Application) : AndroidViewModel(app) {
                 return@launch
             }
             val granted = gateway.grantedPermissions()
-            if (HealthPermission.getReadPermission(ExerciseSessionRecord::class) in granted) {
+            val exercise = HealthPermission.getReadPermission(ExerciseSessionRecord::class) in granted
+            // Kroki i kalorie podstawowe doszły później: pytamy o nie jeden raz, a odmowa nie blokuje apki.
+            val askForDaily = exercise && !granted.containsAll(gateway.dailyPermissions) && !dailyAsked()
+            if (exercise && !askForDaily) {
                 _state.value = GateState.Ready
                 // Synchronizacja przy każdym otwarciu apki; w tle dba o nią cykliczne zadanie.
                 SyncScheduler.syncNow(treningApp)
@@ -128,7 +141,7 @@ fun AppRoot(gate: GateViewModel = viewModel()) {
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { gate.refresh() }
     val permissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract(),
-    ) { gate.refresh() }
+    ) { gate.onPermissionResult() }
 
     val context = LocalContext.current
     Surface(modifier = Modifier.fillMaxSize(), color = LocalTtColors.current.bg) {
@@ -216,7 +229,7 @@ internal fun WelcomeScreen(
                 val done = index < currentStep
                 val now = index == currentStep
                 Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp),
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp).height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(TtSpace.x4),
                 ) {
                     Column(Modifier.width(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -289,27 +302,8 @@ private val topLevel = listOf(
     TopLevel(Routes.MONTH, R.string.nav_month, TtIcons.Month),
     TopLevel(Routes.WORKOUTS, R.string.nav_workouts, TtIcons.Workouts),
     TopLevel(Routes.STATS, R.string.nav_stats, TtIcons.Stats),
+    TopLevel(Routes.MORE, R.string.nav_more, TtIcons.Settings),
 )
-
-/**
- * Górny pasek ekranów głównych: po prawej ikona ustawień, która otwiera „Więcej”
- * (synchronizacja, podsumowania, rekordy, cele, ustawienia, diagnostyka).
- */
-@Composable
-private fun TopStrip(onOpenMore: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().statusBarsPadding().height(48.dp).padding(end = TtSpace.x2),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier.size(TtSpace.minTouch).clip(TtShape.full).ttClickable(onClick = onOpenMore),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(TtIcons.Settings, contentDescription = stringResource(R.string.nav_more), tint = LocalTtColors.current.ink)
-        }
-    }
-}
 
 /**
  * Dolna nawigacja: cztery zakładki na płycie `surface`, nad nią linia 1 dp.
@@ -354,11 +348,6 @@ private fun MainScaffold() {
 
     Scaffold(
         containerColor = LocalTtColors.current.bg,
-        topBar = {
-            if (showBar) {
-                TopStrip(onOpenMore = { nav.navigate(Routes.MORE) })
-            }
-        },
         bottomBar = {
             if (showBar) {
                 TtNavBar(
@@ -405,7 +394,6 @@ private fun MainScaffold() {
             composable(Routes.STATS) { StatsScreen() }
             composable(Routes.MORE) {
                 MoreScreen(
-                    onBack = { nav.popBackStack() },
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenRecords = { nav.navigate(Routes.RECORDS) },

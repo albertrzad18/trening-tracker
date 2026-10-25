@@ -17,6 +17,8 @@ data class DashboardData(
     val perDiscipline: List<DisciplineTotals>,
     val previousPerDiscipline: List<DisciplineTotals>,
     val latest: List<Workout>,
+    /** Kroki i kalorie spalane naturalnie w okresie; `null`, gdy nie ma żadnych danych dziennych. */
+    val passive: PassiveTotals? = null,
 )
 
 fun buildDashboard(

@@ -1,33 +1,30 @@
 package io.github.albertrzad18.treningtracker.ui.goals
 
 import android.app.Application
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,10 +32,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -56,19 +57,27 @@ import io.github.albertrzad18.treningtracker.domain.GoalProgress
 import io.github.albertrzad18.treningtracker.domain.goalHistory
 import io.github.albertrzad18.treningtracker.domain.goalProgress
 import io.github.albertrzad18.treningtracker.domain.goalStreak
-import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
+import io.github.albertrzad18.treningtracker.ui.common.LabelText
+import io.github.albertrzad18.treningtracker.ui.common.Panel
+import io.github.albertrzad18.treningtracker.ui.common.PrimaryButton
+import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
+import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
+import io.github.albertrzad18.treningtracker.ui.common.TtChip
+import io.github.albertrzad18.treningtracker.ui.common.TtIcons
+import io.github.albertrzad18.treningtracker.ui.common.TtTopBar
 import io.github.albertrzad18.treningtracker.ui.common.daysText
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.periodsText
-import io.github.albertrzad18.treningtracker.ui.format.formatCalories
-import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
-import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
+import io.github.albertrzad18.treningtracker.ui.common.ttClickable
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtShape
+import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
+import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -117,214 +126,246 @@ class GoalsViewModel(app: Application) : AndroidViewModel(app) {
 @Composable
 fun GoalsScreen(onBack: () -> Unit, vm: GoalsViewModel = viewModel()) {
     val rows by vm.rows.collectAsStateWithLifecycle()
-    var showDialog by remember { mutableStateOf(false) }
+    var addOpen by remember { mutableStateOf(false) }
+    var detail by remember { mutableStateOf<GoalRow?>(null) }
+    val colors = LocalTtColors.current
 
-    Column(Modifier.fillMaxSize()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-            }
-            Text(stringResource(R.string.goals_title), style = MaterialTheme.typography.titleLarge)
-        }
-        val list = rows
-        when {
-            list == null -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            else -> LazyColumn(
-                Modifier.weight(1f),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                if (list.isEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.goals_empty),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            TtTopBar(stringResource(R.string.goals_title), onBack)
+            val list = rows
+            when {
+                list == null -> Column(
+                    Modifier.padding(horizontal = TtSpace.screenMargin),
+                    verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
+                ) {
+                    repeat(3) { SkeletonBlock(height = 150.dp, shape = TtShape.panel) }
+                }
+                list.isEmpty() -> Text(
+                    stringResource(R.string.goals_empty),
+                    style = TtType.body,
+                    color = colors.ink2,
+                    modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = 56.dp),
+                )
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = TtSpace.screenMargin,
+                        end = TtSpace.screenMargin,
+                        top = TtSpace.x1,
+                        bottom = 96.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
+                ) {
+                    items(list, key = { it.progress.goal.id }) { row ->
+                        Panel(modifier = Modifier.clip(TtShape.panel).ttClickable { detail = row }) {
+                            GoalProgressBlock(row)
+                        }
                     }
                 }
-                items(list, key = { it.progress.goal.id }) { row ->
-                    GoalCard(row, onDelete = { vm.delete(row.progress.goal) })
-                }
             }
         }
-        Button(onClick = { showDialog = true }, modifier = Modifier.padding(16.dp)) {
-            Text(stringResource(R.string.goals_add))
+        // ExtendedFAB „Dodaj cel”: zawsze w prawym dolnym rogu, nad listą.
+        Row(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(TtSpace.x4),
+        ) {
+            Row(
+                Modifier
+                    .height(56.dp)
+                    .clip(TtShape.full)
+                    .background(colors.accent)
+                    .ttClickable { addOpen = true }
+                    .padding(start = 18.dp, end = TtSpace.x6),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(TtIcons.Add, contentDescription = null, tint = colors.onAccent)
+                Text(
+                    stringResource(R.string.goals_add),
+                    style = TtType.title,
+                    color = colors.onAccent,
+                )
+            }
         }
     }
 
-    if (showDialog) {
-        NewGoalDialog(
-            onDismiss = { showDialog = false },
+    if (addOpen) {
+        AddGoalSheet(
+            onDismiss = { addOpen = false },
             onSave = { discipline, period, metric, target ->
                 vm.add(discipline, period, metric, target)
-                showDialog = false
+                addOpen = false
+            },
+        )
+    }
+    detail?.let { row ->
+        GoalDetailSheet(
+            row = row,
+            onDismiss = { detail = null },
+            onDelete = {
+                vm.delete(row.progress.goal)
+                detail = null
             },
         )
     }
 }
 
+/** Arkusz z uchwytem i górnymi rogami 28 dp — wspólny dla dodawania celu i jego szczegółów. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun GoalCard(row: GoalRow, onDelete: (() -> Unit)? = null) {
-    val progress = row.progress
-    val goal = progress.goal
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                goal.discipline?.let {
-                    DisciplineDot(it, size = 10.dp)
-                    Spacer(Modifier.width(8.dp))
-                }
-                Text(goal.title(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                onDelete?.let {
-                    TextButton(onClick = it) { Text(stringResource(R.string.goals_delete)) }
-                }
+private fun TtSheet(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+    val colors = LocalTtColors.current
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        shape = TtShape.sheet,
+        containerColor = colors.surface,
+        dragHandle = {
+            Box(Modifier.fillMaxWidth().padding(top = TtSpace.x3), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(36.dp).height(4.dp).background(colors.line, RoundedCornerShape(2.dp)))
             }
-            Text(
-                stringResource(
-                    R.string.goals_progress,
-                    goal.metric.format(progress.current),
-                    goal.metric.format(goal.target),
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            LinearProgressIndicator(
-                progress = { progress.fraction.toFloat() },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (progress.done) {
-                Text(stringResource(R.string.goals_done), style = MaterialTheme.typography.bodyMedium)
-            } else {
-                progress.projected?.let {
-                    Text(
-                        stringResource(R.string.goals_projection, goal.metric.format(it)),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    stringResource(R.string.goals_days_left, daysText(progress.daysLeft)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (row.history.isNotEmpty()) {
-                Text(
-                    stringResource(R.string.goals_history, row.history.joinToString(" ") { if (it.second) "✔" else "✘" }),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            if (row.streak > 0) {
-                Text(
-                    stringResource(R.string.goals_streak, periodsText(row.streak)),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
+        },
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = TtSpace.screenMargin, end = TtSpace.screenMargin, top = TtSpace.x4)
+                .padding(bottom = TtSpace.x8)
+                .navigationBarsPadding()
+                .imePadding(),
+            verticalArrangement = Arrangement.spacedBy(TtSpace.x4),
+        ) {
+            content()
         }
     }
 }
 
-/** Nazwa celu, np. „Rower: dystans, miesięcznie”. */
+
+/** Szczegóły celu: to samo co na liście plus „Usuń cel”. */
 @Composable
-private fun Goal.title(): String {
-    val who = discipline?.let { stringResource(it.labelRes()) } ?: stringResource(R.string.goals_all_disciplines)
-    return "$who · ${stringResource(metric.labelRes())} · ${stringResource(period.labelRes())}"
+private fun GoalDetailSheet(row: GoalRow, onDismiss: () -> Unit, onDelete: () -> Unit) {
+    val colors = LocalTtColors.current
+    TtSheet(onDismiss) {
+        GoalProgressBlock(row)
+        Text(
+            buildString {
+                append(stringResource(R.string.goals_days_left, daysText(row.progress.daysLeft)))
+                if (row.streak > 0) append(" · " + stringResource(R.string.goals_streak, periodsText(row.streak)))
+            },
+            style = TtType.bodyS,
+            color = colors.ink2,
+        )
+        SecondaryButton(
+            text = stringResource(R.string.goals_delete),
+            contentColor = colors.error,
+            onClick = onDelete,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
-private fun GoalMetric.labelRes() = when (this) {
-    GoalMetric.DISTANCE -> R.string.goals_metric_distance
-    GoalMetric.DURATION -> R.string.goals_metric_duration
-    GoalMetric.CALORIES -> R.string.goals_metric_calories
-    GoalMetric.COUNT -> R.string.goals_metric_count
-}
-
-private fun GoalPeriod.labelRes() = when (this) {
-    GoalPeriod.WEEK -> R.string.goals_period_week
-    GoalPeriod.MONTH -> R.string.goals_period_month
-    GoalPeriod.YEAR -> R.string.goals_period_year
-}
-
-/** Wartość celu w jednostkach, w jakich ją rozumiemy: metry, sekundy, kcal, sztuki. */
-private fun GoalMetric.format(value: Double): String = when (this) {
-    GoalMetric.DISTANCE -> formatDistanceKm(value)
-    GoalMetric.DURATION -> formatHoursAndMinutes(Duration.ofSeconds(value.toLong()))
-    GoalMetric.CALORIES -> formatCalories(value)
-    GoalMetric.COUNT -> value.toInt().toString()
-}
-
-/** Przelicza to, co wpisał użytkownik (km, godziny), na jednostki bazy (metry, sekundy). */
-private fun GoalMetric.toStored(input: Double): Double = when (this) {
-    GoalMetric.DISTANCE -> input * 1000
-    GoalMetric.DURATION -> input * 3600
-    else -> input
-}
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun NewGoalDialog(
+private fun AddGoalSheet(
     onDismiss: () -> Unit,
     onSave: (Discipline?, GoalPeriod, GoalMetric, Double) -> Unit,
 ) {
+    val colors = LocalTtColors.current
     var discipline by remember { mutableStateOf<Discipline?>(null) }
     var period by remember { mutableStateOf(GoalPeriod.MONTH) }
     var metric by remember { mutableStateOf(GoalMetric.DISTANCE) }
     var target by remember { mutableStateOf("") }
     val value = target.replace(',', '.').toDoubleOrNull()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.goals_new)) },
-        confirmButton = {
-            TextButton(
-                enabled = value != null && value > 0,
-                onClick = { onSave(discipline, period, metric, metric.toStored(value!!)) },
-            ) { Text(stringResource(R.string.goals_save)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.goals_cancel)) } },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChipRow(
-                    options = listOf<Discipline?>(null) + Discipline.entries,
-                    selected = discipline,
-                    label = { d -> d?.let { stringResource(it.labelRes()) } ?: stringResource(R.string.goals_all_disciplines) },
-                    onSelect = { discipline = it },
-                )
-                ChipRow(
-                    options = GoalPeriod.entries,
-                    selected = period,
-                    label = { stringResource(it.labelRes()) },
-                    onSelect = { period = it },
-                )
-                ChipRow(
-                    options = GoalMetric.entries,
-                    selected = metric,
-                    label = { stringResource(it.labelRes()) },
-                    onSelect = { metric = it },
-                )
-                OutlinedTextField(
-                    value = target,
-                    onValueChange = { target = it },
-                    label = { Text(stringResource(R.string.goals_target)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
+    TtSheet(onDismiss) {
+        Text(stringResource(R.string.goals_new), style = TtType.title, color = colors.ink)
+
+        ChipGroup(stringResource(R.string.goals_group_discipline)) {
+            val options = listOf<Discipline?>(null) + Discipline.entries
+            options.forEach { option ->
+                val selected = option == discipline
+                TtChip(
+                    label = option?.let { stringResource(it.labelRes()) }
+                        ?: stringResource(R.string.goals_all_disciplines),
+                    onClick = { discipline = option },
+                    selected = selected,
+                    background = if (selected) colors.accent else Color.Transparent,
+                    border = if (selected) colors.accent else colors.line,
+                    textColor = if (selected) colors.onAccent else colors.ink,
                 )
             }
-        },
-    )
+        }
+        ChipGroup(stringResource(R.string.goals_group_period)) {
+            GoalPeriod.entries.forEach { option ->
+                val selected = option == period
+                TtChip(
+                    label = stringResource(option.labelRes()),
+                    onClick = { period = option },
+                    selected = selected,
+                    background = if (selected) colors.accent else Color.Transparent,
+                    border = if (selected) colors.accent else colors.line,
+                    textColor = if (selected) colors.onAccent else colors.ink,
+                )
+            }
+        }
+        ChipGroup(stringResource(R.string.goals_group_metric)) {
+            GoalMetric.entries.forEach { option ->
+                val selected = option == metric
+                TtChip(
+                    label = stringResource(option.labelRes()),
+                    onClick = { metric = option },
+                    selected = selected,
+                    background = if (selected) colors.accent else Color.Transparent,
+                    border = if (selected) colors.accent else colors.line,
+                    textColor = if (selected) colors.onAccent else colors.ink,
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+            LabelText(stringResource(R.string.goals_target))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .border(1.dp, colors.line, TtShape.field)
+                    .padding(horizontal = TtSpace.x4),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                BasicTextField(
+                    value = target,
+                    onValueChange = { text -> target = text.filter { it.isDigit() || it == ',' || it == '.' }.take(7) },
+                    modifier = Modifier.weight(1f),
+                    textStyle = TtType.value.copy(fontSize = 18.sp, fontWeight = FontWeight.Medium, color = colors.ink),
+                    cursorBrush = SolidColor(colors.accent),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                )
+                Text(metric.unitLabel(), style = TtType.bodyS, color = colors.ink2)
+            }
+        }
+
+        PrimaryButton(
+            text = stringResource(R.string.goals_save),
+            onClick = { if (value != null && value > 0) onSave(discipline, period, metric, metric.toStored(value)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun <T> ChipRow(options: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
-    // FlowRow zawija chipy do kolejnej linii, więc w wąskim oknie dialogu nic nie ucieka poza ekran.
-    FlowRow(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        options.forEach { option ->
-            FilterChip(
-                selected = option == selected,
-                onClick = { onSelect(option) },
-                label = { Text(label(option)) },
-            )
+private fun ChipGroup(title: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+        LabelText(title)
+        FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
+            verticalArrangement = Arrangement.spacedBy(TtSpace.x2),
+        ) {
+            content()
         }
     }
 }

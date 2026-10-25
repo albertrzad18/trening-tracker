@@ -3,14 +3,19 @@ package io.github.albertrzad18.treningtracker.domain
 import java.time.LocalDate
 import java.time.ZoneId
 
-/** Dane Pulpitu: bieżący tydzień na tle poprzedniego, podział na dyscypliny, mini-wykres 7 dni i ostatnie treningi. */
+/**
+ * Dane Pulpitu: ostatni tydzień na tle poprzedniego (łącznie i w podziale na dyscypliny)
+ * oraz ostatnie treningi. Zmiany w procentach są `null`, gdy nie ma z czym porównać.
+ */
 data class DashboardData(
     val isEmpty: Boolean,
+    val weekRange: DateRange,
     val week: Totals,
     val previousWeek: Totals,
     val durationChangePercent: Double?,
+    val caloriesChangePercent: Double?,
     val perDiscipline: List<DisciplineTotals>,
-    val lastSevenDays: List<Bucket>,
+    val previousPerDiscipline: List<DisciplineTotals>,
     val latest: List<Workout>,
 )
 
@@ -22,12 +27,13 @@ fun buildDashboard(workouts: List<Workout>, today: LocalDate, zone: ZoneId, late
     val previous = lastWeek.totals()
     return DashboardData(
         isEmpty = workouts.isEmpty(),
+        weekRange = currentRange,
         week = week,
         previousWeek = previous,
         durationChangePercent = percentChange(week.duration.seconds.toDouble(), previous.duration.seconds.toDouble()),
+        caloriesChangePercent = week.caloriesKcal?.let { percentChange(it, previous.caloriesKcal) },
         perDiscipline = thisWeek.perDiscipline(),
-        // Mini-wykres: 7 ostatnich dni włącznie z dziś, niezależnie od granic tygodnia.
-        lastSevenDays = workouts.bucketize(DateRange(today.minusDays(6), today.plusDays(1)), Granularity.DAY, zone),
+        previousPerDiscipline = lastWeek.perDiscipline(),
         latest = workouts.sortedByDescending { it.start }.take(latestCount),
     )
 }

@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /** Jak długi jest jeden okres na ekranie Podsumowania. */
-enum class SummaryGranularity { WEEK, MONTH, YEAR }
+enum class SummaryGranularity { DAY, WEEK, MONTH, YEAR }
 
 /**
  * Podsumowanie jednego okresu: tygodnia, miesiąca albo roku.
@@ -28,6 +28,7 @@ data class PeriodSummary(
 
 /** Zakres okresu, w którym leży [day]. */
 fun SummaryGranularity.rangeOf(day: LocalDate): DateRange = when (this) {
+    SummaryGranularity.DAY -> DateRange(day, day.plusDays(1))
     SummaryGranularity.WEEK -> weekOf(day)
     SummaryGranularity.MONTH -> day.withDayOfMonth(1).let { DateRange(it, it.plusMonths(1)) }
     SummaryGranularity.YEAR -> day.withDayOfYear(1).let { DateRange(it, it.plusYears(1)) }
@@ -35,6 +36,7 @@ fun SummaryGranularity.rangeOf(day: LocalDate): DateRange = when (this) {
 
 /** Poprzedni okres tej samej długości (poprzedni tydzień, miesiąc albo rok). */
 fun SummaryGranularity.previous(range: DateRange): DateRange = when (this) {
+    SummaryGranularity.DAY -> DateRange(range.start.minusDays(1), range.start)
     SummaryGranularity.WEEK -> DateRange(range.start.minusWeeks(1), range.start)
     SummaryGranularity.MONTH -> DateRange(range.start.minusMonths(1), range.start)
     SummaryGranularity.YEAR -> DateRange(range.start.minusYears(1), range.start)

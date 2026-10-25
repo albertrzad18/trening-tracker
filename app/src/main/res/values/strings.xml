@@ -6,7 +6,7 @@
     <string name="discipline_road">Rower</string>
     <string name="discipline_trainer">Trenażer</string>
 
-    <string name="nav_dashboard">Tydzień</string>
+    <string name="nav_dashboard">Dashboard</string>
     <string name="nav_month">Miesiąc</string>
     <string name="nav_workouts">Treningi</string>
     <string name="nav_stats">Wykresy</string>
@@ -16,6 +16,8 @@
     <!-- Zmiany: strzałka i procent, bez koloru (zielony znaczy „rower”) -->
     <string name="delta_more_week">więcej niż poprzedni tydzień</string>
     <string name="delta_less_week">mniej niż poprzedni tydzień</string>
+    <string name="delta_more_day">więcej niż wczoraj</string>
+    <string name="delta_less_day">mniej niż wczoraj</string>
     <string name="delta_more_month">więcej niż poprzedni miesiąc</string>
     <string name="delta_less_month">mniej niż poprzedni miesiąc</string>
     <string name="delta_above_average">powyżej średniej</string>
@@ -205,6 +207,11 @@
     <string name="dashboard_week_label">Ostatni tydzień · %1$s</string>
     <string name="dashboard_month_label">Ten miesiąc · %1$s</string>
     <string name="dashboard_this_month">Ten miesiąc</string>
+    <string name="dashboard_this_day">Dziś</string>
+    <string name="dashboard_prev_day">Wczoraj</string>
+    <string name="dashboard_day_label">Dziś · %1$s</string>
+    <string name="dashboard_none_day">Dziś bez treningu</string>
+    <string name="dashboard_none_period">Brak treningów w tym okresie</string>
     <string name="dashboard_prev_month">Poprzedni miesiąc</string>
     <string name="passive_title">Aktywność dzienna</string>
     <string name="passive_steps">Kroki</string>

@@ -135,7 +135,7 @@ internal fun SummariesContent(
     Column(Modifier.fillMaxSize()) {
         TtTopBar(stringResource(R.string.summaries_title), onBack)
         SegmentedToggle(
-            options = SummaryGranularity.entries,
+            options = SummaryGranularity.entries - SummaryGranularity.DAY,
             selected = granularity,
             label = { stringResource(it.labelRes()) },
             onSelect = onGranularity,
@@ -172,6 +172,7 @@ internal fun SummariesContent(
 }
 
 private fun SummaryGranularity.labelRes() = when (this) {
+    SummaryGranularity.DAY -> R.string.dashboard_this_day
     SummaryGranularity.WEEK -> R.string.summary_tab_week
     SummaryGranularity.MONTH -> R.string.summary_tab_month
     SummaryGranularity.YEAR -> R.string.summary_tab_year
@@ -179,6 +180,7 @@ private fun SummaryGranularity.labelRes() = when (this) {
 
 /** Nagłówek okresu: `19 paź 2026 – 25 paź 2026`, `październik 2026` albo `2026`. */
 private fun PeriodSummary.title(): String = when (granularity) {
+    SummaryGranularity.DAY -> formatDate(range.start)
     SummaryGranularity.WEEK -> formatRangeFull(range.start, range.endExclusive.minusDays(1))
     SummaryGranularity.MONTH -> formatMonth(YearMonth.from(range.start))
     SummaryGranularity.YEAR -> range.start.year.toString()

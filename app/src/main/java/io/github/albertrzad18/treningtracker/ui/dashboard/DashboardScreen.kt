@@ -73,6 +73,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
+import io.github.albertrzad18.treningtracker.ui.format.formatDayMonth
 import io.github.albertrzad18.treningtracker.ui.format.formatMonth
 import io.github.albertrzad18.treningtracker.ui.format.formatRangeShort
 import io.github.albertrzad18.treningtracker.ui.goals.GoalProgressBlock
@@ -103,9 +104,9 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** `null` = jeszcze się wczytuje. Tydzień i miesiąc to ten sam ekran w dwóch skalach. */
-    val week: StateFlow<DashboardData?> = stateFor(SummaryGranularity.WEEK)
+    val day: StateFlow<DashboardData?> = stateFor(SummaryGranularity.DAY)
     val month: StateFlow<DashboardData?> = stateFor(SummaryGranularity.MONTH)
-    val state get() = week
+    val state get() = day
 }
 
 @Composable
@@ -116,7 +117,7 @@ fun DashboardScreen(
     onOpenGoals: () -> Unit,
     vm: DashboardViewModel = viewModel(),
 ) {
-    val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.week).collectAsStateWithLifecycle()
+    val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.day).collectAsStateWithLifecycle()
     DashboardContent(data, period, onOpenWorkout, onOpenSummaries, onOpenGoals)
 }
 
@@ -142,7 +143,6 @@ internal fun DashboardContent(
             verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
         ) {
             item { WeekPanel(data, period) }
-            data.passive?.let { passive -> item { PassivePanel(passive, period) } }
             item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
             item { GoalsPanel(onOpenGoals) }
         }
@@ -158,41 +158,55 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
             if (period == SummaryGranularity.MONTH) {
                 stringResource(R.string.dashboard_month_label, formatMonth(java.time.YearMonth.from(d.range.start)))
             } else {
-                stringResource(
-                    R.string.dashboard_week_label,
-                    formatRangeShort(d.range.start, d.range.endExclusive.minusDays(1)),
-                )
+                stringResource(R.string.dashboard_day_label, formatDayMonth(d.range.start))
             },
         )
         Spacer(Modifier.height(10.dp))
-        Text(
-            stringResource(R.string.dashboard_burned),
-            style = TtType.body.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium),
-            color = colors.ink2,
-        )
-        Spacer(Modifier.height(TtSpace.x1))
-        // Tydzień bez kalorii (sam trenażer bez danych) pokazuje czas, a nie zero.
-        val kcal = d.week.caloriesKcal
-        if (kcal != null) {
-            BigValue(caloriesParts(kcal), style = TtType.heroXL)
+        if (d.week.count == 0) {
+            Text(
+                stringResource(if (period == SummaryGranularity.DAY) R.string.dashboard_none_day else R.string.dashboard_none_period),
+                style = TtType.headline,
+                color = colors.ink2,
+            )
         } else {
-            BigValue(formatHoursAndMinutes(d.week.duration), style = TtType.heroXL)
+            Text(
+                stringResource(R.string.dashboard_burned),
+                style = TtType.body.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium),
+                color = colors.ink2,
+            )
+            Spacer(Modifier.height(TtSpace.x1))
+            val kcal = d.week.caloriesKcal
+            if (kcal != null) {
+                BigValue(caloriesParts(kcal), style = TtType.heroXL)
+            } else {
+                BigValue(formatHoursAndMinutes(d.week.duration), style = TtType.heroXL)
+            }
         }
         Spacer(Modifier.height(10.dp))
         d.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineSplitRow(it) }
         val change = d.caloriesChangePercent ?: d.durationChangePercent
-        if (change != null) {
+        if (change != null && d.week.count > 0) {
             Spacer(Modifier.height(TtSpace.x1))
-            DeltaBadge(change, text = deltaPeriodText(change, period == SummaryGranularity.MONTH))
+            DeltaBadge(change, text = deltaPeriodText(change, period))
         }
-        Spacer(Modifier.height(TtSpace.x3))
-        TtDivider()
-        Spacer(Modifier.height(TtSpace.x4))
-        WeekBars(d, period)
-        Spacer(Modifier.height(TtSpace.x3))
-        TtDivider()
-        Spacer(Modifier.height(TtSpace.x4))
-        DisciplineColumns(d.perDiscipline)
+        if (d.week.count > 0) {
+            Spacer(Modifier.height(TtSpace.x3))
+            TtDivider()
+            Spacer(Modifier.height(TtSpace.x4))
+            WeekBars(d, period)
+        }
+        if (d.week.count > 0) {
+            Spacer(Modifier.height(TtSpace.x3))
+            TtDivider()
+            Spacer(Modifier.height(TtSpace.x4))
+            DisciplineColumns(d.perDiscipline)
+        }
+        d.passive?.let { passive ->
+            Spacer(Modifier.height(TtSpace.x3))
+            TtDivider()
+            Spacer(Modifier.height(TtSpace.x4))
+            PassiveGrid(passive, period)
+        }
     }
 }
 
@@ -264,7 +278,7 @@ private fun WeekBars(d: DashboardData, period: SummaryGranularity) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 Text(
-                    stringResource(if (period == SummaryGranularity.MONTH) R.string.dashboard_this_month else R.string.dashboard_this_week),
+                    stringResource(period.thisLabel()),
                     style = TtType.bodyS.copy(fontWeight = FontWeight.Medium),
                     color = colors.ink,
                     modifier = Modifier.weight(1f),
@@ -281,7 +295,7 @@ private fun WeekBars(d: DashboardData, period: SummaryGranularity) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(Modifier.fillMaxWidth()) {
                     Text(
-                        stringResource(if (period == SummaryGranularity.MONTH) R.string.dashboard_prev_month else R.string.dashboard_prev_week),
+                        stringResource(period.prevLabel()),
                         style = TtType.bodyS,
                         color = colors.ink2,
                         modifier = Modifier.weight(1f),
@@ -467,18 +481,27 @@ private fun DashboardEmpty() {
     }
 }
 
-/** Kroki i kalorie spalane naturalnie: pokazujemy tylko to, co Health Connect faktycznie podał. */
+/** Kroki i kalorie spalane naturalnie w głównej karcie: tylko to, co Health Connect faktycznie podał. */
 @Composable
-private fun PassivePanel(passive: PassiveTotals, period: SummaryGranularity) {
+private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
     val items = listOfNotNull(
         passive.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
-        passive.averageSteps?.takeIf { period == SummaryGranularity.MONTH || passive.steps != passive.averageSteps }
+        // Średnia dzienna ma sens tylko dla okresu dłuższego niż jeden dzień.
+        passive.averageSteps?.takeIf { period != SummaryGranularity.DAY }
             ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
         passive.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
     )
-    Panel {
-        SectionHeader(stringResource(R.string.passive_title))
-        Spacer(Modifier.height(TtSpace.x3))
-        MetricGrid(items)
-    }
+    MetricGrid(items)
+}
+
+private fun SummaryGranularity.thisLabel() = when (this) {
+    SummaryGranularity.MONTH -> R.string.dashboard_this_month
+    SummaryGranularity.DAY -> R.string.dashboard_this_day
+    else -> R.string.dashboard_this_week
+}
+
+private fun SummaryGranularity.prevLabel() = when (this) {
+    SummaryGranularity.MONTH -> R.string.dashboard_prev_month
+    SummaryGranularity.DAY -> R.string.dashboard_prev_day
+    else -> R.string.dashboard_prev_week
 }

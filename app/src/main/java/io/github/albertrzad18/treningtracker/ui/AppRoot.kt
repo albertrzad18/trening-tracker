@@ -376,7 +376,7 @@ private fun MainScaffold() {
         ) {
             composable(Routes.DASHBOARD) {
                 DashboardScreen(
-                    period = SummaryGranularity.WEEK,
+                    period = SummaryGranularity.DAY,
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenGoals = { nav.navigate(Routes.GOALS) },

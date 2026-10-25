@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import io.github.albertrzad18.treningtracker.domain.PeriodFilter
+import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.ui.format.ValueUnit
 import io.github.albertrzad18.treningtracker.ui.format.formatPercentAbs
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
@@ -228,10 +229,11 @@ fun DeltaBadge(
 
 /** Opis zmiany dla pigułki: „mniej / więcej niż poprzedni tydzień” (albo miesiąc). */
 @Composable
-fun deltaPeriodText(percent: Double, month: Boolean): String = stringResource(
+fun deltaPeriodText(percent: Double, period: SummaryGranularity): String = stringResource(
     when {
-        month && percent < 0 -> R.string.delta_less_month
-        month -> R.string.delta_more_month
+        period == SummaryGranularity.DAY -> if (percent < 0) R.string.delta_less_day else R.string.delta_more_day
+        period == SummaryGranularity.MONTH && percent < 0 -> R.string.delta_less_month
+        period == SummaryGranularity.MONTH -> R.string.delta_more_month
         percent < 0 -> R.string.delta_less_week
         else -> R.string.delta_more_week
     },

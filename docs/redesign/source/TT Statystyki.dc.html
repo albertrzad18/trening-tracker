@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:8px 0 24px">
+  <div style="padding:0 var(--m) 16px;display:flex;gap:8px;align-items:center">
+    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3"><div class="chip" onClick="{{ c.tap }}" style="background:{{ c.bg }};border-color:{{ c.bd }};padding:0 12px"><span style="width:8px;height:8px;border-radius:99px;background:{{ c.color }}"></span>{{ c.name }}</div></sc-for>
+    <div class="chip" style="margin-left:auto;padding:0 10px 0 14px;gap:2px">Rok<span class="ms" style="font-size:20px">arrow_drop_down</span></div>
+  </div>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:20px;overflow-x:auto;padding:0 var(--m);border-bottom:1px solid var(--line);margin-bottom:var(--sec-gap)">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5"><div class="t-body" onClick="{{ t.tap }}" style="height:44px;display:flex;align-items:center;cursor:pointer;white-space:nowrap;font-weight:{{ t.w }};color:{{ t.fg }};border-bottom:2px solid {{ t.bd }};margin-bottom:-1px">{{ t.t }}</div></sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isLoad }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m);display:flex;flex-direction:column;gap:14px"><div class="skel" style="height:20px;width:160px"></div><div class="skel" style="height:14px;width:240px"></div><div class="skel" style="height:40px;width:130px"></div><div class="skel" style="height:150px"></div><div class="skel" style="height:20px;width:180px;margin-top:20px"></div><div class="skel" style="height:110px"></div></div>
+  </sc-if>
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m);padding-top:72px"><span class="t-body c2">Brak treningów do pokazania. Zsynchronizuj dane w zakładce Więcej.</span></div>
+  </sc-if>
+  <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="3">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:{{ b.bt }};display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span class="t-title">{{ b.title }}</span><span class="t-bodys c2">{{ b.sub }}</span></div>
+      <sc-if value="{{ b.toggle }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px"><sc-for list="{{ b.toggle }}" as="t" hint-placeholder-count="3"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }};transition:background 150ms">{{ t.t }}</div></sc-for></div>
+      </sc-if>
+      <sc-if value="{{ b.hasBig }}" hint-placeholder-val="{{ true }}"><span class="t-hero" style="font-size:36px">{{ b.big }}<span class="u">{{ b.bigU }}</span></span></sc-if>
+      <sc-if value="{{ b.bars }}" hint-placeholder-val="{{ false }}">
+        <svg viewBox="0 0 {{ cw }} 134" style="width:100%;height:auto;display:block;overflow:visible">
+          <sc-for list="{{ b.grid }}" as="g" hint-placeholder-count="2"><line x1="0" x2="{{ cw }}" y1="{{ g.y }}" y2="{{ g.y }}" style="stroke:var(--grid-line)" stroke-width="1"></line><text x="{{ cw }}" y="{{ g.ty }}" text-anchor="end" style="fill:var(--ink2);font:500 12px var(--font)">{{ g.t }}</text></sc-for>
+          <line x1="0" x2="{{ cw }}" y1="130" y2="130" style="stroke:var(--line)" stroke-width="1"></line>
+          <sc-for list="{{ b.paths }}" as="p" hint-placeholder-count="10"><path d="{{ p.d }}" class="grow" style="fill:{{ p.fill }};animation-delay:{{ p.delay }}"></path></sc-for>
+          <sc-if value="{{ b.peak }}" hint-placeholder-val="{{ false }}"><text x="{{ b.peakX }}" y="{{ b.peakY }}" text-anchor="middle" style="fill:var(--ink);font:600 12px var(--font)">{{ b.peakT }}</text></sc-if>
+        </svg>
+        <div style="display:grid;grid-template-columns:repeat({{ b.xn }},1fr);text-align:center"><sc-for list="{{ b.xl }}" as="x" hint-placeholder-count="10"><span class="t-cap c2" style="white-space:nowrap">{{ x }}</span></sc-for></div>
+      </sc-if>
+      <sc-if value="{{ b.lines }}" hint-placeholder-val="{{ false }}">
+        <svg viewBox="0 0 {{ cw }} 134" style="width:100%;height:auto;display:block;overflow:visible">
+          <sc-for list="{{ b.grid }}" as="g" hint-placeholder-count="2"><line x1="0" x2="{{ cw }}" y1="{{ g.y }}" y2="{{ g.y }}" style="stroke:var(--grid-line)" stroke-width="1"></line><text x="{{ cw }}" y="{{ g.ty }}" text-anchor="end" style="fill:var(--ink2);font:500 12px var(--font)">{{ g.t }}</text></sc-for>
+          <line x1="0" x2="{{ cw }}" y1="130" y2="130" style="stroke:var(--line)" stroke-width="1"></line>
+          <sc-for list="{{ b.paths }}" as="p" hint-placeholder-count="2"><path d="{{ p.d }}" class="draw" style="fill:{{ p.fill }};stroke:{{ p.stroke }};stroke-width:{{ p.sw }};opacity:{{ p.op }};stroke-linecap:round;stroke-linejoin:round"></path></sc-for>
+          <sc-for list="{{ b.dots }}" as="d" hint-placeholder-count="2"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="2" style="fill:var(--ink2);opacity:.5"></circle></sc-for>
+          <sc-for list="{{ b.ends }}" as="e" hint-placeholder-count="2"><text x="{{ e.x }}" y="{{ e.y }}" text-anchor="end" style="fill:{{ e.c }};font:600 12px var(--font)">{{ e.t }}</text></sc-for>
+        </svg>
+        <div style="display:flex;justify-content:space-between"><sc-for list="{{ b.xl }}" as="x" hint-placeholder-count="5"><span class="t-cap c2">{{ x }}</span></sc-for></div>
+      </sc-if>
+      <sc-if value="{{ b.empty }}" hint-placeholder-val="{{ false }}">
+        <div style="height:96px;border-bottom:1px solid var(--line);display:flex;align-items:center"><span class="t-bodys c2">Potrzebne są co najmniej dwa treningi z tymi danymi.</span></div>
+      </sc-if>
+      <sc-if value="{{ b.heat }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:18px 1fr;column-gap:6px;row-gap:6px">
+          <span></span>
+          <div style="display:grid;grid-template-columns:repeat(26,1fr);column-gap:3px;height:14px"><sc-for list="{{ b.months }}" as="m" hint-placeholder-count="6"><span class="t-cap c2" style="grid-column:{{ m.c }} / span 4;white-space:nowrap">{{ m.t }}</span></sc-for></div>
+          <div style="display:grid;grid-template-rows:repeat(7,1fr);gap:3px"><sc-for list="{{ b.dows }}" as="d" hint-placeholder-count="7"><span class="t-cap c2" style="line-height:1;display:flex;align-items:center;font-size:10px">{{ d }}</span></sc-for></div>
+          <div style="display:grid;grid-template-columns:repeat(26,1fr);grid-auto-flow:row;gap:3px"><sc-for list="{{ b.cells }}" as="c" hint-placeholder-count="30"><span style="aspect-ratio:1;border-radius:{{ cr }};background:{{ c.bg }}"></span></sc-for></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px"><sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}"><span class="t-cap c2">mniej</span><sc-for list="{{ b.ramp }}" as="r" hint-placeholder-count="5"><span style="width:10px;height:10px;border-radius:2px;background:{{ r }}"></span></sc-for><span class="t-cap c2">więcej</span></sc-if><sc-if value="{{ isB }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ b.dots3 }}" as="r" hint-placeholder-count="3"><span style="width:9px;height:9px;border-radius:99px;background:{{ r }}"></span></sc-for><span class="t-cap c2">dłuższy trening = ciemniejszy</span></sc-if></div>
+      </sc-if>
+      <sc-if value="{{ b.share }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;justify-content:center;position:relative"><svg viewBox="0 0 160 160" style="width:176px;height:176px"><sc-for list="{{ b.arcs }}" as="a" hint-placeholder-count="3"><path d="{{ a.d }}" class="draw" style="fill:none;stroke:{{ a.c }};stroke-width:14;animation-duration:600ms"></path></sc-for></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span class="t-value">{{ b.total }}</span><span class="t-cap c2">łącznie</span></div></div>
+        </sc-if>
+        <sc-if value="{{ isB }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:3px;height:16px"><sc-for list="{{ b.legend }}" as="l" hint-placeholder-count="3"><div style="flex:{{ l.pct }};background:{{ l.c }};border-radius:99px"></div></sc-for></div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column"><sc-for list="{{ b.legend }}" as="l" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;min-height:44px;border-top:1px solid var(--line)"><span style="width:8px;height:8px;border-radius:99px;background:{{ l.c }}"></span><span class="t-body" style="flex:1">{{ l.name }}</span><span class="t-body" style="font-weight:500">{{ l.pct }}% · {{ l.t }}</span></div></sc-for></div>
+      </sc-if>
+    </div>
+  </sc-for>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;ladowanie&quot;,&quot;pusto&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, C: null, sel: [], metric: 'czas', tab: 'objetosc', trendSel: 'pool' };
+  async componentDidMount() { const [T, C] = await Promise.all([import('./tt-data.js'), import('./tt-charts.js')]); this.setState({ T, C }); }
+  renderVals() {
+    const { T, C } = this.state;
+    const v = this.props.variant ?? 'dane', l2 = String(this.props.layout ?? '1') === '2', b = this.props.direction === 'b';
+    const cw = b ? 326 : 350, NB = '\u00a0';
+    const base = { l2, isA: !b, isB: b, cw, cr: b ? '50%' : '2px', isLoad: v === 'ladowanie', isEmpty: v === 'pusto', chips: [], tabs: [], blocks: [] };
+    if (!T) return base;
+    const keys = ['pool', 'road', 'trainer'], names = { pool: 'Basen', road: 'Rower', trainer: 'Trenażer' }, col = (d) => `var(--${d})`;
+    const sel = this.state.sel, act = (d) => !sel.length || sel.includes(d);
+    const chips = keys.map(d => { const on = sel.includes(d); return { name: names[d], color: col(d), bg: on ? `var(--${d}-c)` : 'transparent', bd: on ? col(d) : 'var(--line)', tap: () => this.setState({ sel: on ? sel.filter(x => x !== d) : [...sel, d] }) }; });
+    if (v === 'ladowanie' || v === 'pusto') return { ...base, chips, isLoad: v === 'ladowanie', isEmpty: v === 'pusto', tabs: [] };
+    const bt = b ? 'none' : '1px solid var(--line)';
+    const box = { x: 0, y: 12, w: cw, h: 118 };
+    const single = sel.length === 1 ? col(sel[0]) : 'var(--ink)';
+    const yy = (t, mx) => box.y + box.h - t / mx * box.h;
+    const seg = (items, cur, set) => items.map(([k, t]) => ({ t, bg: cur === k ? 'var(--accent)' : 'transparent', fg: cur === k ? 'var(--on-accent)' : 'var(--ink)', tap: () => set(k) }));
+    const mk = (o) => ({ bt, hasBig: !!o.big, toggle: null, ...o });
+    const barBlock = (title, sub, series, labels, fills, big, bigU, fmt, extra = {}) => {
+      const n = labels.length, tot = labels.map((_, i) => series.reduce((a, s) => a + s[i], 0));
+      const ticks = C.niceTicks(Math.max(...tot, 1), 2), mx = ticks[ticks.length - 1];
+      const bars = C.stackedBars(series, box, mx, { widthFrac: b ? 0.4 : 0.56, rTop: 3, roundAll: b });
+      const hi = tot.indexOf(Math.max(...tot));
+      const top = bars.find(x => x.slot === hi && true);
+      const peak = b && top ? { peak: true, peakX: top.cx, peakY: Math.min(...bars.filter(x => x.slot === hi).map(x => x.topY)) - 6, peakT: fmt(tot[hi]) } : { peak: false };
+      return mk({ title, sub, big, bigU, bars: true, xn: n, xl: labels, paths: bars.map(x => ({ d: x.d, fill: fills[x.layer], delay: x.slot * 20 + 'ms' })), grid: b ? [] : ticks.filter(t => t > 0).map(t => ({ y: yy(t, mx), ty: yy(t, mx) - 5, t: fmt(t) })), ...peak, ...extra });
+    };
+    // objętość
+    const metric = this.state.metric, f = { czas: [1, 1, 1], dystans: [2.9, 26, 0], kcal: [600, 600, 600] }[metric];
+    const V = T.VOL_YEAR, ser = keys.map((d, k) => V[d].map(x => act(d) ? x * f[k] : 0));
+    const fmtM = { czas: (t) => T.fmtNum(Math.round(t * 10) / 10, t % 1 ? 1 : 0) + NB + 'h', dystans: (t) => T.fmtNum(Math.round(t)) + NB + 'km', kcal: (t) => T.fmtNum(Math.round(t)) + NB + 'kcal' }[metric];
+    const sum = ser.reduce((a, s) => a + s.reduce((x, y) => x + y, 0), 0);
+    const bigV = metric === 'czas' ? (sel.length ? T.fmtSum(sum * 60) : T.SHARE_TOTAL) : T.fmtNum(Math.round(sum));
+    const vol = barBlock('Objętość treningowa', 'Czas treningu, słupki ułożone według dyscyplin.', ser, V.labels.map((m, i) => i % 2 === 0 ? m : ''), keys.map(col), bigV, metric === 'czas' ? '' : NB + (metric === 'dystans' ? 'km' : 'kcal'), fmtM);
+    vol.toggle = seg([['czas', 'Czas'], ['dystans', 'Dystans'], ['kalorie', 'Kalorie']].map(([k, t]) => [k === 'kalorie' ? 'kcal' : k, t]), metric, (k) => this.setState({ metric: k }));
+    vol.sub = { czas: 'Godziny treningu w miesiącu, według dyscyplin.', dystans: 'Kilometry w miesiącu, według dyscyplin.', kcal: 'Kalorie w miesiącu, według dyscyplin.' }[metric];
+    // heatmapa
+    const pct = [30, 55, 80, 100];
+    const cells = []; let days = 0;
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 26; c++) { const x = T.HEAT[c][r]; if (x && act(x.d)) { days++; cells.push({ bg: `color-mix(in srgb,${col(x.d)} ${pct[x.lvl - 1]}%,var(--bg))` }); } else cells.push({ bg: 'var(--track)' }); }
+    const heat = mk({ title: 'Kalendarz aktywności', sub: 'Ostatnie 26 tygodni: kolumna to tydzień, kwadrat to dzień.', big: String(days), bigU: NB + 'dni z treningiem', heat: true, cells, dows: ['pn', '', 'śr', '', 'pt', '', 'nd'], months: [['maj', 1], ['cze', 5], ['lip', 10], ['sie', 14], ['wrz', 19], ['paź', 23]].map(([t, c]) => ({ t, c: c + 1 })), ramp: [0.12, 0.35, 0.55, 0.78, 1].map(a => `color-mix(in srgb,var(--ink) ${a * 100}%,var(--bg))`), dots3: keys.map(col) });
+    // udział
+    const arcs = C.ringArcs(T.SHARE.map(s => s.pct), 80, 80, 66, 3).map((a, i) => ({ d: a.d, c: col(keys[i]) }));
+    const share = mk({ title: 'Udział dyscyplin', sub: 'Podział łącznego czasu treningów.', big: b ? T.SHARE_TOTAL : '', bigU: b ? NB + 'łącznie' : '', share: true, arcs, total: T.SHARE_TOTAL, legend: T.SHARE.map(s => ({ name: names[s.d], pct: s.pct, t: s.t, c: col(s.d) })) });
+    // rytm
+    const wd = barBlock('Dni tygodnia', 'W które dni trenujesz najwięcej.', [T.WEEKDAYS.h], T.WEEKDAYS.labels, [single], '81', NB + 'h w soboty', (t) => T.fmtNum(Math.round(t)) + NB + 'h');
+    const dt = barBlock('Pora dnia', 'O której godzinie zaczynasz treningi.', [T.DAYTIME.h], T.DAYTIME.labels, [single], '97', NB + 'h między 16 a 20', (t) => T.fmtNum(Math.round(t)) + NB + 'h');
+    // narastająco
+    const cb = { x: 0, y: 12, w: cw, h: 118 }, cd = [0, 2600], cy = (t) => 130 - t / 2600 * 118;
+    const b26 = { ...cb, w: cw * 297 / 365 };
+    const l26 = C.linePath(T.CUM.y26, b26, cd), l25 = C.linePath(T.CUM.y25, cb, cd);
+    const cum = mk({ title: 'Dystans narastająco', sub: 'Kilometry od 1 stycznia: 2026 na tle 2025.', big: '2 600', bigU: NB + 'km', lines: true, xl: ['sty', 'kwi', 'lip', 'paź', 'gru'],
+      grid: b ? [] : [{ y: cy(2000), ty: cy(2000) - 5, t: '2 000' + NB + 'km' }],
+      paths: [{ d: l25, stroke: 'var(--ink2)', sw: 1.5, op: 1, fill: 'none' }, ...(b ? [{ d: C.areaPath(T.CUM.y26, b26, cd), stroke: 'none', sw: 0, op: 1, fill: 'color-mix(in srgb,var(--ink) 12%,transparent)' }] : []), { d: l26, stroke: 'var(--ink)', sw: b ? 2.5 : 2, op: 1, fill: 'none' }], dots: [],
+      ends: [{ x: b26.w, y: cy(2600) - 8, t: '2026 · 2 600', c: 'var(--ink)' }, { x: cw, y: cy(2480) + 18, t: '2025 · 2 480', c: 'var(--ink2)' }] });
+    // trend / forma
+    const lineBlock = (title, sub, ys, dom, color, bigT, fmt) => {
+      const avg = T.movAvg(ys), yv = (t) => 130 - (t - dom[0]) / (dom[1] - dom[0]) * 118, n = ys.length;
+      const dots = b ? ys.map((y, i) => ({ x: i / (n - 1) * cw, y: yv(y) })) : [];
+      return mk({ title, sub, big: bigT[0], bigU: bigT[1], lines: true, xl: ['paź 25', 'sty', 'kwi', 'lip', 'paź'], dots,
+        grid: b ? [] : [yv((dom[0] + dom[1]) / 2)].map((y, i) => ({ y, ty: y - 5, t: fmt((dom[0] + dom[1]) / 2) })),
+        paths: [...(b ? [] : [{ d: C.linePath(ys, box, dom), stroke: 'var(--ink2)', sw: 1, op: 0.4, fill: 'none' }]), { d: C.linePath(avg, box, dom), stroke: color, sw: 2.5, op: 1, fill: 'none' }], ends: [] });
+    };
+    const pf = (t) => T.fmtPace(t), kf = (t) => T.fmtNum(t, 0) + NB + 'km/h';
+    const tr = {
+      pool: lineBlock('Trend: Basen', 'Tempo /100 m: niżej znaczy szybciej. Gruba linia to średnia z pięciu treningów.', T.TREND.pool, [105, 150], 'var(--pool)', ['1:52', NB + '/100 m'], pf),
+      road: lineBlock('Trend: Rower', 'Średnia prędkość km/h. Gruba linia to średnia z pięciu treningów.', T.TREND.road, [22, 29], 'var(--road)', ['27,0', NB + 'km/h'], kf),
+      trainer: mk({ title: 'Trend: Trenażer', sub: 'Średnia prędkość km/h.', big: '', empty: true }),
+    };
+    const form = lineBlock('Forma: Rower', 'Km/h na 100 uderzeń tętna. Rośnie, gdy przy tym samym tętnie jedziesz szybciej.', T.TREND.form, [14, 24], 'var(--road)', ['21', NB + 'km/h na 100 uderzeń'], (t) => String(Math.round(t)));
+    let blocks;
+    const tab = this.state.tab;
+    const tabs = [['objetosc', 'Objętość'], ['kalendarz', 'Kalendarz'], ['udzial', 'Udział'], ['rytm', 'Rytm'], ['postep', 'Postęp']].map(([k, t]) => ({ t, w: tab === k ? 600 : 400, fg: tab === k ? 'var(--ink)' : 'var(--ink2)', bd: tab === k ? 'var(--ink)' : 'transparent', tap: () => this.setState({ tab: k }) }));
+    if (!l2) blocks = [vol, heat, share, wd, dt, cum, tr.pool, tr.road, tr.trainer, form];
+    else {
+      const ts = this.state.trendSel, trb = { ...tr[ts] };
+      trb.toggle = seg([['pool', 'Basen'], ['road', 'Rower'], ['trainer', 'Trenażer']], ts, (k) => this.setState({ trendSel: k }));
+      blocks = { objetosc: [vol], kalendarz: [heat], udzial: [share], rytm: [wd, dt], postep: [cum, trb, form] }[tab];
+    }
+    const dflt = { bars: false, lines: false, heat: false, share: false, empty: false, peak: false, toggle: null, grid: [], paths: [], dots: [], ends: [], xl: [], xn: 1 };
+    return { ...base, chips, tabs, blocks: blocks.map(x => ({ ...dflt, ...x })) };
+  }
+}
+
+</script>
+</body>
+</html>

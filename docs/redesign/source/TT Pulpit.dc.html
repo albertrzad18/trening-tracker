@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:8px 0 24px">
+<sc-if value="{{ isLoad }}" hint-placeholder-val="{{ false }}">
+  <div style="margin:0 var(--m);display:flex;flex-direction:column;gap:20px">
+    <div class="skel" style="height:14px;width:140px"></div><div class="skel" style="height:72px;width:260px"></div><div class="skel" style="height:16px;width:180px"></div><div class="skel" style="height:28px;width:230px;border-radius:999px"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div class="skel" style="height:84px"></div><div class="skel" style="height:84px"></div><div class="skel" style="height:84px"></div></div>
+    <div class="skel" style="height:140px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div>
+  </div>
+</sc-if>
+<sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+  <div style="margin:0 var(--m);padding-top:96px;display:flex;flex-direction:column;gap:16px">
+    <span class="t-headline">Brak treningów</span>
+    <span class="t-body c2">Treningi pojawią się tutaj po synchronizacji z Health Connect. Upewnij się, że Health Sync przesyła treningi z Huawei Health.</span>
+    <div class="btn" style="margin-top:8px"><span class="ms">sync</span>Synchronizuj teraz</div>
+    <div style="margin-top:32px;display:flex;flex-direction:column">
+      <sc-for list="{{ emptySteps }}" as="s" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)"><span class="t-cap c2" style="width:24px;height:24px;border:1px solid var(--line);border-radius:999px;display:flex;align-items:center;justify-content:center">{{ s.n }}</span><span class="t-body">{{ s.t }}</span></div>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ isData }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column">
+  <!-- HERO -->
+  <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;gap:10px">
+    <span class="t-label c2">Ostatni tydzień · 19–25 paź</span>
+    <span class="t-title c2" style="text-transform:none;letter-spacing:0;font-size:22px;font-weight:500;margin-top:6px">Przepalone</span>
+    <span class="t-herox">1 027<span class="u" style="margin-left:8px">kcal</span></span>
+    <div style="display:flex;flex-direction:column;margin-top:6px">
+      <sc-for list="{{ split }}" as="s" hint-placeholder-count="2">
+        <div style="display:grid;grid-template-columns:8px 1fr auto auto auto;align-items:baseline;column-gap:12px;padding:10px 0;border-top:1px solid var(--line)">
+          <span style="width:8px;height:8px;border-radius:99px;background:{{ s.dot }};align-self:center"></span>
+          <span class="t-body" style="font-weight:500;color:{{ s.tc }}">{{ s.name }}</span>
+          <span class="t-body" style="font-weight:{{ s.tw }};color:{{ s.tc }};min-width:72px;text-align:right">{{ s.time }}</span>
+          <span class="t-bodys c2" style="min-width:52px;text-align:right">{{ s.km }}</span>
+          <span class="t-bodys c2" style="min-width:64px;text-align:right">{{ s.kcal }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+      <div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;margin-top:4px;background:var(--delta-bg);padding:var(--delta-pad);border-radius:999px"><span class="ms" style="font-size:18px">arrow_downward</span><span class="t-bodys"><b style="font-weight:600">37%</b> mniej niż poprzedni tydzień</span></div>
+    </sc-if>
+    <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between" class="t-bodys"><span>Ten tydzień</span><span style="font-weight:600">2 h 2 min</span></div>
+          <div style="display:flex;height:12px;border-radius:999px;overflow:hidden;gap:1px;width:63%"><div style="flex:71;background:var(--pool)"></div><div style="flex:51;background:var(--trainer)"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between" class="t-bodys c2"><span>Poprzedni tydzień</span><span>3 h 14 min</span></div>
+          <div style="display:flex;height:12px;border-radius:999px;overflow:hidden;gap:1px;opacity:.4"><div style="flex:33;background:var(--pool)"></div><div style="flex:161;background:var(--trainer)"></div></div>
+        </div>
+        <div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;background:var(--delta-bg);padding:var(--delta-pad);border-radius:999px"><span class="ms" style="font-size:18px">arrow_downward</span><span class="t-bodys"><b style="font-weight:600">37%</b> mniej niż poprzedni tydzień</span></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:12px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between" class="t-bodys"><span style="font-weight:500">Ten tydzień</span><span style="font-weight:600">2 h 2 min</span></div>
+          <div style="display:flex;height:10px;border-radius:999px;overflow:hidden;gap:2px;width:63%"><div style="flex:71;background:var(--pool)"></div><div style="flex:51;background:var(--trainer)"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between" class="t-bodys c2"><span>Poprzedni tydzień</span><span>3 h 14 min</span></div>
+          <div style="display:flex;height:10px;border-radius:999px;overflow:hidden;gap:2px;opacity:.4"><div style="flex:33;background:var(--pool)"></div><div style="flex:161;background:var(--trainer)"></div></div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:12px;padding-top:16px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr)">
+        <sc-for list="{{ discs }}" as="x" hint-placeholder-count="3">
+          <div style="padding:0 12px;border-left:{{ x.bl }};display:flex;flex-direction:column;gap:6px">
+            <div style="height:3px;border-radius:2px;background:{{ x.bar }}"></div>
+            <span class="t-label" style="margin-top:6px">{{ x.name }}</span>
+            <span class="t-value" style="color:{{ x.numColor }}">{{ x.n }}</span>
+            <span class="t-bodys c2" style="min-height:18px">{{ x.km }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+  <!-- DYSCYPLINY -->
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column">
+      <sc-for list="{{ discRows }}" as="x" hint-placeholder-count="2">
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-top:1px solid var(--line)"><span style="width:8px;height:8px;border-radius:99px;background:{{ x.color }}"></span><span class="t-body" style="flex:1">{{ x.name }}</span><span class="t-bodys c2">{{ x.n }}</span><span class="t-bodys" style="width:64px;text-align:right">{{ x.km }}</span></div>
+      </sc-for>
+      <div class="t-bodys c2" style="padding-top:12px;border-top:1px solid var(--line)">Rower: brak treningów w tym tygodniu</div>
+    </div>
+  </sc-if>
+  <!-- OSTATNIE -->
+  <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:var(--sec-sep);display:flex;flex-direction:column">
+    <span class="t-title" style="margin-bottom:8px">Ostatnie treningi</span>
+    <sc-for list="{{ recent }}" as="w" hint-placeholder-count="3">
+      <div class="press" onClick="{{ w.go }}" style="display:flex;align-items:center;gap:12px;min-height:60px;border-top:1px solid var(--line)">
+        <span style="width:8px;height:8px;border-radius:99px;background:{{ w.color }}"></span>
+        <div style="flex:1;display:flex;flex-direction:column"><span class="t-body" style="font-weight:500">{{ w.name }}</span><span class="t-bodys c2">{{ w.when }}</span></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end"><span class="t-body" style="font-weight:500">{{ w.dur }}</span><span class="t-bodys c2" style="min-height:18px">{{ w.km }}</span></div>
+      </div>
+    </sc-for>
+    <div class="press" onClick="{{ toSummaries }}" style="display:flex;align-items:center;gap:6px;min-height:48px;border-top:1px solid var(--line)"><span class="t-bodys" style="font-weight:600">Zobacz podsumowania</span><span class="ms" style="font-size:18px">arrow_forward</span></div>
+  </div>
+  <!-- CELE -->
+  <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:var(--sec-sep);display:flex;flex-direction:column;gap:20px">
+    <span class="t-title">Cele</span>
+    <sc-for list="{{ goals }}" as="g" hint-placeholder-count="2">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="t-label c2">{{ g.name }}</span>
+        <div style="display:flex;align-items:baseline;gap:8px"><span class="t-value">{{ g.cur }}</span><span class="t-bodys c2">z {{ g.goal }}</span><sc-if value="{{ g.done }}" hint-placeholder-val="{{ false }}"><span class="t-label" style="margin-left:auto;color:{{ g.color }};display:flex;align-items:center;gap:4px"><sc-if value="{{ e1 }}" hint-placeholder-val="{{ true }}"><span class="ms f" style="font-size:20px">check_circle</span></sc-if>Osiągnięty</span></sc-if></div>
+        <div style="height:6px;border-radius:99px;background:var(--track);overflow:hidden"><div style="height:100%;width:{{ g.pct }};background:{{ g.color }};border-radius:99px;transition:width 450ms cubic-bezier(.2,0,0,1)"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="t-bodys c2">{{ g.left }}</span>
+          <sc-if value="{{ e1 }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:4px"><sc-for list="{{ g.hist }}" as="h" hint-placeholder-count="6"><span style="width:10px;height:10px;border-radius:2px;background:{{ h.bg }};border:1px solid {{ h.bd }}"></span></sc-for></div></sc-if>
+          <sc-if value="{{ e2 }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:4px;align-items:flex-end;height:14px"><sc-for list="{{ g.hist }}" as="h" hint-placeholder-count="6"><span style="width:3px;height:{{ h.h }};border-radius:1px;background:{{ h.bar }}"></span></sc-for></div></sc-if>
+        </div>
+      </div>
+    </sc-for>
+    <div class="press" onClick="{{ toGoals }}" style="display:flex;align-items:center;gap:6px;min-height:40px"><span class="t-bodys" style="font-weight:600">Wszystkie cele</span><span class="ms" style="font-size:18px">arrow_forward</span></div>
+  </div>
+  </div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:780},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;ladowanie&quot;,&quot;pusto&quot;]},&quot;emoji&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;e1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;e1&quot;,&quot;e2&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:string,p?:object)=&gt;void&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, C: null };
+  async componentDidMount() {
+    const [T, C] = await Promise.all([import('./tt-data.js'), import('./tt-charts.js')]);
+    this.setState({ T, C });
+  }
+  go = (s, p) => () => this.props.onNav && this.props.onNav(s, p);
+  renderVals() {
+    const v = this.props.variant ?? 'dane', lay = String(this.props.layout ?? '1');
+    const base = { isLoad: v === 'ladowanie', isEmpty: v === 'pusto', isData: v !== 'ladowanie' && v !== 'pusto', l1: lay !== '2', l2: lay === '2', e1: (this.props.emoji ?? 'e1') !== 'e2', e2: this.props.emoji === 'e2',
+      emptySteps: [{ n: 1, t: 'Health Sync przesyła treningi z Huawei Health' }, { n: 2, t: 'Health Connect zbiera je na telefonie' }, { n: 3, t: 'trening-tracker je czyta i pokazuje' }] };
+    const { T, C } = this.state;
+    if (!T) return base;
+    const b = this.props.direction === 'b';
+    const col = { pool: 'var(--pool)', road: 'var(--road)', trainer: 'var(--trainer)', all: 'var(--ink)' };
+    const cw = b ? 326 : 350;
+    const layers = [0, 1, 2].map(k => T.WEEK7.map(d => d.v[k]));
+    const keys = ['pool', 'road', 'trainer'];
+    const bars = C.stackedBars(layers, { x: 0, y: 8, w: cw, h: 120 }, 60, { widthFrac: b ? 0.4 : 0.56, rTop: 3, roundAll: b }).map((x, i) => ({ d: x.d, fill: col[keys[x.layer]], delay: x.slot * 20 + 'ms' }));
+    const gridLines = b ? [] : [{ y: 68, ty: 62, t: '30 min' }, { y: 8, ty: 2, t: '60 min' }];
+    const days = T.WEEK7.map(d => {
+      const tot = d.v[0] + d.v[1] + d.v[2], k = d.v.indexOf(Math.max(...d.v));
+      return { l: d.lbl, color: d.lbl === 'sob' ? 'var(--ink)' : 'var(--ink2)', min: tot ? tot + ' min' : '', fill: tot ? `color-mix(in srgb,${col[keys[k]]} ${Math.round(30 + Math.min(tot, 60) / 60 * 70)}%,var(--bg))` : 'var(--track)' };
+    });
+    const hist = (g) => g.hist.map((h, i) => {
+      const cur = i === g.hist.length - 1 && !g.done;
+      return { bg: h ? col[g.d] : 'transparent', bd: h ? col[g.d] : 'var(--line)', h: h ? '14px' : '4px', bar: h ? col[g.d] : 'var(--ink2)' };
+    });
+    const goals = [T.GOALS[0], T.GOALS[1]].map(g => ({ name: g.name, cur: g.curTxt, goal: g.goalTxt, done: !!g.done, color: col[g.d], pct: Math.min(100, Math.round(g.cur / g.goal * 100)) + '%', left: g.left, hist: hist(g) }));
+    const recent = T.WORKOUTS.slice(0, 3).map(w => ({ name: T.DISC[w.d], color: col[w.d], when: T.fmtDateTime(w.date, w.time), dur: T.fmtDur(w.sec), km: w.km ? T.fmtKm(w.km) : (w.d === 'trainer' ? T.fmtKcal(w.kcal) : ''), go: this.go('szczegoly', { w: w.date }) }));
+    const pl = (n) => n === 1 ? 'trening' : 'treningi';
+    const dd = [['pool', 2, '3,8 km'], ['road', 0, '0 km'], ['trainer', 1, '51 min']];
+    const discs = dd.map(([d, n, km], i) => ({ name: T.DISC[d], n, km, bar: n ? col[d] : 'var(--line)', numColor: n ? 'var(--ink)' : 'var(--ink2)', bl: i ? '1px solid var(--line)' : 'none' }));
+    const discRows = [['pool', '2 treningi', '3,8 km'], ['trainer', '1 trening', '']].map(([d, n, km]) => ({ color: col[d], name: T.DISC[d], n, km }));
+    const split = [{ color: col.pool, name: 'Basen', time: T.fmtSum(71), km: '3,8' + '\u00a0km', kcal: '568\u00a0kcal' }, { color: col.trainer, name: 'Trenażer', time: T.fmtSum(51), km: '', kcal: '459\u00a0kcal' }];
+    split.forEach(s => { s.tc = s.muted ? 'var(--ink2)' : 'var(--ink)'; s.tw = s.muted ? 400 : 600; s.dot = s.muted ? 'var(--line)' : s.color; });
+    return { ...base, split, cw, bars, gridLines, days, goals, recent, discs, discRows, toGoals: this.go('cele'), toRecords: this.go('rekordy'), toSummaries: this.go('podsumowania') };
+  }
+}
+
+</script>
+</body>
+</html>

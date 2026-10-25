@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:4px 0 24px;min-height:100%">
+  <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;gap:20px">
+      <span class="t-label c2">Trening</span>
+      <div style="display:flex;flex-direction:column;gap:8px"><span class="t-title">Tętno maksymalne</span><span class="t-bodys c2">Potrzebne do stref tętna w szczegółach treningu.</span>
+        <div style="display:flex;align-items:center;gap:10px;height:52px;width:140px;border:1px solid var(--line);border-radius:12px;padding:0 16px"><input value="{{ hr }}" onInput="{{ setHr }}" inputmode="numeric" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font:500 18px var(--font)"><span class="t-bodys c2">bpm</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><span class="t-title">Długość basenu</span><div style="display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px"><sc-for list="{{ poolSeg }}" as="t" hint-placeholder-count="2"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }};transition:background 150ms">{{ t.t }}</div></sc-for></div></div>
+    </div>
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:var(--sec-sep);display:flex;flex-direction:column;gap:12px">
+      <span class="t-label c2">Wygląd</span><span class="t-title">Motyw</span>
+      <div style="display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px"><sc-for list="{{ themeSeg }}" as="t" hint-placeholder-count="3"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }};transition:background 150ms">{{ t.t }}</div></sc-for></div>
+    </div>
+    <div style="margin:0 var(--m);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:var(--sec-sep)"><span class="t-title" style="display:block;margin-bottom:12px">Jak ustawić Health Sync</span>
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5"><div style="display:flex;gap:14px;padding:8px 0"><span class="t-cap" style="flex:none;width:24px;height:24px;border:1px solid var(--line);border-radius:99px;display:flex;align-items:center;justify-content:center">{{ s.n }}</span><span class="t-body">{{ s.t }}</span></div></sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3"><div class="press" onClick="{{ r.go }}" style="display:flex;align-items:center;gap:12px;min-height:64px;border-top:1px solid var(--line)"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span class="t-body" style="font-weight:500">{{ r.t }}</span><span class="t-bodys c2">{{ r.s }}</span></div><span class="t-body c2">{{ r.v }}</span><span class="ms c2">chevron_right</span></div></sc-for>
+      <div class="press" onClick="{{ toggleSteps }}" style="display:flex;align-items:center;gap:12px;min-height:64px;border-top:1px solid var(--line)"><span class="t-body" style="flex:1;font-weight:500">Jak ustawić Health Sync</span><span class="ms c2">{{ stepsIcon }}</span></div>
+      <sc-if value="{{ stepsOpen }}" hint-placeholder-val="{{ false }}"><div style="padding-bottom:12px;animation:ttFade 250ms both"><sc-for list="{{ steps }}" as="s" hint-placeholder-count="5"><div style="display:flex;gap:14px;padding:8px 0"><span class="t-cap" style="flex:none;width:24px;height:24px;border:1px solid var(--line);border-radius:99px;display:flex;align-items:center;justify-content:center">{{ s.n }}</span><span class="t-bodys">{{ s.t }}</span></div></sc-for></div></sc-if>
+    </div>
+  </sc-if>
+  <sc-if value="{{ sheet }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ close }}" style="position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 32%,transparent);animation:ttFade 150ms both"></div>
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:28px 28px 0 0;padding:12px var(--m) 32px;display:flex;flex-direction:column;gap:14px;animation:ttSheet 250ms cubic-bezier(.2,0,0,1) both">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto"></div>
+      <span class="t-title">{{ sheetTitle }}</span><span class="t-bodys c2">{{ sheetSub }}</span>
+      <sc-if value="{{ sheetHr }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:10px;height:56px;border:1px solid var(--line);border-radius:12px;padding:0 16px"><input value="{{ hr }}" onInput="{{ setHr }}" inputmode="numeric" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font:500 22px var(--font)"><span class="t-bodys c2">bpm</span></div></sc-if>
+      <sc-if value="{{ sheetPool }}" hint-placeholder-val="{{ false }}"><div style="display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px"><sc-for list="{{ poolSeg }}" as="t" hint-placeholder-count="2"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }}">{{ t.t }}</div></sc-for></div></sc-if>
+      <sc-if value="{{ sheetTheme }}" hint-placeholder-val="{{ false }}"><div style="display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px"><sc-for list="{{ themeSeg }}" as="t" hint-placeholder-count="3"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }}">{{ t.t }}</div></sc-for></div></sc-if>
+      <div class="btn" onClick="{{ close }}">Gotowe</div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;arkusz&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { hr: '190', pool: 25, theme: 'sys', sheet: null, steps: false };
+  renderVals() {
+    const l2 = String(this.props.layout ?? '1') === '2', s = this.state;
+    const seg = (items, cur, set) => items.map(([k, t]) => ({ t, bg: cur === k ? 'var(--accent)' : 'transparent', fg: cur === k ? 'var(--on-accent)' : 'var(--ink)', tap: () => set(k) }));
+    const sheet = s.sheet !== null ? s.sheet : (this.props.variant === 'arkusz' ? 'hr' : false);
+    const tl = { sys: 'Jak w systemie', light: 'Jasny', dark: 'Ciemny' };
+    const open = (k) => () => this.setState({ sheet: k });
+    const st = ['Zainstaluj Health Sync.', 'Wybierz Huawei Health jako źródło, a Health Connect jako cel.', 'Zaznacz treningi, tętno, dystans i kalorie.', 'Włącz automatyczną synchronizację.', 'W tej apce nadaj uprawnienia i naciśnij „Synchronizuj teraz”.'];
+    const titles = { hr: ['Tętno maksymalne', 'Potrzebne do stref tętna w szczegółach treningu.'], pool: ['Długość basenu', 'Używana do liczenia tempa na 100 m.'], theme: ['Motyw', 'Wybierz wygląd aplikacji.'] };
+    return { l1: !l2, l2, hr: s.hr, setHr: (e) => this.setState({ hr: e.target.value }),
+      poolSeg: seg([[25, '25 m'], [50, '50 m']], s.pool, (k) => this.setState({ pool: k })),
+      themeSeg: seg([['sys', 'Jak w systemie'], ['light', 'Jasny'], ['dark', 'Ciemny']], s.theme, (k) => this.setState({ theme: k })),
+      steps: st.map((t, i) => ({ n: i + 1, t })),
+      rows: [{ t: 'Tętno maksymalne', s: 'Potrzebne do stref tętna', v: s.hr + '\u00a0bpm', go: open('hr') }, { t: 'Długość basenu', s: '', v: s.pool + '\u00a0m', go: open('pool') }, { t: 'Motyw', s: '', v: tl[s.theme], go: open('theme') }],
+      toggleSteps: () => this.setState(x => ({ steps: !x.steps })), stepsOpen: s.steps, stepsIcon: s.steps ? 'expand_less' : 'expand_more',
+      sheet: l2 && !!sheet, close: () => this.setState({ sheet: false }), sheetTitle: sheet ? titles[sheet][0] : '', sheetSub: sheet ? titles[sheet][1] : '', sheetHr: sheet === 'hr', sheetPool: sheet === 'pool', sheetTheme: sheet === 'theme' };
+  }
+}
+
+</script>
+</body>
+</html>

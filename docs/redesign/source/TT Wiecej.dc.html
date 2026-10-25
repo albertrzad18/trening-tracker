@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:8px 0 24px">
+  <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px"><span class="ms c2" style="font-size:20px">sync</span><span class="t-label c2">Ostatnia synchronizacja</span></div>
+      <span class="t-value">24 paź 2026, 21:14</span>
+      <sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}"><span class="t-bodys" style="color:var(--error)">Ostatni błąd: Health Connect nie odpowiada.</span></sc-if>
+      <div class="btn" style="margin-top:12px"><span class="ms">sync</span>Synchronizuj teraz</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;align-items:center;gap:12px;min-height:64px">
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span class="t-bodys c2">Ostatnia synchronizacja:</span><span class="t-body" style="font-weight:500">24 paź 2026, 21:14</span><sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}"><span class="t-bodys" style="color:var(--error)">Ostatni błąd: Health Connect nie odpowiada.</span></sc-if></div>
+      <div class="press t-bodys" style="height:44px;padding:0 14px;border-radius:99px;display:flex;align-items:center;font-weight:600;border:1px solid var(--line)">Synchronizuj</div>
+    </div>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r)">
+      <sc-if value="{{ g.title }}" hint-placeholder-val="{{ false }}"><span class="t-label c2" style="display:block;padding:4px 0 8px">{{ g.title }}</span></sc-if>
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+        <div class="press" onClick="{{ it.go }}" style="display:flex;align-items:center;gap:16px;min-height:64px;border-top:1px solid var(--line)">
+          <span class="ms" style="color:var(--ink2)">{{ it.icon }}</span>
+          <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span class="t-body" style="font-weight:500">{{ it.t }}</span><span class="t-bodys c2">{{ it.s }}</span></div>
+          <span class="ms c2">chevron_right</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:700},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;blad&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  go = (s) => () => this.props.onNav && this.props.onNav(s);
+  renderVals() {
+    const l2 = String(this.props.layout ?? '1') === '2';
+    const I = (icon, t, s, to) => ({ icon, t, s, go: this.go(to) });
+    const P = I('calendar_view_week', 'Podsumowania', 'Ten tydzień: 2 h 2 min', 'podsumowania'), R = I('trophy', 'Rekordy osobiste', '11 rekordów', 'rekordy'), G = I('flag', 'Cele', '1 aktywny', 'cele'), U = I('tune', 'Ustawienia', 'Tętno maks. 190 · basen 25 m', 'ustawienia'), D = I('troubleshoot', 'Diagnostyka danych z Health Connect', 'Raport z ostatniej synchronizacji', 'diagnostyka');
+    const groups = l2 ? [{ title: 'Przegląd', items: [P, R, G] }, { title: 'Aplikacja', items: [U, D] }] : [{ title: '', items: [P, R, G, U, D] }];
+    return { l1: !l2, l2, isErr: this.props.variant === 'blad', groups };
+  }
+}
+
+</script>
+</body>
+</html>

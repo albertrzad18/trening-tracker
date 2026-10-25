@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="flex:1;display:flex;flex-direction:column;min-height:100%;padding:20px var(--m) 24px">
+  <span class="t-label c2" style="letter-spacing:.04em">trening-tracker</span>
+  <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:28px;margin-top:40px">
+      <span class="t-headline" style="font-size:32px;line-height:1.15">Twoje treningi z zegarka, na telefonie.</span>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ chain }}" as="s" hint-placeholder-count="5">
+          <div style="display:flex;gap:16px;align-items:stretch;min-height:44px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:24px"><span style="width:24px;height:24px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:{{ s.bg }};border:1.5px solid {{ s.bd }};color:{{ s.fg }}"><span class="ms" style="font-size:16px">{{ s.icon }}</span></span><span style="flex:1;width:1.5px;background:var(--line);display:{{ s.line }}"></span></div>
+            <span class="t-body" style="padding-top:2px;color:{{ s.tc }};font-weight:{{ s.w }}">{{ s.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;padding-bottom:48px">
+      <span class="t-herox" style="font-size:44px;line-height:1.08">Twoje treningi z zegarka, na telefonie.</span>
+      <div style="display:flex;gap:8px;align-items:center"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:6px;margin-right:8px"><span style="width:8px;height:8px;border-radius:99px;background:{{ d.bg }};border:1.5px solid {{ d.bd }}"></span><span class="t-cap" style="color:{{ d.fg }};font-size:12px">{{ d.t }}</span></div></sc-for></div>
+    </div>
+  </sc-if>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:20px">
+    <span class="t-body c2">{{ text }}</span>
+    <sc-if value="{{ hasBtn }}" hint-placeholder-val="{{ true }}"><div class="btn">{{ btn }}</div></sc-if>
+    <sc-if value="{{ isLoad }}" hint-placeholder-val="{{ false }}"><div style="height:2px;background:var(--track);border-radius:99px;overflow:hidden"><div style="height:100%;width:40%;background:var(--ink);animation:ttInd 1.2s ease-in-out infinite"></div></div></sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;brak-uprawnien&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;brak-uprawnien&quot;,&quot;brak-hc&quot;,&quot;ladowanie&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]}}">
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.variant ?? 'brak-uprawnien', l2 = String(this.props.layout ?? '1') === '2';
+    const cur = v === 'brak-hc' ? 3 : 4;
+    const names = ['Zegarek Huawei', 'Huawei Health', 'Health Sync', 'Health Connect', 'trening-tracker'];
+    const chain = names.map((t, i) => {
+      const done = i < cur, now = i === cur;
+      return { t, icon: done ? 'check' : '', bg: now ? 'var(--ink)' : 'transparent', bd: now ? 'var(--ink)' : 'var(--line)', fg: done ? 'var(--ink2)' : 'var(--on-accent)', tc: now ? 'var(--ink)' : 'var(--ink2)', w: now ? 600 : 400, line: i < 4 ? 'block' : 'none' };
+    });
+    const ai = v === 'brak-hc' ? 0 : v === 'brak-uprawnien' ? 1 : 2;
+    const dots = ['Health Connect', 'Uprawnienia', 'Gotowe'].map((t, i) => ({ t, bg: i <= ai ? 'var(--ink)' : 'transparent', bd: i <= ai ? 'var(--ink)' : 'var(--line)', fg: i === ai ? 'var(--ink)' : 'var(--ink2)' }));
+    const text = { 'brak-uprawnien': 'Apka potrzebuje uprawnień do odczytu treningów z Health Connect. Dane zostają na Twoim telefonie.', 'brak-hc': 'Health Connect jest niedostępny lub wymaga aktualizacji. Zainstaluj go albo zaktualizuj w Sklepie Play.', ladowanie: 'Wczytuję treningi…' }[v];
+    return { l1: !l2, l2, chain, dots, text, btn: v === 'brak-hc' ? 'Zainstaluj Health Connect' : 'Nadaj uprawnienia', hasBtn: v !== 'ladowanie', isLoad: v === 'ladowanie' };
+  }
+}
+
+</script>
+</body>
+</html>

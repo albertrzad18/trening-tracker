@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,100..700,0..1,0">
+<style>
+.tt{--r-m:12px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.tt *{box-sizing:border-box}
+.tt ::-webkit-scrollbar{display:none}
+.tt{--pool-c:color-mix(in srgb,var(--pool) var(--c-mix),var(--bg));--road-c:color-mix(in srgb,var(--road) var(--c-mix),var(--bg));--trainer-c:color-mix(in srgb,var(--trainer) var(--c-mix),var(--bg))}
+.tt-a{--font:'Geist',system-ui,sans-serif;--mono:'Geist Mono',ui-monospace,monospace;--accent:var(--ink);--on-accent:var(--bg);--panel-bg:transparent;--panel-pad:0px;--panel-r:0px;--sec-sep:1px solid var(--line);--sec-gap:24px;--sec-pt:24px;--delta-bg:transparent;--delta-pad:0px;--grid-line:var(--line);--bar-r:3px;--bar-w:.56;--m:20px;--herox:72px;--hero:48px;--headline:28px;--value:22px;--title:17px;--body:16px;--bodys:14px;--label:13px;--w-big:500;--w-title:600;--ls-big:-.025em;--label-tt:none;--label-ls:.01em;--ms-w:300;--z1:var(--zA1);--z2:var(--zA2);--z3:var(--zA3);--z4:var(--zA4);--z5:var(--zA5)}
+.tt-b{--font:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;--panel-bg:var(--surface);--panel-pad:16px;--panel-r:20px;--sec-sep:none;--sec-gap:12px;--sec-pt:16px;--delta-bg:var(--track);--delta-pad:6px 12px;--grid-line:transparent;--bar-r:999px;--bar-w:.4;--m:16px;--herox:64px;--hero:44px;--headline:24px;--value:20px;--title:16px;--body:15px;--bodys:13px;--label:12px;--w-big:600;--w-title:600;--ls-big:-.02em;--label-tt:uppercase;--label-ls:.06em;--ms-w:400;--z1:color-mix(in srgb,var(--accent) 20%,var(--bg));--z2:color-mix(in srgb,var(--accent) 40%,var(--bg));--z3:color-mix(in srgb,var(--accent) 60%,var(--bg));--z4:color-mix(in srgb,var(--accent) 80%,var(--bg));--z5:var(--accent)}
+.tt-a.tt-light{--bg:#F7F6F3;--surface:#FFFFFF;--track:#ECEAE5;--line:#E2E0DA;--ink:#17181A;--ink2:#5E6066;--pool:#2B6FD6;--road:#23914A;--trainer:#D9700F;--c-mix:14%;--error:#C4372B;--zA1:#D5D3CD;--zA2:#ADABA5;--zA3:#85837E;--zA4:#55534F;--zA5:#17181A}
+.tt-a.tt-dark{--bg:#111214;--surface:#1A1B1E;--track:#232428;--line:#2A2B2F;--ink:#EDECE8;--ink2:#9A9CA3;--pool:#5B9BFF;--road:#46B86C;--trainer:#F2913A;--c-mix:20%;--error:#FF7A6B;--zA1:#3A3B3F;--zA2:#5C5E63;--zA3:#84868C;--zA4:#B4B6BB;--zA5:#EDECE8}
+.tt-b.tt-light{--bg:#EEF0F3;--surface:#FFFFFF;--track:#E3E6EB;--line:#D9DDE3;--ink:#0F1216;--ink2:#59616E;--accent:#B8326A;--on-accent:#FFFFFF;--pool:#2F6BFF;--road:#1E9E5A;--trainer:#E5730B;--c-mix:14%;--error:#C4372B}
+.tt-b.tt-dark{--bg:#0D0F12;--surface:#171A1F;--track:#22262D;--line:#2A2F37;--ink:#E8EBEF;--ink2:#97A0AD;--accent:#F07AA6;--on-accent:#1A0A11;--pool:#6E9BFF;--road:#4CC985;--trainer:#FF9E4A;--c-mix:22%;--error:#FF7A6B}
+.tt .t-herox{font-size:var(--herox);line-height:1;font-weight:var(--w-big);letter-spacing:var(--ls-big)}
+.tt .t-hero{font-size:var(--hero);line-height:1.08;font-weight:var(--w-big);letter-spacing:var(--ls-big)}
+.tt .t-headline{font-size:var(--headline);line-height:1.2;font-weight:var(--w-big);letter-spacing:-.01em}
+.tt .t-value{font-size:var(--value);line-height:1.25;font-weight:var(--w-big);letter-spacing:-.01em}
+.tt .t-title{font-size:var(--title);line-height:1.4;font-weight:var(--w-title)}
+.tt .t-body{font-size:var(--body);line-height:1.45}
+.tt .t-bodys{font-size:var(--bodys);line-height:1.4}
+.tt .t-label{font-size:var(--label);line-height:1.25;font-weight:500;text-transform:var(--label-tt);letter-spacing:var(--label-ls)}
+.tt .t-cap{font-family:var(--font);font-size:12px;line-height:14px;font-weight:500;letter-spacing:.01em}
+.tt .u{font-size:.4em;font-weight:500;color:var(--ink2);margin-left:4px;letter-spacing:0}
+.tt .c2{color:var(--ink2)}
+.tt .ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;font-variation-settings:'FILL' 0,'wght' var(--ms-w),'GRAD' 0,'opsz' 24;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';user-select:none}
+.tt .ms.f{font-variation-settings:'FILL' 1,'wght' var(--ms-w),'GRAD' 0,'opsz' 24}
+.tt .press{cursor:pointer;transition:background 150ms}
+.tt .press:active{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.tt .chip{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 var(--label)/1 var(--font);cursor:pointer;white-space:nowrap;transition:background 150ms,border-color 150ms}
+.tt .chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tt .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:999px;border:0;background:var(--accent);color:var(--on-accent);font:600 15px/1 var(--font);cursor:pointer}
+.tt .btn2{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 14px/1 var(--font);cursor:pointer}
+.tt .skel{background:var(--track);border-radius:6px;animation:ttPulse 1.2s ease-in-out infinite alternate}
+.tt .grow{transform-box:fill-box;transform-origin:50% 100%;animation:ttGrow 450ms cubic-bezier(.2,0,0,1) both}
+.tt .draw{animation:ttDraw 600ms cubic-bezier(.2,0,0,1) both}
+@keyframes ttPulse{from{opacity:.5}to{opacity:1}}
+@keyframes ttGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes ttDraw{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes ttFade{from{opacity:0}to{opacity:1}}
+@keyframes ttSheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes ttInd{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@media (prefers-reduced-motion:reduce){.tt *{animation-duration:1ms!important}}
+</style>
+</helmet>
+<div class="{{ rootClass }}" style="position:relative;width:390px;height:844px;border-radius:44px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column;transform:translateZ(0);outline:1px solid var(--line);outline-offset:-1px">
+  <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;background:var(--bg)">
+    <span style="font:500 14px/1 var(--font);letter-spacing:.01em">21:30</span>
+    <span style="display:flex;gap:6px;align-items:center"><span class="ms f" style="font-size:18px">signal_cellular_alt</span><span class="ms" style="font-size:18px">wifi</span><span class="ms f" style="font-size:18px;transform:rotate(90deg)">battery_full</span></span>
+  </div>
+  <sc-if value="{{ hasTop }}" hint-placeholder-val="{{ false }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:4px;padding:0 var(--m) 0 8px;background:var(--bg)">
+      <div class="press" onClick="{{ back }}" style="width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center"><span class="ms">arrow_back</span></div>
+      <span class="t-headline">{{ topTitle }}</span>
+    </div>
+  </sc-if>
+  <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none">
+    <div style="animation:ttFade 250ms cubic-bezier(.2,0,0,1) both;min-height:100%;display:flex;flex-direction:column">
+      <sc-if value="{{ isPulpit }}" hint-placeholder-val="{{ true }}"><dc-import name="TT Pulpit" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isTreningi }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Treningi" layout="{{ layout }}" variant="{{ variant }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isSzczegoly }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Szczegoly" layout="{{ layout }}" variant="{{ szVariant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isStatystyki }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Statystyki" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isPodsumowania }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Podsumowania" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isRekordy }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Rekordy" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isCele }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Cele" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isWiecej }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Wiecej" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isUstawienia }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Ustawienia" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isDiagnostyka }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Diagnostyka" layout="{{ layout }}" variant="{{ variant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+      <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}"><dc-import name="TT Onboarding" layout="{{ layout }}" variant="{{ obVariant }}" emoji="{{ emoji }}" direction="{{ direction }}" on-nav="{{ nav }}" style="flex:1;display:flex;flex-direction:column;min-height:100%" hint-size="100%,700px"></dc-import></sc-if>
+    </div>
+  </div>
+  <sc-if value="{{ hasNav }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;height:72px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;background:var(--surface);border-top:1px solid var(--line)">
+      <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+        <div class="press" onClick="{{ tab.go }}" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+          <span style="width:56px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:{{ tab.bg }};transition:background 150ms"><span class="ms {{ tab.fill }}" style="font-size:24px;color:{{ tab.color }}">{{ tab.icon }}</span></span>
+          <span class="t-label" style="text-transform:none;letter-spacing:.01em;color:{{ tab.color }}">{{ tab.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <div style="flex:none;height:24px;display:flex;align-items:center;justify-content:center;background:{{ gestureBg }}"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.9"></div></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;'a'|'b'&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;],&quot;section&quot;:&quot;Wygląd&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;section&quot;:&quot;Wygląd&quot;},&quot;emoji&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;e1&quot;,&quot;tsType&quot;:&quot;'e1'|'e2'&quot;,&quot;options&quot;:[&quot;e1&quot;,&quot;e2&quot;],&quot;section&quot;:&quot;Wygląd&quot;},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;pulpit&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;pulpit&quot;,&quot;treningi&quot;,&quot;szczegoly&quot;,&quot;statystyki&quot;,&quot;podsumowania&quot;,&quot;rekordy&quot;,&quot;cele&quot;,&quot;wiecej&quot;,&quot;ustawienia&quot;,&quot;diagnostyka&quot;,&quot;onboarding&quot;],&quot;section&quot;:&quot;Ekran&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;'1'|'2'&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;],&quot;section&quot;:&quot;Ekran&quot;},&quot;variant&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Ekran&quot;},&quot;interactive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Ekran&quot;},&quot;layouts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,string&gt;&quot;}}">
+class Component extends DCLogic {
+  state = { scr: null, params: {}, hist: [] };
+  cur() { return this.state.scr ?? this.props.screen ?? 'pulpit'; }
+  nav = (scr, params = {}) => {
+    if (!this.props.interactive) return;
+    const main = ['pulpit', 'treningi', 'statystyki', 'wiecej'].includes(scr);
+    this.setState(s => ({ scr, params, hist: main ? [] : [...s.hist, { scr: this.cur(), params: s.params }] }));
+  };
+  back = () => {
+    if (!this.props.interactive) return;
+    this.setState(s => { const h = s.hist.slice(); const p = h.pop() || { scr: 'wiecej', params: {} }; return { scr: p.scr, params: p.params, hist: h }; });
+  };
+  renderVals() {
+    const dir = this.props.direction ?? 'b', theme = this.props.theme ?? 'light';
+    const scr = this.cur();
+    const main = ['pulpit', 'treningi', 'statystyki', 'wiecej'].includes(scr);
+    const titles = { podsumowania: 'Podsumowania', rekordy: 'Rekordy', cele: 'Cele', ustawienia: 'Ustawienia', diagnostyka: 'Diagnostyka', szczegoly: '' };
+    const layout = String((this.props.layouts && this.props.layouts[scr]) ?? this.props.layout ?? '1');
+    const tabDef = [['pulpit', 'Pulpit', 'home'], ['treningi', 'Treningi', 'format_list_bulleted'], ['statystyki', 'Statystyki', 'bar_chart'], ['wiecej', 'Więcej', 'more_horiz']];
+    const hasNav = main;
+    const tabs = tabDef.map(([id, label, icon]) => {
+      const on = id === scr;
+      return { label, icon, fill: on ? 'f' : '', color: on ? 'var(--ink)' : 'var(--ink2)', bg: on ? (dir === 'b' ? 'color-mix(in srgb,var(--accent) 18%,transparent)' : 'var(--track)') : 'transparent', go: () => this.nav(id) };
+    });
+    return {
+      rootClass: `tt tt-${dir} tt-${theme}`,
+      scr, layout, hasNav, tabs, nav: this.nav, direction: dir, emoji: this.props.emoji ?? 'e1', variant: this.props.variant ?? 'dane',
+      isPulpit: scr === 'pulpit', isTreningi: scr === 'treningi', szVariant: ({pool:'basen',road:'rower',trainer:'trenazer'})[this.state.params && this.state.params.d] || this.props.variant || 'rower', obVariant: ['brak-hc','ladowanie'].includes(this.props.variant) ? this.props.variant : 'brak-uprawnien',
+      isSzczegoly: scr === 'szczegoly', isStatystyki: scr === 'statystyki', isPodsumowania: scr === 'podsumowania', isRekordy: scr === 'rekordy', isCele: scr === 'cele', isWiecej: scr === 'wiecej', isUstawienia: scr === 'ustawienia', isDiagnostyka: scr === 'diagnostyka', isOnboarding: scr === 'onboarding',
+      hasTop: !main && scr !== 'onboarding',
+      topTitle: titles[scr] ?? '',
+      gestureBg: hasNav ? 'var(--surface)' : 'var(--bg)',
+      back: this.back,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

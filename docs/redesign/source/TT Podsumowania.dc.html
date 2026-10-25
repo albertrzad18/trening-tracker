@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:4px 0 24px">
+  <div style="margin:0 var(--m) 16px;display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px">
+    <sc-for list="{{ seg }}" as="t" hint-placeholder-count="3"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }};transition:background 150ms">{{ t.t }}</div></sc-for>
+  </div>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><div class="press" onClick="{{ prev }}" style="width:44px;height:44px;border-radius:99px;display:flex;align-items:center;justify-content:center"><span class="ms">chevron_left</span></div><span class="t-bodys c2">{{ pagerLabel }}</span><div class="press" onClick="{{ next }}" style="width:44px;height:44px;border-radius:99px;display:flex;align-items:center;justify-content:center"><span class="ms">chevron_right</span></div></div>
+      <svg viewBox="0 0 {{ cw }} 110" style="width:100%;height:auto;display:block"><line x1="0" x2="{{ cw }}" y1="104" y2="104" style="stroke:var(--line)" stroke-width="1"></line><sc-for list="{{ pbars }}" as="p" hint-placeholder-count="8"><path d="{{ p.d }}" onClick="{{ p.tap }}" class="grow" style="fill:{{ p.fill }};opacity:{{ p.op }};cursor:pointer;transition:opacity 250ms;animation-delay:{{ p.delay }}"></path></sc-for></svg>
+    </div>
+  </sc-if>
+  <sc-for list="{{ items }}" as="p" hint-placeholder-count="3">
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:{{ p.bt }}">
+      <div class="press" onClick="{{ p.toggle }}" style="display:flex;align-items:center;gap:12px;min-height:48px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span class="{{ p.rangeCls }}">{{ p.range }}</span><sc-if value="{{ p.collapsed }}" hint-placeholder-val="{{ false }}"><span class="t-body" style="font-weight:600">{{ p.time }}</span></sc-if></div>
+        <sc-if value="{{ p.collapsed }}" hint-placeholder-val="{{ false }}"><div style="display:flex;width:48px;height:6px;border-radius:99px;overflow:hidden;gap:1px"><sc-for list="{{ p.mini }}" as="m" hint-placeholder-count="2"><div style="flex:{{ m.f }};background:{{ m.c }}"></div></sc-for></div><span class="t-bodys" style="display:flex;align-items:center;gap:2px;min-width:52px;justify-content:flex-end"><span class="ms" style="font-size:16px">{{ p.tIcon }}</span>{{ p.tPct }}</span><span class="ms c2">expand_more</span></sc-if>
+      </div>
+      <sc-if value="{{ p.empty }}" hint-placeholder-val="{{ false }}"><span class="t-bodys c2">Brak treningów w tym okresie.</span></sc-if>
+      <sc-if value="{{ p.open }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:8px;animation:ttFade 250ms both">
+          <div style="display:flex;flex-direction:column;gap:4px"><span class="t-hero">{{ p.time }}</span><span class="t-body c2">{{ p.sub }}</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ p.deltas }}" as="d" hint-placeholder-count="3"><div style="display:inline-flex;align-items:center;gap:4px;background:var(--delta-bg);padding:var(--delta-pad);border-radius:999px"><span class="ms" style="font-size:16px">{{ d.icon }}</span><span class="t-bodys"><b style="font-weight:600">{{ d.pct }}</b> {{ d.l }}</span></div></sc-for></div>
+          <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px"><sc-for list="{{ p.mini }}" as="m" hint-placeholder-count="2"><div style="flex:{{ m.f }};background:{{ m.c }}"></div></sc-for></div>
+          <div style="display:flex;flex-direction:column"><sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:12px;min-height:44px;border-top:1px solid var(--line)"><span style="width:8px;height:8px;border-radius:99px;background:{{ r.c }}"></span><span class="t-body" style="width:76px">{{ r.name }}</span><span class="t-bodys c2" style="flex:1;text-align:right">{{ r.v }}</span></div></sc-for></div>
+          <span class="t-bodys c2">{{ p.facts }}</span>
+          <div class="press" onClick="{{ p.goBest }}" style="display:flex;align-items:center;gap:8px;min-height:52px;border-top:1px solid var(--line)"><div style="flex:1;display:flex;flex-direction:column"><span class="t-label c2">Najlepszy trening</span><span class="t-body">{{ p.best }}</span></div><span class="ms c2">chevron_right</span></div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-for>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, C: null, per: 'w', open: 0, idx: 0 };
+  async componentDidMount() { const [T, C] = await Promise.all([import('./tt-data.js'), import('./tt-charts.js')]); this.setState({ T, C }); }
+  data(T) {
+    const mo = (range, min, km, kcal, n, days, streak, d, delta, best) => ({ range, min, km, kcal, n, days, streak, d, delta, best });
+    return {
+      w: T.WEEKS,
+      m: [
+        mo('październik 2026', 613, 13.5, 5553, 11, 11, 2, [{ d: 'pool', min: 255, km: 13.5, kcal: 2073 }, { d: 'trainer', min: 358, km: null, kcal: 3480 }], { t: -47, km: -97, kcal: -52 }, 'Trenażer, 17 paź 2026 · 1:47:00'),
+        mo('wrzesień 2026', 1160, 394.9, 11482, 15, 15, 3, [{ d: 'pool', min: 314, km: 17.0, kcal: 2534 }, { d: 'road', min: 846, km: 377.9, kcal: 8948 }], { t: 5, km: 8, kcal: 4 }, 'Rower, 13 wrz 2026 · 3:10:00'),
+        mo('sierpień 2026', 1105, 365.2, 11030, 15, 15, 3, [{ d: 'pool', min: 290, km: 15.8, kcal: 2350 }, { d: 'road', min: 815, km: 349.4, kcal: 8680 }], { t: 3, km: 6, kcal: 2 }, 'Rower, 1 sie 2026 · 3:05:00'),
+      ],
+      y: [
+        mo('2026', 10801, 2600, 111400, 214, 190, 6, [{ d: 'pool', min: 3389, km: 164, kcal: 27800 }, { d: 'road', min: 5349, km: 2436, kcal: 60200 }, { d: 'trainer', min: 2063, km: null, kcal: 23400 }], { t: 4, km: 5, kcal: 11 }, 'Rower, 16 maj 2026 · 3:23:00'),
+        mo('2025', 10399, 2541.4, 100315, 85, 80, 5, [{ d: 'pool', min: 3200, km: 150, kcal: 25000 }, { d: 'road', min: 4900, km: 2391, kcal: 52000 }, { d: 'trainer', min: 2299, km: null, kcal: 23315 }], null, 'Rower, 6 wrz 2025 · 3:23:00'),
+      ],
+    };
+  }
+  renderVals() {
+    const { T, C } = this.state;
+    const b = this.props.direction === 'b', l2 = String(this.props.layout ?? '1') === '2', cw = b ? 326 : 350, NB = '\u00a0';
+    const base = { l2, items: [], seg: [], pbars: [], cw };
+    if (!T) return base;
+    const D = this.data(T), per = this.state.per, list = D[per];
+    const col = { pool: 'var(--pool)', road: 'var(--road)', trainer: 'var(--trainer)' };
+    const names = { pool: 'Basen', road: 'Rower', trainer: 'Trenażer' };
+    const seg = [['w', 'Tygodnie'], ['m', 'Miesiące'], ['y', 'Lata']].map(([k, t]) => ({ t, bg: per === k ? 'var(--accent)' : 'transparent', fg: per === k ? 'var(--on-accent)' : 'var(--ink)', tap: () => this.setState({ per: k, open: 0, idx: 0 }) }));
+    const plural = (n, a, b2, c) => n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? b2 : c;
+    const view = (p, i, expanded) => {
+      const kms = p.km ? T.fmtKm(p.km) : null, sub = [kms, T.fmtKcal(p.kcal)].filter(Boolean).join(' · ');
+      const dl = p.delta ? [['Czas', p.delta.t], ['Dystans', p.delta.km], ['Kalorie', p.delta.kcal]].map(([l, v]) => ({ l, pct: Math.abs(v) + '%', icon: v >= 0 ? 'arrow_upward' : 'arrow_downward' })) : [];
+      const open = expanded;
+      return { range: p.range, rangeCls: open ? 't-label c2' : 't-body', time: T.fmtSum(p.min), sub, deltas: dl, mini: p.d.map(x => ({ f: x.min, c: col[x.d] })),
+        rows: p.d.map(x => ({ c: col[x.d], name: names[x.d], v: [T.fmtSum(x.min), x.km ? T.fmtKm(x.km) : null, T.fmtKcal(x.kcal)].filter(Boolean).join(' · ') })),
+        facts: `${p.n} ${plural(p.n, 'trening', 'treningi', 'treningów')} · ${p.days} ${plural(p.days, 'dzień z treningiem', 'dni z treningiem', 'dni z treningiem')} · seria ${p.streak} ${plural(p.streak, 'dzień', 'dni', 'dni')}`,
+        best: p.best, goBest: () => this.props.onNav && this.props.onNav('szczegoly', {}),
+        open, collapsed: !open, empty: false, bt: (b || i === 0 || l2) ? 'none' : '1px solid var(--line)',
+        tIcon: p.delta && p.delta.t < 0 ? 'arrow_downward' : 'arrow_upward', tPct: p.delta ? Math.abs(p.delta.t) + '%' : '',
+        toggle: () => this.setState(s => ({ open: s.open === i ? -1 : i })) };
+    };
+    let items, pbars = [], pagerLabel = '';
+    if (!l2) items = list.map((p, i) => view(p, i, this.state.open === i));
+    else {
+      const idx = Math.min(this.state.idx, list.length - 1), ps = list.slice(0, 8).reverse(), sidx = ps.length - 1 - idx;
+      const series = [0, 1, 2].map(k => ps.map(p => { const d = p.d.find(x => x.d === ['pool', 'road', 'trainer'][k]); return d ? d.min : 0; }));
+      const mx = Math.max(...ps.map(p => p.min));
+      const raw = C.stackedBars(series, { x: 0, y: 6, w: cw, h: 98 }, mx, { widthFrac: b ? 0.5 : 0.6, rTop: 3, roundAll: b });
+      pbars = raw.map(x => ({ d: x.d, fill: col[['pool', 'road', 'trainer'][x.layer]], op: x.slot === sidx ? 1 : 0.4, delay: x.slot * 20 + 'ms', tap: () => this.setState({ idx: ps.length - 1 - x.slot }) }));
+      pagerLabel = list[idx].range;
+      items = [{ ...view(list[idx], idx, true), bt: 'none', toggle: () => {} }];
+    }
+    return { ...base, seg, items, pbars, pagerLabel, prev: () => this.setState(s => ({ idx: Math.min(s.idx + 1, Math.min(7, list.length - 1)) })), next: () => this.setState(s => ({ idx: Math.max(s.idx - 1, 0) })) };
+  }
+}
+
+</script>
+</body>
+</html>

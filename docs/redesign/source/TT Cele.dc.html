@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="flex:1;display:flex;flex-direction:column;min-height:100%;padding-top:4px">
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}"><div style="margin:0 var(--m);padding-top:56px"><span class="t-body c2">Nie masz jeszcze żadnego celu. Dodaj pierwszy przyciskiem poniżej.</span></div></sc-if>
+  <sc-if value="{{ showL1 }}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{ goals }}" as="g" hint-placeholder-count="4">
+      <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:{{ g.bt }};display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:99px;background:{{ g.color }}"></span><span class="t-label c2">{{ g.name }}</span></div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span class="t-hero" style="font-size:34px">{{ g.cur }}</span><span class="t-bodys c2">z {{ g.goal }}</span>
+          <sc-if value="{{ g.done }}" hint-placeholder-val="{{ false }}"><span class="t-label" style="margin-left:auto;color:{{ g.color }};display:flex;align-items:center;gap:4px;text-transform:none;letter-spacing:0"><sc-if value="{{ e1 }}" hint-placeholder-val="{{ true }}"><span class="ms f" style="font-size:20px">check_circle</span></sc-if>Cel osiągnięty</span></sc-if></div>
+        <div style="height:6px;border-radius:99px;background:var(--track);overflow:hidden"><div style="height:100%;width:{{ g.pct }};background:{{ g.color }};border-radius:99px"></div></div>
+        <sc-if value="{{ g.fc }}" hint-placeholder-val="{{ false }}"><span class="t-bodys">{{ g.fc }}</span></sc-if>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="t-bodys c2">{{ g.left }}</span>
+          <sc-if value="{{ e1 }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:4px"><sc-for list="{{ g.hist }}" as="h" hint-placeholder-count="6"><span style="width:10px;height:10px;border-radius:2px;background:{{ h.bg }};border:1px solid {{ h.bd }}"></span></sc-for></div></sc-if>
+          <sc-if value="{{ e2 }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:4px;align-items:flex-end;height:14px"><sc-for list="{{ g.hist }}" as="h" hint-placeholder-count="6"><span style="width:3px;height:{{ h.h }};border-radius:1px;background:{{ h.bar }}"></span></sc-for></div></sc-if></div>
+        <span class="t-bodys c2">Seria: {{ g.streak }}</span>
+      </div>
+    </sc-for>
+  </sc-if>
+  <sc-if value="{{ showL2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m);display:grid;grid-template-columns:1fr 1fr;gap:{{ gap }}">
+      <sc-for list="{{ goals }}" as="g" hint-placeholder-count="4">
+        <div class="press" onClick="{{ g.open }}" style="padding:16px 8px;background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+          <div style="position:relative;width:120px;height:120px"><svg viewBox="0 0 120 120" style="width:120px;height:120px"><circle cx="60" cy="60" r="50" style="fill:none;stroke:var(--track);stroke-width:12"></circle><path d="{{ g.arc }}" class="draw" style="fill:none;stroke:{{ g.color }};stroke-width:12;stroke-linecap:{{ cap }}"></path></svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span class="t-value" style="font-size:18px">{{ g.cur }}</span><span class="t-cap c2">z {{ g.goal }}</span></div></div>
+          <span class="t-bodys" style="font-weight:500">{{ g.name }}</span><span class="t-cap c2">{{ g.left }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <div style="position:sticky;bottom:0;margin-top:auto;padding:16px var(--m);display:flex;justify-content:flex-end;pointer-events:none"><div onClick="{{ openAdd }}" style="pointer-events:auto;height:56px;padding:0 24px 0 18px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;gap:10px;font:600 15px var(--font);cursor:pointer"><span class="ms">add</span>Dodaj cel</div></div>
+  <sc-if value="{{ det }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 32%,transparent);animation:ttFade 150ms both"></div>
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:28px 28px 0 0;padding:12px var(--m) 32px;display:flex;flex-direction:column;gap:12px;animation:ttSheet 250ms cubic-bezier(.2,0,0,1) both">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 8px"></div>
+      <span class="t-label c2">{{ det.name }}</span><span class="t-hero" style="font-size:34px">{{ det.cur }}<span class="u">z {{ det.goal }}</span></span>
+      <div style="height:6px;border-radius:99px;background:var(--track);overflow:hidden"><div style="height:100%;width:{{ det.pct }};background:{{ det.color }};border-radius:99px"></div></div>
+      <sc-if value="{{ det.fc }}" hint-placeholder-val="{{ false }}"><span class="t-bodys">{{ det.fc }}</span></sc-if>
+      <span class="t-bodys c2">{{ det.left }} · Seria: {{ det.streak }}</span>
+      <div class="btn2" style="margin-top:8px;color:var(--error)">Usuń cel</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 32%,transparent);animation:ttFade 150ms both"></div>
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:28px 28px 0 0;padding:12px var(--m) 32px;display:flex;flex-direction:column;gap:16px;animation:ttSheet 250ms cubic-bezier(.2,0,0,1) both">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 0"></div>
+      <span class="t-title">Nowy cel</span>
+      <sc-for list="{{ groups }}" as="gr" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:8px"><span class="t-label c2">{{ gr.title }}</span><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ gr.opts }}" as="o" hint-placeholder-count="4"><div class="chip {{ o.cls }}" onClick="{{ o.tap }}">{{ o.t }}</div></sc-for></div></div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:8px"><span class="t-label c2">Wartość celu</span><div style="display:flex;align-items:center;gap:10px;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 16px"><input value="{{ val }}" onInput="{{ setVal }}" inputmode="decimal" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font:500 18px var(--font)"><span class="t-bodys c2">{{ unit }}</span></div></div>
+      <div class="btn" onClick="{{ closeAll }}">Zapisz cel</div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;pusto&quot;,&quot;arkusz&quot;]},&quot;emoji&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;e1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;e1&quot;,&quot;e2&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, C: null, det: null, add: null, g: { d: 1, p: 1, m: 0 }, val: '300' };
+  async componentDidMount() { const [T, C] = await Promise.all([import('./tt-data.js'), import('./tt-charts.js')]); this.setState({ T, C }); }
+  renderVals() {
+    const { T, C } = this.state, v = this.props.variant ?? 'dane', b = this.props.direction === 'b', l2 = String(this.props.layout ?? '1') === '2';
+    const base = { isEmpty: v === 'pusto', e1: this.props.emoji !== 'e2', e2: this.props.emoji === 'e2', showL1: !l2 && v !== 'pusto', showL2: l2 && v !== 'pusto', goals: [], groups: [], det: null, addOpen: false, gap: b ? '12px' : '0', cap: b ? 'round' : 'butt' };
+    if (!T) return base;
+    const col = { pool: 'var(--pool)', road: 'var(--road)', trainer: 'var(--trainer)', all: 'var(--ink)' };
+    const hist = (g) => g.hist.map(h => ({ bg: h ? col[g.d] : 'transparent', bd: h ? col[g.d] : 'var(--line)', h: h ? '14px' : '4px', bar: h ? col[g.d] : 'var(--ink2)' }));
+    const goals = T.GOALS.map((g, i) => { const pc = Math.min(100, Math.round(g.cur / g.goal * 100)); const o = { name: g.name, cur: g.curTxt, goal: g.goalTxt, done: !!g.done, color: col[g.d], pct: pc + '%', fc: g.fc || '', left: g.left, streak: g.streak ? g.streak + ' ' + (g.streak === 1 ? 'okres' : 'okresów') + ' pod rząd' : 'brak', hist: hist(g), bt: (b || i === 0) ? 'none' : '1px solid var(--line)', arc: pc ? C.ringProgress(pc / 100, 60, 60, 50) : '' }; o.open = () => this.setState({ det: o }); return o; });
+    const gs = this.state.g, upd = (k, i) => () => this.setState(s => ({ g: { ...s.g, [k]: i } }));
+    const mk = (title, k, arr) => ({ title, opts: arr.map((t, i) => ({ t, cls: gs[k] === i ? 'on' : '', tap: upd(k, i) })) });
+    const groups = [mk('Dyscyplina', 'd', ['Wszystko', 'Basen', 'Rower', 'Trenażer']), mk('Okres', 'p', ['Tygodniowy', 'Miesięczny', 'Roczny']), mk('Metryka', 'm', ['Dystans (km)', 'Czas (godziny)', 'Kalorie', 'Liczba treningów'])];
+    const units = ['km', 'godz.', 'kcal', 'treningów'];
+    const addOpen = this.state.add !== null ? this.state.add : v === 'arkusz';
+    return { ...base, goals: v === 'pusto' ? [] : goals, groups, det: this.state.det, addOpen, unit: units[gs.m], val: this.state.val, setVal: (e) => this.setState({ val: e.target.value }), openAdd: () => this.setState({ add: true }), closeAll: () => this.setState({ add: false, det: null }) };
+  }
+}
+
+</script>
+</body>
+</html>

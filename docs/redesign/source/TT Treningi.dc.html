@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="flex:1;display:flex;flex-direction:column;min-height:100%;position:relative">
+  <!-- filtry -->
+  <div style="padding:8px var(--m) 4px;display:flex;flex-direction:column;gap:12px;position:relative">
+    <div style="display:flex;gap:8px;align-items:center">
+      <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+        <div class="chip" onClick="{{ c.tap }}" style="background:{{ c.bg }};border-color:{{ c.bd }};padding:0 12px"><span style="width:8px;height:8px;border-radius:99px;background:{{ c.color }}"></span>{{ c.name }}</div>
+      </sc-for>
+      <div class="chip" onClick="{{ toggleMenu }}" style="margin-left:auto;padding:0 10px 0 14px;gap:2px">{{ period }}<span class="ms" style="font-size:20px">arrow_drop_down</span></div>
+    </div>
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;right:var(--m);top:52px;z-index:6;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;min-width:150px;animation:ttFade 150ms both">
+        <sc-for list="{{ periods }}" as="p" hint-placeholder-count="4"><div class="press t-body" onClick="{{ p.tap }}" style="height:44px;padding:0 14px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;font-weight:{{ p.w }}">{{ p.t }}<sc-if value="{{ p.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:18px">check</span></sc-if></div></sc-for>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;justify-content:space-between;min-height:36px">
+      <div class="chip" onClick="{{ openSort }}" style="padding:0 10px 0 14px;gap:6px">{{ sortLabel }}<span class="ms" style="font-size:18px">{{ sortIcon }}</span></div>
+      <span class="t-bodys c2">{{ countTxt }}</span>
+    </div>
+  </div>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:{{ gt }};column-gap:10px;padding:0 var(--m);height:36px;align-items:center;border-bottom:1px solid var(--line)">
+      <span></span>
+      <sc-for list="{{ cols }}" as="c" hint-placeholder-count="4"><div class="press t-cap" onClick="{{ c.tap }}" style="display:flex;align-items:center;gap:2px;justify-content:{{ c.just }};height:36px;color:{{ c.color }};font-weight:{{ c.w }}">{{ c.t }}<sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:14px">{{ sortIcon }}</span></sc-if></div></sc-for>
+    </div>
+    </sc-if>
+  </sc-if>
+  <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column">
+    <sc-for list="{{ items }}" as="it" hint-placeholder-count="8">
+      <div style="display:flex;flex-direction:column">
+        <sc-if value="{{ it.head }}" hint-placeholder-val="{{ false }}">
+          <div class="press" onClick="{{ it.tog }}" style="position:sticky;top:0;z-index:3;background:var(--bg);padding:14px var(--m) 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:8px"><span class="t-title" style="flex:1">{{ it.label }}</span><span class="t-label c2">{{ it.count }}</span><span class="ms c2">{{ it.icon }}</span></div>
+            <span class="t-bodys c2">{{ it.sum }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ it.r1 }}" hint-placeholder-val="{{ true }}">
+          <div class="press" onClick="{{ it.go }}" style="display:grid;grid-template-columns:3px 64px 1fr 1fr 1.2fr;column-gap:12px;align-items:start;padding:12px var(--m);margin:0;position:relative;min-height:60px">
+            <div style="grid-row:1/3;align-self:stretch;border-radius:2px;background:{{ it.color }}"></div>
+            <div style="display:flex;flex-direction:column"><span class="t-body" style="font-weight:500">{{ it.day }}</span><span class="t-cap c2">{{ it.dow }}</span></div>
+            <span class="t-body" style="font-weight:500">{{ it.dur }}</span>
+            <span class="t-body">{{ it.km }}</span>
+            <span class="t-body" style="text-align:right">{{ it.metric }}</span>
+            <span class="t-bodys c2" style="grid-column:2/6">{{ it.line2 }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ it.r2 }}" hint-placeholder-val="{{ false }}">
+          <div style="border-bottom:1px solid var(--line)">
+            <div class="press" onClick="{{ it.toggle }}" style="display:grid;grid-template-columns:{{ gt }};column-gap:10px;align-items:center;padding:0 var(--m);min-height:52px">
+              <div style="height:28px;border-radius:2px;background:{{ it.color }}"></div>
+              <sc-for list="{{ it.cells }}" as="c" hint-placeholder-count="4"><span class="t-body" style="text-align:{{ c.al }};font-weight:{{ c.w }};font-size:14px">{{ c.v }}</span></sc-for>
+            </div>
+            <sc-if value="{{ it.open }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:4px var(--m) 14px 29px;display:flex;flex-direction:column;gap:10px;animation:ttFade 250ms both">
+                <span class="t-bodys c2">{{ it.full }}</span>
+                <div class="press" onClick="{{ it.go }}" style="display:flex;align-items:center;gap:6px;min-height:40px;align-self:flex-start"><span class="t-bodys" style="font-weight:600">Szczegóły</span><span class="ms" style="font-size:18px">arrow_forward</span></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+  <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:72px var(--m) 24px;display:flex;flex-direction:column;gap:16px;align-items:flex-start">
+      <span class="t-body c2">Brak treningów dla wybranych filtrów.</span>
+      <div class="btn2" onClick="{{ clearFilters }}">Wyczyść filtry</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+  <div style="position:sticky;bottom:0;margin-top:auto;z-index:4;background:var(--surface);border-top:1px solid var(--line);padding:12px var(--m);display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="t-label">{{ totalHead }}</span><span class="t-bodys c2">{{ avgTxt }}</span></div>
+    <span class="t-body" style="font-weight:500">{{ totalSum }}</span>
+  </div>
+  </sc-if>
+  <!-- arkusz sortowania -->
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSort }}" style="position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 32%,transparent);animation:ttFade 150ms both"></div>
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:28px 28px 0 0;padding:12px var(--m) 32px;animation:ttSheet 250ms cubic-bezier(.2,0,0,1) both">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 16px"></div>
+      <span class="t-title" style="display:block;margin-bottom:8px">Sortuj według</span>
+      <sc-for list="{{ sortOpts }}" as="o" hint-placeholder-count="7">
+        <div class="press" onClick="{{ o.tap }}" style="display:flex;align-items:center;gap:14px;height:48px;border-radius:12px">
+          <span style="width:20px;height:20px;border-radius:99px;border:2px solid {{ o.bd }};display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:99px;background:{{ o.dot }}"></span></span>
+          <span class="t-body">{{ o.t }}</span>
+        </div>
+      </sc-for>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+        <div class="chip {{ dirAscCls }}" onClick="{{ setAsc }}" style="justify-content:center;height:44px"><span class="ms" style="font-size:18px">arrow_upward</span>Rosnąco</div>
+        <div class="chip {{ dirDescCls }}" onClick="{{ setDesc }}" style="justify-content:center;height:44px"><span class="ms" style="font-size:18px">arrow_downward</span>Malejąco</div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:700},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;pusto&quot;,&quot;arkusz&quot;,&quot;basen&quot;,&quot;rower&quot;,&quot;trenazer&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:string,p?:object)=&gt;void&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, shut: {}, sel: null, period: 'Wszystko', menu: false, sheet: null, key: 'date', dir: 'desc', open: null };
+  async componentDidMount() { this.setState({ T: await import('./tt-data.js') }); }
+  go = (w) => () => this.props.onNav && this.props.onNav('szczegoly', { w: w.date, d: w.d });
+  getSel() {
+    if (this.state.sel) return this.state.sel;
+    const v = this.props.variant;
+    const m = { basen: ['pool'], rower: ['road'], trenazer: ['trainer'] };
+    return m[v] || [];
+  }
+  renderVals() {
+    const T = this.state.T;
+    if (!T) return { items: [], chips: [], cols: [], periods: [], sortOpts: [], hasRows: true, noRows: false };
+    const lay = String(this.props.layout ?? '1'), l2 = lay === '2';
+    const v = this.props.variant ?? 'dane';
+    const sel = this.getSel(), set = (s) => this.setState({ sel: s });
+    const col = { pool: 'var(--pool)', road: 'var(--road)', trainer: 'var(--trainer)' };
+    const dnames = { pool: 'Basen', road: 'Rower', trainer: 'Trenażer' };
+    const chips = ['pool', 'road', 'trainer'].map(d => {
+      const on = sel.includes(d);
+      return { name: dnames[d], color: col[d], bg: on ? `var(--${d}-c)` : 'transparent', bd: on ? col[d] : 'var(--line)', tap: () => set(on ? sel.filter(x => x !== d) : [...sel, d]) };
+    });
+    const periodsL = ['Tydzień', 'Miesiąc', 'Rok', 'Wszystko'];
+    const cut = { 'Tydzień': '2026-10-18', 'Miesiąc': '2026-10-01', 'Rok': '2026-01-01', 'Wszystko': '0' }[this.state.period];
+    const sheetOpen = this.state.sheet !== null ? this.state.sheet : v === 'arkusz';
+    let rows = T.WORKOUTS.filter(w => (!sel.length || sel.includes(w.d)) && w.date >= cut);
+    if (v === 'pusto') rows = [];
+    const filtered = sel.length > 0 || this.state.period !== 'Wszystko';
+    const { key, dir } = this.state;
+    const sp = (w) => w.pace ? 360 / w.pace : (w.kmh ?? null);
+    const getters = { date: w => w.date + w.time, disc: w => w.d, dur: w => w.sec, km: w => w.km, kcal: w => w.kcal, speed: sp, hr: w => w.hr };
+    const g = getters[key], sgn = dir === 'asc' ? 1 : -1;
+    rows = rows.slice().sort((a, b) => { const x = g(a), y = g(b); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * sgn; });
+    const mode = sel.length === 1 ? sel[0] : 'all';
+    const colDefs = { all: [['Data', 'date'], ['Czas', 'dur'], ['km', 'km'], ['kcal', 'kcal']], pool: [['Data', 'date'], ['Czas', 'dur'], ['km', 'km'], ['/100 m', 'speed'], ['bpm', 'hr']], road: [['Data', 'date'], ['Czas', 'dur'], ['km', 'km'], ['km/h', 'speed'], ['bpm', 'hr']], trainer: [['Data', 'date'], ['Czas', 'dur'], ['kcal', 'kcal'], ['bpm', 'hr']] }[mode];
+    const gt = '3px 56px ' + colDefs.slice(1).map(() => '1fr').join(' ');
+    const cols = colDefs.map(([t, k], i) => ({ t, just: i ? 'flex-end' : 'flex-start', on: key === k, color: key === k ? 'var(--ink)' : 'var(--ink2)', w: key === k ? 600 : 500, tap: () => this.setState(s => ({ key: k, dir: s.key === k ? (s.dir === 'asc' ? 'desc' : 'asc') : (k === 'date' ? 'desc' : 'desc') })) }));
+    const cell = (w, k) => ({ date: T.fmtDay(w.date), dur: T.fmtDur(w.sec), km: w.km ? T.fmtNum(w.km, 1) : '', kcal: T.fmtNum(w.kcal), speed: w.pace ? Math.floor(w.pace / 60) + ':' + String(w.pace % 60).padStart(2, '0') : (w.kmh ? T.fmtNum(w.kmh, 1) : ''), hr: w.hr ? String(w.hr) : '' })[k];
+    const items = [];
+    const sumOf = (rs) => { const s = rs.reduce((a, w) => a + w.sec, 0) / 60, km = rs.reduce((a, w) => a + (w.km || 0), 0), kc = rs.reduce((a, w) => a + w.kcal, 0); return T.fmtSum(s) + (km ? ' · ' + T.fmtKm(km) : '') + ' · ' + T.fmtKcal(kc); };
+    const mk = (w) => {
+      const base = { color: col[w.d], go: this.go(w) };
+      if (!l2) {
+        const metric = w.pace ? T.fmtPace(w.pace) : (w.kmh ? T.fmtKmh(w.kmh) : '');
+        const l2t = [T.fmtKcal(w.kcal), w.hr ? T.fmtBpm(w.hr) : null].filter(Boolean).join(' · ');
+        return { ...base, r1: true, day: T.fmtDay(w.date), dow: T.dowOf(w.date) + ' ' + w.time, dur: T.fmtDur(w.sec), km: w.km ? T.fmtKm(w.km) : '', metric, line2: l2t };
+      }
+      const id = w.date + w.time;
+      return { ...base, r2: true, open: this.state.open === id, toggle: () => this.setState(s => ({ open: s.open === id ? null : id })), cells: colDefs.map(([t, k], i) => ({ v: cell(w, k), al: i ? 'right' : 'left', w: i === 0 ? 500 : 400 })), full: [T.DISC[w.d], T.fmtDateTime(w.date, w.time), T.fmtDur(w.sec), w.km ? T.fmtKm(w.km) : null, T.fmtKcal(w.kcal), w.pace ? T.fmtPace(w.pace) : (w.kmh ? T.fmtKmh(w.kmh) : null), w.hr ? T.fmtBpm(w.hr) : null].filter(Boolean).join(' · ') };
+    };
+    if (key === 'date') {
+      const keys = []; rows.forEach(w => { const k = w.date.slice(0, 7); if (!keys.includes(k)) keys.push(k); });
+      keys.forEach(k => {
+        const rs = rows.filter(w => w.date.slice(0, 7) === k), [y, m] = k.split('-').map(Number);
+        const gh = T.GROUPS.find(x => x.key === k);
+        const shut = !!this.state.shut[k];
+        items.push({ head: true, shut, icon: shut ? 'expand_more' : 'expand_less', tog: () => this.setState(st => ({ shut: { ...st.shut, [k]: !st.shut[k] } })), label: T.MONTHS_FULL[m - 1] + ' ' + y, count: filtered ? rs.length : gh ? gh.count : rs.length, sum: !filtered && gh ? gh.sum : sumOf(rs) });
+        if (!shut) rs.forEach(w => items.push(mk(w)));
+      });
+    } else rows.forEach(w => items.push(mk(w)));
+    const labels = { date: 'Data', disc: 'Dyscyplina', dur: 'Czas', km: 'Dystans', kcal: 'Kalorie', speed: 'Tempo / prędkość', hr: 'Tętno' };
+    const sortOpts = Object.keys(labels).map(k => ({ t: labels[k], bd: key === k ? 'var(--ink)' : 'var(--line)', dot: key === k ? 'var(--ink)' : 'transparent', tap: () => this.setState({ key: k }) }));
+    const n = rows.length;
+    const plt = (c) => c === 1 ? 'trening' : (c % 10 >= 2 && c % 10 <= 4 && (c % 100 < 10 || c % 100 >= 20)) ? 'treningi' : 'treningów';
+    const avg = n ? rows.reduce((a, w) => a + w.sec, 0) / n : 0;
+    return {
+      l2, chips, items, cols, gt, sortOpts, sheetOpen,
+      hasRows: n > 0, noRows: n === 0,
+      period: this.state.period, menuOpen: this.state.menu,
+      periods: periodsL.map(p => ({ t: p, on: p === this.state.period, w: p === this.state.period ? 600 : 400, tap: () => this.setState({ period: p, menu: false }) })),
+      toggleMenu: () => this.setState(s => ({ menu: !s.menu })),
+      sortLabel: labels[key], sortIcon: dir === 'asc' ? 'arrow_upward' : 'arrow_downward',
+      countTxt: filtered ? n + ' ' + plt(n) : T.TOTALS.count + ' treningów',
+      openSort: () => this.setState({ sheet: true }), closeSort: () => this.setState({ sheet: false }),
+      setAsc: () => this.setState({ dir: 'asc' }), setDesc: () => this.setState({ dir: 'desc' }),
+      dirAscCls: dir === 'asc' ? 'on' : '', dirDescCls: dir === 'desc' ? 'on' : '',
+      clearFilters: () => this.setState({ sel: [], period: 'Wszystko', key: 'date', dir: 'desc' }),
+      totalHead: 'Suma (' + (filtered ? n : T.TOTALS.count) + ')',
+      totalSum: filtered ? sumOf(rows) : T.TOTALS.label.replace(/ /g, '\u00a0'),
+      avgTxt: 'śr. ' + (filtered ? T.fmtDur(avg) : T.TOTALS.avg),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

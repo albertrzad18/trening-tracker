@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:4px 0 24px">
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}"><div style="margin:0 var(--m);padding-top:64px"><span class="t-body c2">Rekordy pojawią się, gdy w bazie będą treningi.</span></div></sc-if>
+  <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:0 var(--m) 20px;display:flex;background:var(--track);border-radius:999px;padding:3px;gap:2px">
+      <sc-for list="{{ seg }}" as="t" hint-placeholder-count="4"><div class="t-label" onClick="{{ t.tap }}" style="flex:1;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-transform:none;letter-spacing:0;background:{{ t.bg }};color:{{ t.fg }};transition:background 150ms">{{ t.t }}</div></sc-for>
+    </div>
+    <div style="margin:0 var(--m) var(--sec-gap);padding:var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:6px"><span class="t-label c2">{{ hero.name }}</span><span class="t-hero">{{ hero.v }}<span class="u">{{ hero.u }}</span></span><span class="t-bodys c2">{{ hero.date }}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:20px">
+        <sc-for list="{{ rest }}" as="r" hint-placeholder-count="4"><div class="press" style="padding:14px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px"><span class="t-label c2">{{ r.name }}</span><span class="t-value">{{ r.v }}<span class="u">{{ r.u }}</span></span><span class="t-cap c2">{{ r.date }}</span></div></sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+      <div style="margin:0 var(--m) var(--sec-gap);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:{{ s.bt }}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><sc-if value="{{ s.dot }}" hint-placeholder-val="{{ true }}"><span style="width:10px;height:10px;border-radius:99px;background:{{ s.c }}"></span></sc-if><span class="t-title">{{ s.title }}</span></div>
+        <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="4">
+          <div class="press" onClick="{{ r.go }}" style="display:flex;align-items:center;gap:12px;min-height:60px;border-top:1px solid var(--line)">
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px"><span class="t-bodys c2">{{ r.name }}</span>
+              <sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px"><sc-if value="{{ e1 }}" hint-placeholder-val="{{ true }}"><span class="ms f" style="font-size:16px;color:{{ s.c }}">trophy</span><span class="t-label" style="text-transform:none;letter-spacing:0;color:{{ s.c }}">Nowy rekord</span></sc-if><sc-if value="{{ e2 }}" hint-placeholder-val="{{ false }}"><span class="t-cap" style="border:1px solid {{ s.c }};color:{{ s.c }};border-radius:4px;padding:1px 6px">REKORD</span></sc-if></div></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span class="t-value">{{ r.v }}<span class="u">{{ r.u }}</span></span><span class="t-cap c2">{{ r.date }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;dane&quot;,&quot;pusto&quot;]},&quot;emoji&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;e1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;e1&quot;,&quot;e2&quot;]},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { T: null, sel: 'road' };
+  async componentDidMount() { this.setState({ T: await import('./tt-data.js') }); }
+  split(v) { const m = v.match(/^(.*?)(?: (kcal|km\/h|km|m|\/100 m))$/); return m ? [m[1], '\u00a0' + m[2]] : [v, '']; }
+  renderVals() {
+    const T = this.state.T, b = this.props.direction === 'b', l2 = String(this.props.layout ?? '1') === '2';
+    const base = { l2, l1: !l2, e1: this.props.emoji !== 'e2', e2: this.props.emoji === 'e2', isEmpty: this.props.variant === 'pusto', sections: [], seg: [], rest: [], hero: { name: '', v: '', u: '', date: '' } };
+    if (!T || base.isEmpty) return base;
+    const R = T.RECORDS, nm = { pool: 'Basen', road: 'Rower', trainer: 'Trenażer', periods: 'Najlepsze okresy' };
+    const col = { pool: 'var(--pool)', road: 'var(--road)', trainer: 'var(--trainer)', periods: 'var(--ink)' };
+    const row = (r) => { const [v, u] = this.split(r[1]); return { name: r[0], v, u, date: r[2], isNew: !!r[3], go: () => this.props.onNav && this.props.onNav('szczegoly', {}) }; };
+    const sections = ['pool', 'road', 'trainer', 'periods'].map((k, i) => ({ title: nm[k], c: col[k], dot: k !== 'periods', rows: R[k].map(row), bt: (b || i === 0) ? 'none' : '1px solid var(--line)' }));
+    const sel = this.state.sel;
+    const seg = [['pool', 'Basen'], ['road', 'Rower'], ['trainer', 'Trenażer'], ['periods', 'Okresy']].map(([k, t]) => ({ t, bg: sel === k ? 'var(--accent)' : 'transparent', fg: sel === k ? 'var(--on-accent)' : 'var(--ink)', tap: () => this.setState({ sel: k }) }));
+    const rows = R[sel].map(row);
+    return { ...base, sections, seg, hero: rows[0], rest: rows.slice(1) };
+  }
+}
+
+</script>
+</body>
+</html>

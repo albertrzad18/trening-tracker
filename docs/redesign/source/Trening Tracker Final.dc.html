@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0;background:#E9E9E6}a{color:#17181A}a:hover{color:#59616E}</style>
+</helmet>
+<div style="font-family:'IBM Plex Sans',system-ui,sans-serif;color:#0F1216;padding:48px 56px 96px;display:flex;flex-direction:column;gap:32px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 12px/1 'IBM Plex Sans';letter-spacing:.06em;text-transform:uppercase;color:#59616E">trening-tracker · wybrana wersja</span><span style="font:600 40px/1.1 'IBM Plex Sans';letter-spacing:-.02em">Kierunek B „Panel”</span><span style="font:400 16px/1.5 'IBM Plex Sans';color:#59616E;max-width:680px">Ikony zamiast emoji (E1). Układy: Pulpit 1, Treningi 1, Szczegóły 1, Statystyki 2, Podsumowania 1, Rekordy 1, Cele 1, Więcej / Ustawienia / Diagnostyka 2, ekrany powitalne 1.</span></div>
+    <div style="display:flex;background:#fff;border-radius:99px;padding:3px;gap:2px"><sc-for list="{{ themes }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.tap }}" style="height:36px;padding:0 18px;border-radius:99px;display:flex;align-items:center;font:500 14px/1 'IBM Plex Sans';cursor:pointer;background:{{ t.bg }};color:{{ t.fg }}">{{ t.t }}</div></sc-for></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ nav }}" as="n" hint-placeholder-count="5"><div onClick="{{ n.tap }}" style="height:36px;padding:0 16px;border-radius:99px;display:flex;align-items:center;font:500 14px/1 'IBM Plex Sans';cursor:pointer;background:{{ n.bg }};color:{{ n.fg }}">{{ n.t }}</div></sc-for></div>
+  <sc-if value="{{ isProto }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:56px;flex-wrap:wrap;align-items:flex-start">
+      <dc-import name="TT Phone" screen="pulpit" interactive="{{ true }}" direction="b" theme="{{ theme }}" emoji="e1" layouts="{{ layouts }}" hint-size="390px,844px"></dc-import>
+      <div style="max-width:380px;display:flex;flex-direction:column;gap:12px"><span style="font:600 20px/1.2 'IBM Plex Sans'">Działający prototyp</span><span style="font:400 15px/1.55 'IBM Plex Sans';color:#59616E">Klikaj dolną nawigację, wiersze treningów i listę w Więcej. Strzałka wraca. Arkusze (sortowanie, dodawanie celu, edycja ustawień), filtry i przełączniki reagują na dotyk. Wykresy dorysowują się przy wejściu na ekran.</span></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isShots }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:48px 40px;flex-wrap:wrap;align-items:flex-start">
+      <sc-for list="{{ phones }}" as="p" hint-placeholder-count="6"><div data-screen-label="{{ p.cap }}" style="display:flex;flex-direction:column;gap:10px"><span style="font:500 13px/1 'IBM Plex Mono',monospace;color:#59616E">{{ p.cap }}</span><dc-import name="TT Phone" screen="{{ p.screen }}" layout="{{ p.layout }}" variant="{{ p.variant }}" direction="b" theme="{{ theme }}" emoji="e1" hint-size="390px,844px"></dc-import></div></sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isDoc }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:32px;max-width:1200px">
+      <sc-for list="{{ docs }}" as="d" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:12px"><span style="font:600 22px/1.2 'IBM Plex Sans'">{{ d.title }}</span>
+          <div style="background:#fff;border-radius:16px;padding:8px 24px;display:flex;flex-direction:column"><sc-for list="{{ d.rows }}" as="r" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:{{ d.cols }};gap:16px;padding:12px 0;border-top:{{ r.bt }};align-items:center;font:400 14px/1.45 'IBM Plex Sans'"><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:10px"><sc-if value="{{ c.sw }}" hint-placeholder-val="{{ false }}"><span style="width:22px;height:22px;border-radius:6px;background:{{ c.sw }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);flex:none"></span></sc-if><span>{{ c.t }}</span></div></sc-for></div></sc-for></div></div>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sec: 'proto', theme: 'light' };
+  renderVals() {
+    const sec = this.state.sec, theme = this.state.theme;
+    const L = { pulpit: '1', treningi: '1', szczegoly: '1', statystyki: '2', podsumowania: '1', rekordy: '1', cele: '1', wiecej: '2', ustawienia: '2', diagnostyka: '2', onboarding: '1' };
+    const P = (screen, variant, cap) => ({ screen, variant, layout: L[screen], cap });
+    const groups = {
+      glowne: [P('pulpit', 'dane', 'Pulpit'), P('treningi', 'dane', 'Treningi'), P('szczegoly', 'rower', 'Szczegóły · rower'), P('statystyki', 'dane', 'Statystyki'), P('podsumowania', 'dane', 'Podsumowania'), P('rekordy', 'dane', 'Rekordy')],
+      reszta: [P('cele', 'dane', 'Cele'), P('wiecej', 'dane', 'Więcej'), P('ustawienia', 'dane', 'Ustawienia'), P('diagnostyka', 'dane', 'Diagnostyka'), P('szczegoly', 'trenazer', 'Szczegóły · trenażer'), P('szczegoly', 'basen', 'Szczegóły · basen')],
+      stany: [P('pulpit', 'ladowanie', 'Pulpit · ładowanie'), P('pulpit', 'pusto', 'Pulpit · pusto'), P('treningi', 'pusto', 'Treningi · pusto'), P('treningi', 'arkusz', 'Treningi · sortowanie'), P('statystyki', 'ladowanie', 'Statystyki · ładowanie'), P('cele', 'arkusz', 'Cele · dodawanie'), P('ustawienia', 'arkusz', 'Ustawienia · edycja'), P('wiecej', 'blad', 'Więcej · błąd synchronizacji'), P('onboarding', 'brak-uprawnien', 'Brak uprawnień'), P('onboarding', 'brak-hc', 'Brak Health Connect'), P('onboarding', 'ladowanie', 'Ładowanie')],
+    };
+    const tok = (n, a, b) => ({ bt: '1px solid #ECEAE5', cells: [{ t: n }, { t: a, sw: a }, { t: b, sw: b }] });
+    const colors = { title: 'Kolory (B)', cols: '160px 1fr 1fr', rows: [{ bt: 'none', cells: [{ t: '' }, { t: 'Jasny' }, { t: 'Ciemny' }] }, tok('tło', '#EEF0F3', '#0D0F12'), tok('panel', '#FFFFFF', '#171A1F'), tok('tor / puste', '#E3E6EB', '#22262D'), tok('linia', '#D9DDE3', '#2A2F37'), tok('tekst', '#0F1216', '#E8EBEF'), tok('tekst 2', '#59616E', '#97A0AD'), tok('akcja', '#B8326A', '#F07AA6'), tok('basen', '#2F6BFF', '#6E9BFF'), tok('rower', '#1E9E5A', '#4CC985'), tok('trenażer', '#E5730B', '#FF9E4A'), tok('błąd', '#C4372B', '#FF7A6B')] };
+    const tx = (rows, cols, title) => ({ title, cols, rows: rows.map((r, i) => ({ bt: i ? '1px solid #ECEAE5' : 'none', cells: r.map(t => ({ t })) })) });
+    const typo = tx([['Krój', 'IBM Plex Sans + IBM Plex Mono'], ['Liczba główna', '64/64, 600, −2%'], ['Duża liczba', '44/48, 600'], ['Tytuł ekranu', '24/30, 600'], ['Wartość', '20/26, 600'], ['Tytuł sekcji', '16/22, 600'], ['Tekst', '15/22 · 13/18'], ['Etykieta', '12/16, 500, wersaliki +6%'], ['Odstępy', 'skala 4 px; margines 16, odstęp paneli 12, wypełnienie panelu 16'], ['Promienie', 'panel 20, mapa 16, przyciski i chipy pełne, słupki pełne'], ['Ruch', '150 ms dotyk, 250 ms przejścia, 450 ms wykresy, 600 ms pierścień, bez sprężyn']], '200px 1fr', 'Typografia, odstępy, ruch');
+    const charts = tx([['Siatka', 'brak siatki i osi Y; baza 1 px; wartość przy najwyższym słupku'], ['Słupki', '40% slotu, pełne zaokrąglenie, warstwy rozdzielone 1 px'], ['Linie', '2,5 px, wypełnienie 12%, kropka na końcu'], ['Tętno', 'w kolorze akcji'], ['Heatmapa', 'kółka 9 px, 4 poziomy nasycenia koloru dyscypliny'], ['Udział dyscyplin', 'poziomy pasek z legendą'], ['Strefy tętna', '5 pasków na wspólnej skali, rampa akcentu'], ['Mapa', 'ramka 16 w panelu, ślad 3 px, znaczniki Start i Meta'], ['Wspólne', 'jedna liczba nad wykresem · brak danych = brak słupka · animacja wejścia raz']], '200px 1fr', 'Zasady wykresów');
+    const ch = { title: 'Zmiany względem obecnej wersji', cols: '1fr 1fr 1fr', rows: [{ bt: 'none', cells: [{ t: 'Wylatuje' }, { t: 'Dochodzi' }, { t: 'Do rozstrzygnięcia w kodzie' }] }, { bt: '1px solid #ECEAE5', cells: [{ t: 'stos szarych kart · dynamiczne kolory · emoji i ✔ ✘ · pozioma tabela · przerywane siatki · osobna karta średniej · pięć przycisków w Więcej · zielono-czerwone strefy · spinner' }, { t: 'stała paleta jasna i ciemna · akcent malinowy · cyfry tabelaryczne · kluczowa liczba nad wykresem · lista treningów bez przewijania i arkusz sortowania · szkielety ładowania · powitalne stany globalne · ikony zamiast emoji' }, { t: 'wyłączenie dynamicColor i własny ColorScheme · font z polskimi znakami · Vico bez osi Y i z pełnym zaokrągleniem słupków · kolor kratki heatmapy przy dwóch dyscyplinach · stickyHeader + pasek sumy · ślad trasy w osmdroid · respektowanie „usuń animacje”' }] }] };
+    const sets = { proto: [], glowne: groups.glowne, reszta: groups.reszta, stany: groups.stany, dok: [] };
+    const navDef = [['proto', 'Prototyp'], ['glowne', 'Ekrany główne'], ['reszta', 'Pozostałe ekrany'], ['stany', 'Stany i arkusze'], ['dok', 'Tokeny i zmiany']];
+    return {
+      theme, isProto: sec === 'proto', isShots: ['glowne', 'reszta', 'stany'].includes(sec), isDoc: sec === 'dok', phones: sets[sec] || [], layouts: L, docs: [colors, typo, charts, ch],
+      nav: navDef.map(([k, t]) => ({ t, bg: sec === k ? '#0F1216' : '#fff', fg: sec === k ? '#fff' : '#0F1216', tap: () => this.setState({ sec: k }) })),
+      themes: [['light', 'Jasny'], ['dark', 'Ciemny']].map(([k, t]) => ({ t, bg: theme === k ? '#0F1216' : 'transparent', fg: theme === k ? '#fff' : '#0F1216', tap: () => this.setState({ theme: k }) })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

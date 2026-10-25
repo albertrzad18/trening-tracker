@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:4px 0 24px">
+  <div style="margin:0 var(--m) var(--sec-gap);display:flex;flex-direction:column;gap:12px">
+    <span class="t-bodys c2">Co przyszło z Health Connect: liczba rekordów na typ danych.</span>
+    <sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--track);border-radius:12px;padding:16px;font:400 12.5px/1.7 var(--mono);white-space:pre-wrap;color:var(--ink)">{{ report }}</div>
+    </sc-if>
+    <sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="t-bodys" style="font-family:var(--mono)">{{ r.t }}</span><span class="t-body" style="font-weight:600">{{ r.n }}</span></div><div style="height:4px;border-radius:99px;background:var(--track)"><div style="height:100%;width:{{ r.w }};border-radius:99px;background:var(--ink)"></div></div></div></sc-for>
+        <div class="t-bodys c2" style="padding-top:12px;border-top:1px solid var(--line)">Okres: 1 kwi 2025 – 24 paź 2026</div>
+      </div>
+    </sc-if>
+    <div class="btn2" style="align-self:flex-start"><span class="ms" style="font-size:20px">content_copy</span>Kopiuj raport</div>
+  </div>
+  <div style="margin:0 var(--m);padding:var(--sec-pt) var(--panel-pad) var(--panel-pad);background:var(--panel-bg);border-radius:var(--panel-r);border-top:var(--sec-sep);display:flex;flex-direction:column;gap:12px"><span class="t-title">Tylko wersja debug</span><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="btn2">Wczytaj dane demo</div><div class="btn2">Usuń dane demo</div></div></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:700},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;]},&quot;variant&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;dane&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;fn&quot;}}">
+class Component extends DCLogic {
+  state = { T: null };
+  async componentDidMount() { this.setState({ T: await import('./tt-data.js') }); }
+  renderVals() {
+    const l2 = String(this.props.layout ?? '1') === '2', T = this.state.T;
+    if (!T) return { l1: !l2, l2, rows: [], report: '' };
+    const mx = Math.log10(Math.max(...T.DIAG.map(d => d[1])));
+    const rows = T.DIAG.map(([t, n]) => ({ t, n: T.fmtNum(n), w: Math.max(2, Math.log10(n) / mx * 100) + '%' }));
+    const pad = Math.max(...T.DIAG.map(d => d[0].length)) + 2;
+    const report = T.DIAG.map(([t, n]) => t.padEnd(pad) + T.fmtNum(n)).join('\n') + '\n\nOkres: 1 kwi 2025 – 24 paź 2026';
+    return { l1: !l2, l2, rows, report };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -33,6 +33,7 @@ import io.github.albertrzad18.treningtracker.ui.common.color
 fun ActivityHeatmap(data: HeatmapData, modifier: Modifier = Modifier) {
     // Dzień bez treningu ma być widoczny jako pusty kwadrat, ale nie rzucać się w oczy.
     val emptyColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+    val palette = io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors.current
     val gap = 2.dp
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -49,7 +50,7 @@ fun ActivityHeatmap(data: HeatmapData, modifier: Modifier = Modifier) {
                             emptyColor
                         } else {
                             // Najkrótsze treningi też mają być widoczne, dlatego dolny próg krycia.
-                            day.disciplines.first().color().copy(alpha = 0.35f + 0.65f * intensity)
+                            palette.of(day.disciplines.first()).copy(alpha = 0.35f + 0.65f * intensity)
                         }
                         drawRoundRect(
                             color = color,

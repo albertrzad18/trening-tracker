@@ -31,6 +31,7 @@ import java.time.Duration
 fun DisciplineDonut(shares: List<DisciplineShare>, modifier: Modifier = Modifier) {
     val total = Duration.ofSeconds(shares.sumOf { it.duration.seconds })
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
+    val palette = io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors.current
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(140.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.size(140.dp)) {
@@ -51,7 +52,7 @@ fun DisciplineDonut(shares: List<DisciplineShare>, modifier: Modifier = Modifier
                     // Mała przerwa między wycinkami, żeby kolory się nie zlewały.
                     val sweep = (share.fraction * 360f).toFloat()
                     drawArc(
-                        color = share.discipline.color(),
+                        color = palette.of(share.discipline),
                         startAngle = start + 1f,
                         sweepAngle = (sweep - 2f).coerceAtLeast(1f),
                         useCenter = false,

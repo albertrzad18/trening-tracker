@@ -12,16 +12,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.domain.Discipline
-import io.github.albertrzad18.treningtracker.ui.theme.PoolBlue
-import io.github.albertrzad18.treningtracker.ui.theme.RoadGreen
-import io.github.albertrzad18.treningtracker.ui.theme.TrainerOrange
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 
-/** Stały kolor dyscypliny: basen niebieski, rower zielony, trenażer pomarańczowy. */
-fun Discipline.color(): Color = when (this) {
-    Discipline.POOL -> PoolBlue
-    Discipline.ROAD -> RoadGreen
-    Discipline.TRAINER -> TrainerOrange
-}
+/** Stały kolor dyscypliny z motywu: basen niebieski, rower zielony, trenażer pomarańczowy. */
+@Composable
+fun Discipline.color(): Color = LocalTtColors.current.of(this)
+
+/** Tło kontenera dyscypliny (zaznaczony chip, obszar wykresu). */
+@Composable
+fun Discipline.container(): Color = LocalTtColors.current.container(this)
 
 @StringRes
 fun Discipline.labelRes(): Int = when (this) {
@@ -30,8 +29,8 @@ fun Discipline.labelRes(): Int = when (this) {
     Discipline.TRAINER -> R.string.discipline_trainer
 }
 
-/** Kolorowa kropka dyscypliny, używana w tabelach, kafelkach i kartach. */
+/** Kolorowa kropka dyscypliny: 8 dp w listach i wierszach, większa w nagłówkach. */
 @Composable
-fun DisciplineDot(discipline: Discipline, size: Dp = 12.dp, modifier: Modifier = Modifier) {
+fun DisciplineDot(discipline: Discipline, size: Dp = 8.dp, modifier: Modifier = Modifier) {
     Box(modifier.size(size).background(discipline.color(), CircleShape))
 }

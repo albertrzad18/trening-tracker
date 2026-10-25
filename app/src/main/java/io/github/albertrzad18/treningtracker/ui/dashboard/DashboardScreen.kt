@@ -101,7 +101,7 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun DashboardContent(
+internal fun DashboardContent(
     data: DashboardData?,
     onOpenWorkout: (String) -> Unit,
     onOpenSummaries: () -> Unit,

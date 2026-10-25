@@ -174,7 +174,7 @@ private const val CHAIN_APP = 4
  * skąd biorą się dane i na czym stoimy.
  */
 @Composable
-private fun WelcomeScreen(
+internal fun WelcomeScreen(
     currentStep: Int,
     text: String,
     buttonText: String? = null,
@@ -364,7 +364,7 @@ private fun MainScaffold() {
                 )
             }
             composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
-            composable(Routes.STATS) { StatsScreen(onOpenSummaries = { nav.navigate(Routes.SUMMARIES) }) }
+            composable(Routes.STATS) { StatsScreen() }
             composable(Routes.MORE) {
                 MoreScreen(
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },

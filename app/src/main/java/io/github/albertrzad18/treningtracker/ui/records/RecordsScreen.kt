@@ -97,6 +97,12 @@ class RecordsViewModel(app: Application) : AndroidViewModel(app) {
 @Composable
 fun RecordsScreen(onBack: () -> Unit, onOpenWorkout: (String) -> Unit, vm: RecordsViewModel = viewModel()) {
     val data by vm.data.collectAsStateWithLifecycle()
+    RecordsContent(data, onBack, onOpenWorkout)
+}
+
+/** Sam widok rekordów: bez ViewModelu, więc da się go pokazać w `@Preview`. */
+@Composable
+internal fun RecordsContent(data: RecordsData?, onBack: () -> Unit, onOpenWorkout: (String) -> Unit) {
     val colors = LocalTtColors.current
     Column(Modifier.fillMaxSize()) {
         TtTopBar(stringResource(R.string.records_title), onBack)

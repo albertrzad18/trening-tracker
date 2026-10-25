@@ -126,6 +126,22 @@ class GoalsViewModel(app: Application) : AndroidViewModel(app) {
 @Composable
 fun GoalsScreen(onBack: () -> Unit, vm: GoalsViewModel = viewModel()) {
     val rows by vm.rows.collectAsStateWithLifecycle()
+    GoalsContent(
+        rows = rows,
+        onBack = onBack,
+        onAdd = vm::add,
+        onDelete = vm::delete,
+    )
+}
+
+/** Sam widok celów: bez ViewModelu, więc da się go pokazać w `@Preview`. */
+@Composable
+internal fun GoalsContent(
+    rows: List<GoalRow>?,
+    onBack: () -> Unit,
+    onAdd: (Discipline?, GoalPeriod, GoalMetric, Double) -> Unit,
+    onDelete: (Goal) -> Unit,
+) {
     var addOpen by remember { mutableStateOf(false) }
     var detail by remember { mutableStateOf<GoalRow?>(null) }
     val colors = LocalTtColors.current
@@ -195,7 +211,7 @@ fun GoalsScreen(onBack: () -> Unit, vm: GoalsViewModel = viewModel()) {
         AddGoalSheet(
             onDismiss = { addOpen = false },
             onSave = { discipline, period, metric, target ->
-                vm.add(discipline, period, metric, target)
+                onAdd(discipline, period, metric, target)
                 addOpen = false
             },
         )
@@ -205,7 +221,7 @@ fun GoalsScreen(onBack: () -> Unit, vm: GoalsViewModel = viewModel()) {
             row = row,
             onDismiss = { detail = null },
             onDelete = {
-                vm.delete(row.progress.goal)
+                onDelete(row.progress.goal)
                 detail = null
             },
         )

@@ -179,9 +179,31 @@ class StatsViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun StatsScreen(onOpenSummaries: () -> Unit, vm: StatsViewModel = viewModel()) {
+fun StatsScreen(vm: StatsViewModel = viewModel()) {
     val filters by vm.filters.collectAsStateWithLifecycle()
     val data by vm.data.collectAsStateWithLifecycle()
+    StatsContent(
+        filters = filters,
+        data = data,
+        onToggleDiscipline = vm::toggleDiscipline,
+        onPeriod = vm::setPeriod,
+        onTab = vm::setTab,
+        onMetric = vm::setMetric,
+        onTrendDiscipline = vm::setTrendDiscipline,
+    )
+}
+
+/** Sam widok statystyk: bez ViewModelu, więc da się go pokazać w `@Preview`. */
+@Composable
+internal fun StatsContent(
+    filters: StatsFilters,
+    data: StatsData?,
+    onToggleDiscipline: (Discipline) -> Unit,
+    onPeriod: (PeriodFilter) -> Unit,
+    onTab: (StatsTab) -> Unit,
+    onMetric: (StatsMetric) -> Unit,
+    onTrendDiscipline: (Discipline) -> Unit,
+) {
     val colors = LocalTtColors.current
     val d = data
 
@@ -193,10 +215,10 @@ fun StatsScreen(onOpenSummaries: () -> Unit, vm: StatsViewModel = viewModel()) {
                 .padding(top = TtSpace.x2, bottom = TtSpace.x4),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            DisciplineFilterChips(filters.disciplines, vm::toggleDiscipline, modifier = Modifier.weight(1f))
-            PeriodMenuChip(filters.period, vm::setPeriod)
+            DisciplineFilterChips(filters.disciplines, onToggleDiscipline, modifier = Modifier.weight(1f))
+            PeriodMenuChip(filters.period, onPeriod)
         }
-        TabRow(filters.tab, vm::setTab)
+        TabRow(filters.tab, onTab)
         Spacer(Modifier.height(TtSpace.panelGap))
         when {
             d == null -> StatsSkeleton()
@@ -215,7 +237,7 @@ fun StatsScreen(onOpenSummaries: () -> Unit, vm: StatsViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
             ) {
                 when (filters.tab) {
-                    StatsTab.VOLUME -> item { VolumePanel(d, filters, vm::setMetric) }
+                    StatsTab.VOLUME -> item { VolumePanel(d, filters, onMetric) }
                     StatsTab.CALENDAR -> item { CalendarPanel(d) }
                     StatsTab.SHARE -> item { SharePanel(d) }
                     StatsTab.RHYTHM -> {
@@ -224,7 +246,7 @@ fun StatsScreen(onOpenSummaries: () -> Unit, vm: StatsViewModel = viewModel()) {
                     }
                     StatsTab.PROGRESS -> {
                         item { CumulativePanel(d) }
-                        item { TrendPanel(d, filters, vm::setTrendDiscipline) }
+                        item { TrendPanel(d, filters, onTrendDiscipline) }
                         item { FormPanel(d) }
                     }
                 }

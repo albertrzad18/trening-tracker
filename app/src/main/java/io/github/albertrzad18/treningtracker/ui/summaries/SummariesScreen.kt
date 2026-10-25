@@ -106,6 +106,24 @@ fun SummariesScreen(
 ) {
     val granularity by vm.granularity.collectAsStateWithLifecycle()
     val list by vm.data.collectAsStateWithLifecycle()
+    SummariesContent(
+        granularity = granularity,
+        periods = list,
+        onGranularity = vm::setGranularity,
+        onBack = onBack,
+        onOpenWorkout = onOpenWorkout,
+    )
+}
+
+/** Sam widok podsumowań: bez ViewModelu, więc da się go pokazać w `@Preview`. */
+@Composable
+internal fun SummariesContent(
+    granularity: SummaryGranularity,
+    periods: List<PeriodSummary>?,
+    onGranularity: (SummaryGranularity) -> Unit,
+    onBack: () -> Unit,
+    onOpenWorkout: (String) -> Unit,
+) {
     // Rozwinięty jest jeden okres naraz; po zmianie zakładki znów najnowszy.
     var openIndex by remember(granularity) { mutableStateOf(0) }
 
@@ -115,10 +133,9 @@ fun SummariesScreen(
             options = SummaryGranularity.entries,
             selected = granularity,
             label = { stringResource(it.labelRes()) },
-            onSelect = vm::setGranularity,
+            onSelect = onGranularity,
             modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x4),
         )
-        val periods = list
         if (periods == null) {
             Column(
                 Modifier.padding(horizontal = TtSpace.screenMargin),

@@ -140,29 +140,56 @@ fun WorkoutsScreen(onOpenWorkout: (String) -> Unit, vm: WorkoutsViewModel = view
     val filters by vm.filters.collectAsStateWithLifecycle()
     val collapsed by vm.collapsed.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
+    WorkoutsContent(
+        filters = filters,
+        collapsed = collapsed,
+        result = result,
+        onToggleDiscipline = vm::toggleDiscipline,
+        onPeriod = vm::setPeriod,
+        onSort = vm::setSort,
+        onAscending = vm::setAscending,
+        onClear = vm::clearFilters,
+        onToggleMonth = vm::toggleMonth,
+        onOpenWorkout = onOpenWorkout,
+    )
+}
+
+/** Sam widok listy: bez ViewModelu, więc da się go pokazać w `@Preview`. */
+@Composable
+internal fun WorkoutsContent(
+    filters: WorkoutFilters,
+    collapsed: Set<String>,
+    result: WorkoutListResult?,
+    onToggleDiscipline: (Discipline) -> Unit,
+    onPeriod: (PeriodFilter) -> Unit,
+    onSort: (SortColumn) -> Unit,
+    onAscending: (Boolean) -> Unit,
+    onClear: () -> Unit,
+    onToggleMonth: (String) -> Unit,
+    onOpenWorkout: (String) -> Unit,
+) {
     var sortSheet by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
         FilterBar(
             filters = filters,
             count = result?.workouts?.size,
-            onToggleDiscipline = vm::toggleDiscipline,
-            onPeriod = vm::setPeriod,
+            onToggleDiscipline = onToggleDiscipline,
+            onPeriod = onPeriod,
             onOpenSort = { sortSheet = true },
         )
-        val r = result
         when {
-            r == null -> ListSkeleton()
-            r.workouts.isEmpty() -> EmptyList(onClear = vm::clearFilters)
+            result == null -> ListSkeleton()
+            result.workouts.isEmpty() -> EmptyList(onClear = onClear)
             else -> {
                 WorkoutList(
-                    result = r,
+                    result = result,
                     collapsed = collapsed,
-                    onToggleMonth = vm::toggleMonth,
+                    onToggleMonth = onToggleMonth,
                     onOpenWorkout = onOpenWorkout,
                     modifier = Modifier.weight(1f),
                 )
-                SummaryBar(r)
+                SummaryBar(result)
             }
         }
     }
@@ -171,8 +198,8 @@ fun WorkoutsScreen(onOpenWorkout: (String) -> Unit, vm: WorkoutsViewModel = view
         SortSheet(
             filters = filters,
             onDismiss = { sortSheet = false },
-            onSort = vm::setSort,
-            onAscending = vm::setAscending,
+            onSort = onSort,
+            onAscending = onAscending,
         )
     }
 }

@@ -155,7 +155,7 @@ fun WorkoutDetailScreen(onBack: () -> Unit, vm: WorkoutDetailViewModel = viewMod
 }
 
 @Composable
-private fun DetailContent(state: DetailState.Found) {
+internal fun DetailContent(state: DetailState.Found) {
     val colors = LocalTtColors.current
     val workout = state.workout
     val zone = ZoneId.systemDefault()

@@ -98,6 +98,8 @@ fun Panel(
             .fillMaxWidth()
             .clip(shape)
             .background(colors.surface)
+            // W ciemnym motywie panel odcina się od tła cienkim obrysem (cieni nie używamy).
+            .then(if (colors.isDark) Modifier.border(1.dp, colors.line, shape) else Modifier)
             .padding(padding),
         content = content,
     )

@@ -83,9 +83,9 @@ val TtLight = TtColors(
 
 val TtDark = TtColors(
     bg = Color(0xFF0D0F12),
-    surface = Color(0xFF171A1F),
-    track = Color(0xFF22262D),
-    line = Color(0xFF2A2F37),
+    surface = Color(0xFF1D2128),
+    track = Color(0xFF292E36),
+    line = Color(0xFF353B45),
     ink = Color(0xFFE8EBEF),
     ink2 = Color(0xFF97A0AD),
     accent = Color(0xFFF07AA6),

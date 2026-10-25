@@ -180,3 +180,34 @@ fun demoDailyStats(today: LocalDate, months: Long = 18, seed: Int = 2026): List<
         )
     }.toList()
 }
+
+/**
+ * Trening demo z dzisiaj, żeby sprawdzić kartę dnia na Dashboardzie: najpierw basen, potem trenażer.
+ * [n] to numer kolejnego treningu dnia (0 albo 1); inne wartości zwracają `null`.
+ */
+fun demoTodayWorkout(n: Int, today: LocalDate, zone: ZoneId, nowMillis: Long): WorkoutEntity? {
+    val (discipline, hour, minutes) = when (n) {
+        0 -> Triple(Discipline.POOL, 7, 45L)
+        1 -> Triple(Discipline.TRAINER, 12, 60L)
+        else -> return null
+    }
+    val start = today.atTime(LocalTime.of(hour, 10)).atZone(zone).toInstant()
+    val isPool = discipline == Discipline.POOL
+    return WorkoutEntity(
+        id = "demo-today-$n",
+        discipline = discipline,
+        startMillis = start.toEpochMilli(),
+        zoneOffsetSec = zone.rules.getOffset(start).totalSeconds,
+        durationSec = minutes * 60,
+        title = null,
+        distanceM = if (isPool) 2_100.0 else null,
+        caloriesKcal = if (isPool) 410.0 else 520.0,
+        avgHeartRate = if (isPool) 131 else 142,
+        maxHeartRate = if (isPool) 152 else 158,
+        avgSpeedMps = if (isPool) 2_100.0 / (minutes * 60) else null,
+        maxSpeedMps = null,
+        elevationGainM = null,
+        dataOrigin = DEMO_ORIGIN,
+        syncedAt = nowMillis,
+    )
+}

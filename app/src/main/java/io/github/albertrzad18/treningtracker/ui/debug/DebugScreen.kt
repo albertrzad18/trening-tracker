@@ -178,6 +178,7 @@ private fun DemoDataPanel(viewModel: DebugViewModel, modifier: Modifier = Modifi
             ) {
                 SecondaryButton(text = stringResource(R.string.debug_demo_fill), onClick = viewModel::fillDemoData)
                 SecondaryButton(text = stringResource(R.string.debug_demo_clear), onClick = viewModel::clearDemoData)
+                SecondaryButton(text = stringResource(R.string.debug_demo_today), onClick = viewModel::addTodayWorkout)
             }
             when (val m = message) {
                 is DemoMessage.Added -> Text(

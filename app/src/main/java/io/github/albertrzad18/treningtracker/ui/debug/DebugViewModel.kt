@@ -8,6 +8,7 @@ import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
 import io.github.albertrzad18.treningtracker.data.demo.demoDailyStats
 import io.github.albertrzad18.treningtracker.data.demo.demoSeries
+import io.github.albertrzad18.treningtracker.data.demo.demoTodayWorkout
 import io.github.albertrzad18.treningtracker.data.demo.demoWorkouts
 import io.github.albertrzad18.treningtracker.data.healthconnect.DataKind
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
@@ -77,9 +78,23 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private var todayCount = 0
+
+    /** Dodaje kolejny demo trening z dzisiaj (basen, potem trenażer), żeby zobaczyć kartę dnia. */
+    fun addTodayWorkout() {
+        viewModelScope.launch {
+            val workout = demoTodayWorkout(todayCount, LocalDate.now(), ZoneId.systemDefault(), System.currentTimeMillis())
+            if (workout != null) {
+                dao.upsertAll(listOf(workout))
+                todayCount++
+            }
+        }
+    }
+
     fun clearDemoData() {
         viewModelScope.launch {
             dao.deleteByOrigin(DEMO_ORIGIN)
+            todayCount = 0
             dailyDao.deleteByOrigin(DEMO_ORIGIN)
             _demoMessage.value = DemoMessage.Removed
         }

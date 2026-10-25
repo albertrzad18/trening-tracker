@@ -200,6 +200,7 @@
     <string name="debug_demo_desc">Sztuczne treningi do sprawdzenia wykresów i tabeli. Nie są wysyłane do Health Connect i nie mieszają się z Twoimi danymi.</string>
     <string name="debug_demo_fill">Wczytaj dane demo</string>
     <string name="debug_demo_clear">Usuń dane demo</string>
+    <string name="debug_demo_today">Dodaj trening na dziś</string>
     <string name="debug_demo_added">Dodano treningów demo: %1$d</string>
     <string name="debug_demo_removed">Dane demo usunięte</string>
 
@@ -217,6 +218,7 @@
     <string name="passive_steps">Kroki</string>
     <string name="passive_steps_avg">Śr. dziennie</string>
     <string name="passive_basal">Przepalone</string>
+    <string name="passive_basal_avg">Śr. dziennie</string>
     <string name="dashboard_burned">Przepalone</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>

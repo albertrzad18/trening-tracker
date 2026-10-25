@@ -505,6 +505,8 @@ private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
         passive.averageSteps?.takeIf { period != SummaryGranularity.DAY }
             ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
         passive.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
+        passive.averageBasalKcal?.takeIf { period != SummaryGranularity.DAY }
+            ?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
     )
     MetricGrid(items)
 }

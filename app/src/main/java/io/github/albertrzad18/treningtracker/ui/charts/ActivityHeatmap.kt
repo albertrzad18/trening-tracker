@@ -9,78 +9,111 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.albertrzad18.treningtracker.R
+import io.github.albertrzad18.treningtracker.domain.Discipline
 import io.github.albertrzad18.treningtracker.domain.HeatmapData
-import io.github.albertrzad18.treningtracker.ui.common.color
+import io.github.albertrzad18.treningtracker.ui.common.CaptionText
+import io.github.albertrzad18.treningtracker.ui.format.formatMonthShort
+import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
+import io.github.albertrzad18.treningtracker.ui.theme.TtColors
+import java.time.YearMonth
 
 /**
- * Kalendarz aktywności: kolumna to tydzień, wiersz to dzień tygodnia (od poniedziałku u góry).
- * Im dłuższy trening, tym mocniejszy kolor; kolor bierzemy z dyscypliny pierwszego treningu dnia.
+ * Kalendarz aktywności: kolumna to tydzień, kółko to dzień (od poniedziałku u góry).
+ * Kolor bierzemy z dyscypliny, która zajęła w danym dniu najwięcej czasu, a nasycenie
+ * z długości treningu (cztery poziomy). Dzień bez treningu zostaje torem.
  */
 @Composable
 fun ActivityHeatmap(data: HeatmapData, modifier: Modifier = Modifier) {
-    // Dzień bez treningu ma być widoczny jako pusty kwadrat, ale nie rzucać się w oczy.
-    val emptyColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-    val palette = io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors.current
-    val gap = 2.dp
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BoxWithConstraints(Modifier.fillMaxWidth()) {
-            val weeks = data.weeks.size.coerceAtLeast(1)
-            val cell = ((maxWidth - gap * (weeks - 1)) / weeks).coerceAtMost(18.dp)
-            Canvas(Modifier.fillMaxWidth().height(cell * 7 + gap * 6)) {
-                val cellPx = cell.toPx()
-                val step = cellPx + gap.toPx()
-                val radius = CornerRadius(cellPx / 5f)
-                data.weeks.forEachIndexed { x, week ->
-                    week.forEachIndexed { y, day ->
-                        val intensity = if (data.maxMinutes == 0) 0f else day.minutes.toFloat() / data.maxMinutes
-                        val color = if (day.minutes == 0) {
-                            emptyColor
-                        } else {
-                            // Najkrótsze treningi też mają być widoczne, dlatego dolny próg krycia.
-                            palette.of(day.disciplines.first()).copy(alpha = 0.35f + 0.65f * intensity)
-                        }
-                        drawRoundRect(
-                            color = color,
-                            topLeft = Offset(x * step, y * step),
-                            size = Size(cellPx, cellPx),
-                            cornerRadius = radius,
-                        )
+    val colors = LocalTtColors.current
+    val gap = 3.dp
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        MonthLabels(data, gap)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(Modifier.width(18.dp)) {
+                // Podpisujemy co drugi dzień tygodnia, żeby kolumna była wąska.
+                listOf("pn", "", "śr", "", "pt", "", "nd").forEach { label ->
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                        if (label.isNotEmpty()) CaptionText(label)
                     }
                 }
             }
+            Cells(data, colors, gap, Modifier.weight(1f))
         }
-        HeatmapScale(emptyColor)
+        Legend(colors)
     }
 }
 
 @Composable
-private fun HeatmapScale(emptyColor: androidx.compose.ui.graphics.Color) {
-    val sample = MaterialTheme.colorScheme.primary
-    val steps = listOf(emptyColor, sample.copy(alpha = 0.35f), sample.copy(alpha = 0.6f), sample.copy(alpha = 0.85f), sample)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            stringResource(R.string.heatmap_less),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        steps.forEach { Box(Modifier.size(10.dp).background(it, RoundedCornerShape(2.dp))) }
-        Text(
-            stringResource(R.string.heatmap_more),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+private fun MonthLabels(data: HeatmapData, gap: androidx.compose.ui.unit.Dp) {
+    // Nazwa miesiąca pojawia się nad pierwszym tygodniem, który do niego należy.
+    val labels = data.weeks.map { week -> week.first().date }
+    Row(Modifier.fillMaxWidth().padding(start = 24.dp), horizontalArrangement = Arrangement.spacedBy(gap)) {
+        var previous: YearMonth? = null
+        labels.forEach { date ->
+            val month = YearMonth.from(date)
+            val show = month != previous
+            previous = month
+            Box(Modifier.weight(1f)) {
+                if (show) CaptionText(formatMonthShort(month))
+            }
+        }
+    }
+}
+
+@Composable
+private fun Cells(data: HeatmapData, colors: TtColors, gap: androidx.compose.ui.unit.Dp, modifier: Modifier) {
+    BoxWithConstraints(modifier) {
+        val weeks = data.weeks.size.coerceAtLeast(1)
+        val cell = ((maxWidth - gap * (weeks - 1)) / weeks).coerceAtMost(14.dp)
+        Canvas(Modifier.fillMaxWidth().height(cell * 7 + gap * 6)) {
+            val cellPx = cell.toPx()
+            val step = cellPx + gap.toPx()
+            data.weeks.forEachIndexed { x, week ->
+                week.forEachIndexed { y, day ->
+                    val color = cellColor(day.minutes, day.dominant, data.maxMinutes, colors)
+                    drawCircle(
+                        color = color,
+                        radius = cellPx / 2f,
+                        center = Offset(x * step + cellPx / 2f, y * step + cellPx / 2f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Cztery poziomy nasycenia: 30 / 55 / 80 / 100% koloru dyscypliny na tle. */
+private fun cellColor(minutes: Int, discipline: Discipline?, max: Int, colors: TtColors): Color {
+    if (minutes <= 0 || discipline == null) return colors.track
+    val fraction = if (max <= 0) 1f else minutes.toFloat() / max
+    val alpha = when {
+        fraction <= 0.25f -> 0.30f
+        fraction <= 0.50f -> 0.55f
+        fraction <= 0.75f -> 0.80f
+        else -> 1f
+    }
+    return colors.of(discipline).copy(alpha = alpha).compositeOver(colors.bg)
+}
+
+@Composable
+private fun Legend(colors: TtColors) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Discipline.entries.forEach { discipline ->
+            Box(Modifier.size(9.dp).background(colors.of(discipline), CircleShape))
+        }
+        CaptionText(stringResource(R.string.heatmap_legend))
     }
 }

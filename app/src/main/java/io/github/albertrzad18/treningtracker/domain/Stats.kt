@@ -80,12 +80,18 @@ fun List<Workout>.bucketize(range: DateRange, granularity: Granularity, zone: Zo
 
 // --- Kalendarz aktywności (heatmapa) ---
 
-/** Jeden dzień heatmapy: ile minut treningu i jakich dyscyplin (kolor bierzemy z pierwszej). */
-data class HeatmapDay(val date: LocalDate, val minutes: Int, val disciplines: List<Discipline>)
+/**
+ * Jeden dzień heatmapy: ile minut treningu i która dyscyplina go zdominowała.
+ * Przy dwóch treningach w jednym dniu kolor bierzemy z tego dłuższego.
+ */
+data class HeatmapDay(val date: LocalDate, val minutes: Int, val dominant: Discipline?)
 
 /** Kolumny heatmapy to tygodnie (poniedziałek–niedziela), wiersze to dni tygodnia. */
 data class HeatmapData(val weeks: List<List<HeatmapDay>>, val maxMinutes: Int) {
     val isEmpty: Boolean get() = maxMinutes == 0
+
+    /** Ile dni z treningiem w całej siatce: kluczowa liczba nad kalendarzem. */
+    val activeDays: Int get() = weeks.sumOf { week -> week.count { it.minutes > 0 } }
 }
 
 /** Ostatnie [weeks] tygodni, zawsze pełne kolumny od poniedziałku: siatka jak na GitHubie. */
@@ -101,7 +107,11 @@ fun List<Workout>.activityHeatmap(today: LocalDate, zone: ZoneId, weeks: Int = 2
             HeatmapDay(
                 date = date,
                 minutes = if (date.isAfter(today)) 0 else (group.sumOf { it.duration.seconds } / 60).toInt(),
-                disciplines = group.map { it.discipline }.distinct(),
+                // Kolor dnia bierzemy z dyscypliny, która zajęła najwięcej czasu.
+                dominant = group
+                    .groupBy { it.discipline }
+                    .maxByOrNull { (_, list) -> list.sumOf { it.duration.seconds } }
+                    ?.key,
             )
         }
     }

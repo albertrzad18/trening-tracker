@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,7 +33,11 @@ import io.github.albertrzad18.treningtracker.ui.theme.TtMotion
 import io.github.albertrzad18.treningtracker.ui.theme.TtType
 import io.github.albertrzad18.treningtracker.ui.theme.ttAnimationsEnabled
 
-/** Jedna linia wykresu: punkty `x do y`, kolor, grubość i opcjonalne wypełnienie pod linią. */
+/**
+ * Jedna seria wykresu: punkty `x do y`, kolor, grubość i opcjonalne wypełnienie pod linią.
+ * Z [dotsOnly] rysujemy same punkty (pojedyncze treningi na tle średniej kroczącej),
+ * a [endLabel] podpisuje koniec linii, zamiast legendy pod wykresem.
+ */
 data class LineSpec(
     val points: List<Pair<Double, Double>>,
     val color: Color,
@@ -40,6 +45,7 @@ data class LineSpec(
     val areaAlpha: Float = 0f,
     val endDot: Boolean = false,
     val endLabel: String? = null,
+    val dotsOnly: Boolean = false,
 )
 
 /** Pozioma linia odniesienia, np. średnia prędkość z opisem. */
@@ -126,6 +132,10 @@ fun TtLineChart(
             lines.forEach { spec ->
                 if (spec.points.size < 2) return@forEach
                 val offsets = spec.points.map(::px)
+                if (spec.dotsOnly) {
+                    offsets.forEach { drawCircle(spec.color, radius = 2.dp.toPx(), center = it) }
+                    return@forEach
+                }
                 if (spec.areaAlpha > 0f) {
                     val area = Path().apply {
                         moveTo(offsets.first().x, size.height)
@@ -154,6 +164,20 @@ fun TtLineChart(
                 }
                 if (spec.endDot && progress.value > 0.99f) {
                     drawCircle(spec.color, radius = 4.dp.toPx(), center = offsets.last())
+                }
+                if (spec.endLabel != null && progress.value > 0.99f) {
+                    val layout = measurer.measure(
+                        spec.endLabel,
+                        TtType.caption.copy(color = spec.color, fontWeight = FontWeight.SemiBold),
+                    )
+                    val last = offsets.last()
+                    drawText(
+                        layout,
+                        topLeft = Offset(
+                            x = (last.x - layout.size.width).coerceIn(0f, size.width - layout.size.width),
+                            y = (last.y - layout.size.height - 4.dp.toPx()).coerceIn(0f, size.height - layout.size.height),
+                        ),
+                    )
                 }
             }
 

@@ -95,7 +95,8 @@ class StatsTest {
         val tuesday = data.weeks.last()[1]
         assertEquals(LocalDate.of(2026, 10, 20), tuesday.date)
         assertEquals(75, tuesday.minutes)
-        assertEquals(listOf(Discipline.POOL), tuesday.disciplines)
+        assertEquals(Discipline.POOL, tuesday.dominant)
+        assertEquals(1, data.activeDays)
     }
 
     @Test

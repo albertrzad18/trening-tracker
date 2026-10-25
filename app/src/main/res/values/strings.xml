@@ -257,4 +257,23 @@
 
     <!-- Cele (redesign) -->
     <string name="goals_of">z %1$s</string>
+
+    <!-- Statystyki (redesign) -->
+    <string name="stats_tab_volume">Objętość</string>
+    <string name="stats_tab_calendar">Kalendarz</string>
+    <string name="stats_tab_share">Udział</string>
+    <string name="stats_tab_rhythm">Rytm</string>
+    <string name="stats_tab_progress">Postęp</string>
+    <string name="chart_heatmap_unit">dni z treningiem</string>
+    <string name="chart_share_unit">łącznie</string>
+    <string name="chart_efficiency_unit">km/h na 100 uderzeń</string>
+    <string name="chart_timeofday_unit">h między %1$d a %2$d</string>
+    <string name="chart_weekday_unit_mon">h w poniedziałki</string>
+    <string name="chart_weekday_unit_tue">h we wtorki</string>
+    <string name="chart_weekday_unit_wed">h w środy</string>
+    <string name="chart_weekday_unit_thu">h w czwartki</string>
+    <string name="chart_weekday_unit_fri">h w piątki</string>
+    <string name="chart_weekday_unit_sat">h w soboty</string>
+    <string name="chart_weekday_unit_sun">h w niedziele</string>
+    <string name="heatmap_legend">dłuższy trening = ciemniejszy</string>
 </resources>

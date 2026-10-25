@@ -575,6 +575,7 @@ fun ShareBar(
     height: Dp = 10.dp,
     widthFraction: Float = 1f,
     alpha: Float = 1f,
+    gap: Dp = 1.dp,
 ) {
     val colors = LocalTtColors.current
     val total = parts.sumOf { it.second.toDouble() }.toFloat()
@@ -586,9 +587,12 @@ fun ShareBar(
             .background(colors.track),
     ) {
         if (total > 0f) {
-            Row(Modifier.fillMaxWidth().fillMaxHeight().alpha(alpha), horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+            Row(
+                Modifier.fillMaxWidth().fillMaxHeight().alpha(alpha),
+                horizontalArrangement = Arrangement.spacedBy(gap),
+            ) {
                 parts.filter { it.second > 0f }.forEach { (color, value) ->
-                    Box(Modifier.weight(value).fillMaxHeight().background(color))
+                    Box(Modifier.weight(value).fillMaxHeight().clip(TtShape.full).background(color))
                 }
             }
         }
@@ -643,7 +647,12 @@ fun NumberedSteps(steps: List<String>, modifier: Modifier = Modifier) {
 
 /** Mały podpis osi i legend (12/14). */
 @Composable
-fun CaptionText(text: String, modifier: Modifier = Modifier, color: Color = LocalTtColors.current.ink2) {
-    Text(text, style = TtType.caption, color = color, modifier = modifier)
+fun CaptionText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = LocalTtColors.current.ink2,
+    textAlign: androidx.compose.ui.text.style.TextAlign? = null,
+) {
+    Text(text, style = TtType.caption, color = color, textAlign = textAlign, maxLines = 1, modifier = modifier)
 }
 

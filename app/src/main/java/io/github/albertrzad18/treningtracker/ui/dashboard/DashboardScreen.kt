@@ -200,11 +200,11 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
                 color = colors.ink2,
             )
         }
-        // Obok siebie: „Aktywne” (kalorie w ruchu, jak w Huawei Health) i „Spoczynkowe”; ich suma („Łączne”) jest na dole przy krokach.
+        // Obok siebie: „Aktywne” (kalorie w ruchu, jak „W ruchu” w Huawei Health) i kroki.
         // Bez danych dziennych o ruchu „Aktywne” to kalorie z samych treningów.
-        val resting = d.passive?.basalKcal
+        val steps = d.passive?.steps
         val active = d.passive?.activeKcal ?: d.week.caloriesKcal.takeIf { d.week.count > 0 }
-        if (active != null || resting != null || d.week.count > 0) {
+        if (active != null || steps != null || d.week.count > 0) {
             if (d.week.count == 0) Spacer(Modifier.height(TtSpace.x3))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x4)) {
                 if (active != null || d.week.count > 0) {
@@ -214,10 +214,10 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
                         modifier = Modifier.weight(1f),
                     )
                 }
-                if (resting != null) {
+                if (steps != null) {
                     HeroColumn(
-                        label = stringResource(R.string.passive_basal_only),
-                        value = caloriesParts(resting),
+                        label = stringResource(R.string.passive_steps),
+                        value = ValueUnit(formatNumberShort(steps.toDouble()), null),
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -244,12 +244,12 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
             Spacer(Modifier.height(TtSpace.x4))
             DisciplineColumns(columns)
         }
-        // Na dole kroki i kalorie łączne (aktywne + spoczynkowe), a w tygodniu i miesiącu także średnie.
-        d.passive?.takeIf { it.steps != null || it.kcal != null }?.let { passive ->
+        // Na dole średnie i rekordy dnia; karta „Dziś” ich nie ma, bo kroki i kalorie są już na górze.
+        d.passive?.takeIf { period != SummaryGranularity.DAY && (it.steps != null || it.activeKcal != null) }?.let { passive ->
             Spacer(Modifier.height(TtSpace.x3))
             TtDivider()
             Spacer(Modifier.height(TtSpace.x4))
-            PassiveGrid(passive, period)
+            PassiveGrid(passive)
         }
     }
 }
@@ -527,22 +527,15 @@ private fun DashboardEmpty() {
     }
 }
 
-/** Kroki w głównej karcie (suma i średnia dzienna): tylko to, co Health Connect faktycznie podał. */
+/** Średnie i najlepsze dni okresu (kroki, kalorie aktywne): tylko to, co Health Connect faktycznie podał. */
 @Composable
-private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
-    val day = period == SummaryGranularity.DAY
-    // Dwie kolumny: kroki po lewej, kalorie po prawej. Dzień ma tylko sumy, tydzień i miesiąc także średnie.
+private fun PassiveGrid(passive: PassiveTotals) {
+    // Dwie kolumny: kroki po lewej, kalorie aktywne po prawej.
     val items = listOfNotNull(
-        passive.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
-        passive.kcal?.let { MetricItem(stringResource(R.string.dashboard_burned_total), caloriesParts(it).value, "kcal") },
-        passive.averageSteps?.takeIf { !day }
-            ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
-        passive.averageKcal?.takeIf { !day }
-            ?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
-        passive.maxSteps?.takeIf { !day }
-            ?.let { MetricItem(stringResource(R.string.passive_steps_max), formatNumberShort(it.toDouble())) },
-        passive.averageActiveKcal?.takeIf { !day }
-            ?.let { MetricItem(stringResource(R.string.passive_active_avg), caloriesParts(it).value, "kcal") },
+        passive.averageSteps?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
+        passive.averageActiveKcal?.let { MetricItem(stringResource(R.string.passive_active_avg), caloriesParts(it).value, "kcal") },
+        passive.maxSteps?.let { MetricItem(stringResource(R.string.passive_steps_max), formatNumberShort(it.toDouble())) },
+        passive.maxActiveKcal?.let { MetricItem(stringResource(R.string.passive_active_max), caloriesParts(it).value, "kcal") },
     )
     MetricGrid(items)
 }

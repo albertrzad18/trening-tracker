@@ -49,6 +49,7 @@ class DailyStatsTest {
         assertEquals(3_250.0, totals.basalKcal!!, 0.001)
         assertEquals(1_600.0, totals.activeKcal!!, 0.001)
         assertEquals(533.333, totals.averageActiveKcal!!, 0.001)
+        assertEquals(900.0, totals.maxActiveKcal!!, 0.001)
     }
 
     @Test

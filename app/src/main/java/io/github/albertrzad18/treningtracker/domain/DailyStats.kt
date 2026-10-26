@@ -28,8 +28,9 @@ data class PassiveTotals(
     val basalKcal: Double? = null,
     val activeKcal: Double? = null,
     val averageActiveKcal: Double? = null,
+    val maxActiveKcal: Double? = null,
 ) {
-    val isEmpty: Boolean get() = steps == null && kcal == null
+    val isEmpty: Boolean get() = steps == null && kcal == null && activeKcal == null
 }
 
 fun List<DailyStats>.passiveTotals(range: DateRange): PassiveTotals {
@@ -47,5 +48,6 @@ fun List<DailyStats>.passiveTotals(range: DateRange): PassiveTotals {
         basalKcal = basal.takeIf { it.isNotEmpty() }?.sum(),
         activeKcal = active.takeIf { it.isNotEmpty() }?.sum(),
         averageActiveKcal = active.takeIf { it.isNotEmpty() }?.average(),
+        maxActiveKcal = active.maxOrNull(),
     )
 }

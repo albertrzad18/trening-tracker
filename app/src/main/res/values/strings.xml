@@ -209,7 +209,7 @@
     <string name="debug_demo_removed">Dane demo usunięte</string>
 
     <!-- Pulpit (redesign) -->
-    <string name="dashboard_week_label">Ostatni tydzień · %1$s</string>
+    <string name="dashboard_week_label">Aktualny tydzień · %1$s</string>
     <string name="dashboard_month_label">Ten miesiąc · %1$s</string>
     <string name="dashboard_this_month">Ten miesiąc</string>
     <string name="dashboard_this_day">Dziś</string>
@@ -221,7 +221,6 @@
     <string name="passive_title">Aktywność dzienna</string>
     <string name="passive_steps">Kroki</string>
     <string name="passive_steps_avg">Śr. dziennie</string>
-    <string name="passive_basal">Przepalone łącznie</string>
     <string name="settings_cards_title">Karty</string>
     <string name="settings_card_pool">Podsumowanie: Basen</string>
     <string name="settings_card_road">Podsumowanie: Rower</string>
@@ -246,12 +245,11 @@
     <string name="metric_avg_distance">Śr. dystans</string>
     <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>
-    <string name="passive_basal_avg">Śr. łączne / dzień</string>
     <string name="passive_steps_max">Najwięcej kroków</string>
     <string name="passive_active_avg">Śr. aktywne / dzień</string>
-    <string name="passive_basal_only">Spoczynkowe</string>
+    <string name="passive_active_max">Najwięcej aktywnych</string>
+    <string name="passive_active">Aktywne</string>
     <string name="dashboard_burned">Aktywne</string>
-    <string name="dashboard_burned_total">Łączne</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
     <string name="dashboard_all_goals">Wszystkie cele</string>
@@ -301,7 +299,7 @@
     <!-- Podsumowania (redesign) -->
     <string name="summary_best_label">Najlepszy trening</string>
     <string name="summary_steps">%1$s kroków</string>
-    <string name="summary_basal">%1$s przepalone</string>
+    <string name="summary_active">%1$s aktywne</string>
     <string name="summary_active_days_short">%1$d dni z treningiem</string>
     <string name="summary_streak_short">seria %1$s</string>
 

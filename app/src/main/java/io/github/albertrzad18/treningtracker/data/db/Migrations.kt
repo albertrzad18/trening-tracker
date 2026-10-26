@@ -60,3 +60,13 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         )
     }
 }
+
+/**
+ * Wersja 4: do `daily_stats` dochodzą kalorie aktywne, żeby dzienna suma zgadzała się z zegarkiem
+ * (spoczynkowe + aktywne). Dotychczasowe wiersze dostają `NULL`, a dopiero synchronizacja je uzupełni.
+ */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `daily_stats` ADD COLUMN `activeKcal` REAL")
+    }
+}

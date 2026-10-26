@@ -93,8 +93,8 @@ class SyncRepository(
         val today = now.atZone(zone).toLocalDate()
         val stats = gateway.readDailyStats(today.minusDays(days), today, granted)
         val entities = stats
-            .filter { it.steps != null || it.basalKcal != null }
-            .map { DailyStatsEntity(it.date.toString(), it.steps, it.basalKcal, "healthconnect") }
+            .filter { it.steps != null || it.totalKcal != null }
+            .map { DailyStatsEntity(it.date.toString(), it.steps, it.basalKcal, "healthconnect", it.activeKcal) }
         if (entities.isNotEmpty()) dailyDao.upsertAll(entities)
     }
 

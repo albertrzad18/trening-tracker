@@ -177,6 +177,7 @@ fun demoDailyStats(today: LocalDate, months: Long = 18, seed: Int = 2026): List<
             steps = 4_000L + random.nextInt(9_000),
             basalKcal = 1_650.0 + random.nextInt(60),
             dataOrigin = DEMO_ORIGIN,
+            activeKcal = 300.0 + random.nextInt(900),
         )
     }.toList()
 }

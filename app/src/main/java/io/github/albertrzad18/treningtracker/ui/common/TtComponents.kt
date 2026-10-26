@@ -1,6 +1,7 @@
 package io.github.albertrzad18.treningtracker.ui.common
 
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
@@ -407,6 +409,7 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    loading: Boolean = false,
 ) {
     val colors = LocalTtColors.current
     Row(
@@ -414,16 +417,29 @@ fun PrimaryButton(
             .height(52.dp)
             .clip(TtShape.full)
             .background(colors.accent)
-            .ttClickable(onClick = onClick)
+            .ttClickable(onClick = { if (!loading) onClick() })
             .padding(horizontal = TtSpace.x6),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TtSpace.x2, Alignment.CenterHorizontally),
     ) {
         if (icon != null) {
-            Icon(icon, contentDescription = null, tint = colors.onAccent, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = colors.onAccent, modifier = Modifier.size(20.dp).rotate(spinAngle(loading)))
         }
         Text(text, style = TtType.title, color = colors.onAccent, maxLines = 1)
     }
+}
+
+/** Kąt obrotu ikony: kręci się w kółko, dopóki [loading] jest prawdą, w spoczynku stoi (0°). */
+@Composable
+private fun spinAngle(loading: Boolean): Float {
+    if (!loading) return 0f
+    val angle by rememberInfiniteTransition(label = "spin").animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 900, easing = LinearEasing)),
+        label = "spinAngle",
+    )
+    return angle
 }
 
 /** Przycisk pomocniczy: obrys `line`, wysokość 48 (albo 36 dla wariantu `small`). */
@@ -435,6 +451,7 @@ fun SecondaryButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     small: Boolean = false,
     contentColor: Color = LocalTtColors.current.ink,
+    loading: Boolean = false,
 ) {
     val colors = LocalTtColors.current
     Row(
@@ -442,13 +459,13 @@ fun SecondaryButton(
             .height(if (small) 36.dp else TtSpace.minTouch)
             .clip(TtShape.full)
             .border(1.dp, colors.line, TtShape.full)
-            .ttClickable(onClick = onClick)
+            .ttClickable(onClick = { if (!loading) onClick() })
             .padding(horizontal = if (small) 14.dp else TtSpace.x5),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TtSpace.x2, Alignment.CenterHorizontally),
     ) {
         if (icon != null) {
-            Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
+            Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp).rotate(spinAngle(loading)))
         }
         Text(
             text,

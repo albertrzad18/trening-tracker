@@ -94,7 +94,7 @@ class HealthConnectGateway(private val context: Context) {
             .map { HealthPermission.getReadPermission(it) }
             .toSet()
 
-    /** Uprawnienia do danych dziennych (kroki, przemiana podstawowa); bez nich apka działa, tylko bez tych liczb. */
+    /** Uprawnienia do danych dziennych (kroki, kalorie spoczynkowe i aktywne); bez nich apka działa, tylko bez tych liczb. */
     val dailyPermissions: Set<String> = DAILY_KINDS.map { HealthPermission.getReadPermission(it) }.toSet()
 
     /**
@@ -104,10 +104,12 @@ class HealthConnectGateway(private val context: Context) {
     suspend fun readDailyStats(from: java.time.LocalDate, toInclusive: java.time.LocalDate, granted: Set<String>): List<DailyStats> {
         val steps = HealthPermission.getReadPermission(StepsRecord::class) in granted
         val basal = HealthPermission.getReadPermission(BasalMetabolicRateRecord::class) in granted
-        if (!steps && !basal) return emptyList()
+        val active = HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class) in granted
+        if (!steps && !basal && !active) return emptyList()
         val metrics = buildSet {
             if (steps) add(StepsRecord.COUNT_TOTAL)
             if (basal) add(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL)
+            if (active) add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
         }
         val result = client.aggregateGroupByPeriod(
             AggregateGroupByPeriodRequest(
@@ -121,6 +123,7 @@ class HealthConnectGateway(private val context: Context) {
                 date = day.startTime.toLocalDate(),
                 steps = day.result[StepsRecord.COUNT_TOTAL],
                 basalKcal = day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories,
+                activeKcal = day.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
             )
         }
     }
@@ -276,4 +279,4 @@ class HealthConnectGateway(private val context: Context) {
 }
 
 /** Rekordy dzienne czytane osobno od treningów. */
-private val DAILY_KINDS = listOf(StepsRecord::class, BasalMetabolicRateRecord::class)
+private val DAILY_KINDS = listOf(StepsRecord::class, BasalMetabolicRateRecord::class, ActiveCaloriesBurnedRecord::class)

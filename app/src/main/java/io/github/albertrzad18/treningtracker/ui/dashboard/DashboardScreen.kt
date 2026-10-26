@@ -55,6 +55,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.common.LabelText
 import io.github.albertrzad18.treningtracker.ui.common.LinkRow
 import io.github.albertrzad18.treningtracker.ui.common.NumberedSteps
+import io.github.albertrzad18.treningtracker.ui.common.rememberSyncing
 import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.common.PrimaryButton
 import io.github.albertrzad18.treningtracker.ui.common.SectionHeader
@@ -119,11 +120,11 @@ fun DashboardScreen(
     vm: DashboardViewModel = viewModel(),
 ) {
     val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.day).collectAsStateWithLifecycle()
-    // Pod kartą dnia zostaje karta całego tygodnia (bez kroków, te są w karcie dnia).
+    // Pod kartą dnia zostaje karta całego tygodnia, z sumą kroków i przepalonych kalorii z tygodnia.
     val week by vm.week.collectAsStateWithLifecycle()
     DashboardContent(
         data, period, onOpenWorkout, onOpenSummaries, onOpenGoals,
-        weekCard = week?.takeIf { period == SummaryGranularity.DAY }?.copy(passive = null),
+        weekCard = week?.takeIf { period == SummaryGranularity.DAY },
     )
 }
 
@@ -151,7 +152,7 @@ internal fun DashboardContent(
         ) {
             item { WeekPanel(data, period) }
             weekCard?.takeIf { it.week.count > 0 || it.previousWeek.count > 0 }?.let { week ->
-                item { WeekPanel(week, SummaryGranularity.WEEK) }
+                item { WeekPanel(week, SummaryGranularity.WEEK, showChange = false) }
             }
             item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
             item { GoalsPanel(onOpenGoals) }
@@ -161,7 +162,7 @@ internal fun DashboardContent(
 
 /** Najważniejszy kafelek: ile przepalonych kalorii, podział na dyscypliny i porównanie z poprzednim tygodniem. */
 @Composable
-private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
+private fun WeekPanel(d: DashboardData, period: SummaryGranularity, showChange: Boolean = true) {
     val colors = LocalTtColors.current
     Panel {
         LabelText(
@@ -198,9 +199,13 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
             }
         }
         Spacer(Modifier.height(10.dp))
+        if (period == SummaryGranularity.DAY && d.week.count > 0) {
+            LabelText(stringResource(R.string.dashboard_exercises), modifier = Modifier.padding(top = TtSpace.x2))
+        }
         d.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineSplitRow(it) }
         val change = d.caloriesChangePercent ?: d.durationChangePercent
-        if (change != null && d.week.count > 0) {
+        // Karta „Dziś” i karta tygodnia pod nią nie pokazują zmiany procentowej.
+        if (showChange && change != null && d.week.count > 0 && period != SummaryGranularity.DAY) {
             Spacer(Modifier.height(TtSpace.x1))
             DeltaBadge(change, text = deltaPeriodText(change, period))
         }
@@ -466,6 +471,7 @@ private fun DashboardSkeleton() {
 @Composable
 private fun DashboardEmpty() {
     val context = LocalContext.current
+    val syncing by rememberSyncing()
     Column(
         Modifier
             .fillMaxSize()
@@ -487,6 +493,7 @@ private fun DashboardEmpty() {
             text = stringResource(R.string.sync_now),
             onClick = { SyncScheduler.syncNow(context) },
             icon = TtIcons.Sync,
+            loading = syncing,
             modifier = Modifier.padding(top = TtSpace.x2),
         )
         NumberedSteps(
@@ -508,8 +515,8 @@ private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
         // Średnia dzienna ma sens tylko dla okresu dłuższego niż jeden dzień.
         passive.averageSteps?.takeIf { period != SummaryGranularity.DAY }
             ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
-        passive.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
-        passive.averageBasalKcal?.takeIf { period != SummaryGranularity.DAY }
+        passive.kcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
+        passive.averageKcal?.takeIf { period != SummaryGranularity.DAY }
             ?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
     )
     MetricGrid(items)

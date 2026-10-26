@@ -217,9 +217,10 @@
     <string name="passive_title">Aktywność dzienna</string>
     <string name="passive_steps">Kroki</string>
     <string name="passive_steps_avg">Śr. dziennie</string>
-    <string name="passive_basal">Przepalone</string>
+    <string name="passive_basal">Przepalone łącznie</string>
+    <string name="dashboard_exercises">Ćwiczenia</string>
     <string name="passive_basal_avg">Śr. dziennie</string>
-    <string name="dashboard_burned">Przepalone</string>
+    <string name="dashboard_burned">Aktywnie przepalone ćwiczeniem</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
     <string name="dashboard_all_goals">Wszystkie cele</string>

@@ -31,6 +31,7 @@ import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.common.SecondaryButton
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
 import io.github.albertrzad18.treningtracker.ui.common.TtTopBar
+import io.github.albertrzad18.treningtracker.ui.common.rememberSyncing
 import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardViewModel
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
@@ -67,6 +68,7 @@ fun MoreScreen(
     val records by recordsVm.data.collectAsStateWithLifecycle()
     val goals by goalsVm.rows.collectAsStateWithLifecycle()
     val colors = LocalTtColors.current
+    val syncing by rememberSyncing()
 
     Column(Modifier.fillMaxSize()) {
     if (onBack != null) {
@@ -114,6 +116,8 @@ fun MoreScreen(
                 SecondaryButton(
                     text = stringResource(R.string.more_sync_button),
                     onClick = { SyncScheduler.syncNow(context) },
+                    icon = TtIcons.Sync,
+                    loading = syncing,
                     small = true,
                 )
             }

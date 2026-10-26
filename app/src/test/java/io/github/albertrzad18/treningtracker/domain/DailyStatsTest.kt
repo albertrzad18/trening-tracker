@@ -20,14 +20,28 @@ class DailyStatsTest {
         val totals = days.passiveTotals(range)
         assertEquals(16_000L, totals.steps)
         assertEquals(8_000L, totals.averageSteps)
-        assertEquals(5_100.0, totals.basalKcal!!, 0.001)
+        assertEquals(5_100.0, totals.kcal!!, 0.001)
+    }
+
+    @Test
+    fun caloriesAreRestingPlusActive() {
+        val days = listOf(
+            DailyStats(LocalDate.of(2026, 10, 20), null, 1_564.0, 2_036.0),
+            DailyStats(LocalDate.of(2026, 10, 21), null, 1_600.0, null),
+            DailyStats(LocalDate.of(2026, 10, 22), null, null, 500.0),
+        )
+        val totals = days.passiveTotals(range)
+        assertEquals(3_600.0, days[0].totalKcal!!, 0.001)
+        assertEquals(1_600.0, days[1].totalKcal!!, 0.001)
+        assertEquals(5_700.0, totals.kcal!!, 0.001)
+        assertEquals(1_900.0, totals.averageKcal!!, 0.001)
     }
 
     @Test
     fun missingDataStaysNullInsteadOfZero() {
         val totals = listOf(DailyStats(LocalDate.of(2026, 10, 20), null, null)).passiveTotals(range)
         assertNull(totals.steps)
-        assertNull(totals.basalKcal)
+        assertNull(totals.kcal)
         assertTrue(totals.isEmpty)
     }
 }

@@ -20,9 +20,11 @@ data class DailyStatsEntity(
     val steps: Long?,
     val basalKcal: Double?,
     val dataOrigin: String,
+    /** Kalorie aktywne (ruch, treningi); razem z [basalKcal] dają to, co pokazuje zegarek. Dodane w wersji 4. */
+    val activeKcal: Double? = null,
 )
 
-fun DailyStatsEntity.toDomain() = DailyStats(LocalDate.parse(date), steps, basalKcal)
+fun DailyStatsEntity.toDomain() = DailyStats(LocalDate.parse(date), steps, basalKcal, activeKcal)
 
 @Dao
 interface DailyStatsDao {

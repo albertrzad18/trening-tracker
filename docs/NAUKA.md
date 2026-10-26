@@ -248,3 +248,23 @@ Composable do rysowania własnych kształtów: `drawCircle`, `drawRoundRect`, `d
 
 ### Stateless composable i `@Preview`
 Ekran dzielimy na wersję z ViewModelem (`DashboardScreen`) i wersję tylko z danymi w parametrach (`DashboardContent`). Tę drugą można pokazać w `@Preview` z danymi przykładowymi, bez bazy.
+
+## Synchronizacja i kalorie
+
+### Dodanie kolumny: `ALTER TABLE` w migracji
+Nowe pole w encji (`activeKcal` w `DailyStatsEntity`) to nowa wersja bazy i migracja. Dla jednej kolumny wystarczy jedna linijka SQL, a stare wiersze dostają `NULL` (stąd typ `Double?`).
+
+```kotlin
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) { db.execSQL("ALTER TABLE `daily_stats` ADD COLUMN `activeKcal` REAL") }
+}
+```
+
+### Właściwość liczona (`val ... get()`)
+`DailyStats.totalKcal` nie jest zapisane nigdzie, tylko liczy się za każdym razem z dwóch pól. Dzięki temu suma nie może się rozjechać ze składnikami.
+
+### `combine` na `Flow`
+`SyncScheduler.isSyncing` łączy dwa strumienie stanu WorkManagera (synchronizacja ręczna i cykliczna) w jeden `Flow<Boolean>`: `combine(a, b) { x, y -> ... }`.
+
+### Animacja w pętli (`rememberInfiniteTransition`)
+Ikona synchronizacji kręci się, dopóki `loading` jest prawdą: `animateFloat` zmienia kąt od 0 do -360, a `Modifier.rotate(kąt)` obraca ikonę. Przycisk dostał parametr `loading`, więc ten sam wzorzec zadziała w każdym innym miejscu.

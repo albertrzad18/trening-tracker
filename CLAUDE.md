@@ -34,7 +34,7 @@ Plan funkcji i ekranów: `docs/PLAN.md`. Stan startowy i pierwsze kroki: `docs/S
 - Podglądy `@Preview` i dane przykładowe: `app/src/debug/.../ui/preview`. Testy UI na urządzeniu: `app/src/androidTest` (`./gradlew connectedDebugAndroidTest`). Źródło projektu graficznego: `docs/redesign`.
 - Dane demo: w buildzie debug ekran diagnostyki wczytuje sztuczne treningi (`dataOrigin = "demo"`), żeby dało się sprawdzić ekrany bez zegarka.
 - Schematy Room w `app/schemas/` (commitować). Zmiana encji = podbić `version` i napisać migrację (`data/db/Migrations.kt`).
-  Baza jest w wersji 2: `workouts`, `samples` (tętno i prędkość), `route_points`, `goals`.
+  Baza jest w wersji 4: `workouts`, `samples` (tętno i prędkość), `route_points`, `goals`, `daily_stats` (kroki, kalorie spoczynkowe i aktywne).
 - Wyniki rozpoznania danych: `docs/ETAP0-WYNIKI.md`.
 
 ## Nauka (ważne)

@@ -298,7 +298,7 @@ private fun SummaryPanel(
                 summary.passive?.let { passive ->
                     val parts = listOfNotNull(
                         passive.steps?.let { stringResource(R.string.summary_steps, formatNumberShort(it.toDouble())) },
-                        passive.basalKcal?.let { stringResource(R.string.summary_basal, formatCalories(it)) },
+                        passive.kcal?.let { stringResource(R.string.summary_basal, formatCalories(it)) },
                     )
                     if (parts.isNotEmpty()) Text(parts.joinToString(" · "), style = TtType.bodyS, color = colors.ink2)
                 }

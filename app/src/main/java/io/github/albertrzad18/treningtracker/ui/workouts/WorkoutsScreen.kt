@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -46,6 +47,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.TreningApp
+import io.github.albertrzad18.treningtracker.data.settings.card
+import io.github.albertrzad18.treningtracker.domain.perDiscipline
+import io.github.albertrzad18.treningtracker.ui.common.DisciplineSummaryPanel
 import io.github.albertrzad18.treningtracker.data.db.toDomain
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import io.github.albertrzad18.treningtracker.domain.MonthGroup
@@ -245,8 +249,16 @@ private fun WorkoutList(
     onOpenWorkout: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hidden = (LocalContext.current.applicationContext as TreningApp).settings.state.collectAsStateWithLifecycle().value.hiddenCards
     LazyColumn(modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = TtSpace.x6)) {
         item(key = "summary") { SummaryCard(result) }
+        // Te same karty dyscyplin co w zakładce Miesiąc, ale dla widocznych treningów (po filtrach).
+        items(
+            result.workouts.perDiscipline().filter { it.totals.count > 0 && it.discipline.card() !in hidden },
+            key = { "disc-${it.discipline.name}" },
+        ) {
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x1)) { DisciplineSummaryPanel(it) }
+        }
         if (result.groups.isNotEmpty()) {
             result.groups.forEach { group ->
                 val key = group.month.toString()

@@ -76,6 +76,7 @@ import androidx.navigation.compose.rememberNavController
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.TreningApp
 import io.github.albertrzad18.treningtracker.data.sync.SyncScheduler
+import io.github.albertrzad18.treningtracker.ui.common.SyncPullBox
 import io.github.albertrzad18.treningtracker.ui.dashboard.DashboardScreen
 import io.github.albertrzad18.treningtracker.ui.debug.DebugScreen
 import io.github.albertrzad18.treningtracker.ui.detail.WorkoutDetailScreen
@@ -355,6 +356,11 @@ private fun MainScaffold() {
 
     Scaffold(
         containerColor = LocalTtColors.current.bg,
+        // „Więcej” ma własny przycisk synchronizacji, więc tam okrągłego nie pokazujemy.
+        floatingActionButton = {
+            val onMore = destination?.hierarchy?.any { it.route == Routes.MORE } == true
+            if (showBar && !onMore) io.github.albertrzad18.treningtracker.ui.common.SyncButton()
+        },
         bottomBar = {
             if (showBar) {
                 TtNavBar(
@@ -382,23 +388,23 @@ private fun MainScaffold() {
             popExitTransition = { fadeOut(fade) },
         ) {
             composable(Routes.DASHBOARD) {
-                DashboardScreen(
+                SyncPullBox { DashboardScreen(
                     period = SummaryGranularity.DAY,
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenGoals = { nav.navigate(Routes.GOALS) },
-                )
+                ) }
             }
             composable(Routes.MONTH) {
-                DashboardScreen(
+                SyncPullBox { DashboardScreen(
                     period = SummaryGranularity.MONTH,
                     onOpenWorkout = { nav.navigate(Routes.detail(it)) },
                     onOpenSummaries = { nav.navigate(Routes.SUMMARIES) },
                     onOpenGoals = { nav.navigate(Routes.GOALS) },
-                )
+                ) }
             }
-            composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
-            composable(Routes.STATS) { StatsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
+            composable(Routes.WORKOUTS) { SyncPullBox { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) } }
+            composable(Routes.STATS) { SyncPullBox { StatsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) } }
             composable(Routes.MORE) {
                 MoreScreen(
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },

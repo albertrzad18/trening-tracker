@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,6 +56,9 @@ import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.common.LabelText
 import io.github.albertrzad18.treningtracker.ui.common.LinkRow
 import io.github.albertrzad18.treningtracker.ui.common.NumberedSteps
+import io.github.albertrzad18.treningtracker.ui.common.DisciplineSummaryPanel
+import io.github.albertrzad18.treningtracker.data.settings.HomeCard
+import io.github.albertrzad18.treningtracker.data.settings.card
 import io.github.albertrzad18.treningtracker.ui.common.rememberSyncing
 import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.common.PrimaryButton
@@ -122,9 +126,11 @@ fun DashboardScreen(
     val data by (if (period == SummaryGranularity.MONTH) vm.month else vm.day).collectAsStateWithLifecycle()
     // Pod kartą dnia zostaje karta całego tygodnia, z sumą kroków i przepalonych kalorii z tygodnia.
     val week by vm.week.collectAsStateWithLifecycle()
+    val settings by (LocalContext.current.applicationContext as TreningApp).settings.state.collectAsStateWithLifecycle()
     DashboardContent(
         data, period, onOpenWorkout, onOpenSummaries, onOpenGoals,
         weekCard = week?.takeIf { period == SummaryGranularity.DAY },
+        hiddenCards = settings.hiddenCards,
     )
 }
 
@@ -136,6 +142,7 @@ internal fun DashboardContent(
     onOpenSummaries: () -> Unit,
     onOpenGoals: () -> Unit,
     weekCard: DashboardData? = null,
+    hiddenCards: Set<HomeCard> = emptySet(),
 ) {
     when {
         data == null -> DashboardSkeleton()
@@ -151,11 +158,18 @@ internal fun DashboardContent(
             verticalArrangement = Arrangement.spacedBy(TtSpace.panelGap),
         ) {
             item { WeekPanel(data, period) }
-            weekCard?.takeIf { it.week.count > 0 || it.previousWeek.count > 0 }?.let { week ->
+            weekCard?.takeIf { HomeCard.WEEK !in hiddenCards && (it.week.count > 0 || it.previousWeek.count > 0) }?.let { week ->
                 item { WeekPanel(week, SummaryGranularity.WEEK, showChange = false) }
             }
-            item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
-            item { GoalsPanel(onOpenGoals) }
+            if (period == SummaryGranularity.MONTH) {
+                // Miesiąc: zamiast listy ostatnich treningów trzy karty z podsumowaniem dyscyplin.
+                items(data.perDiscipline.filter { it.discipline.card() !in hiddenCards }, key = { it.discipline.name }) {
+                    DisciplineSummaryPanel(it, emptyText = stringResource(R.string.dashboard_none_month))
+                }
+            } else if (HomeCard.LATEST !in hiddenCards) {
+                item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
+            }
+            if (HomeCard.GOALS !in hiddenCards) item { GoalsPanel(onOpenGoals) }
         }
     }
 }

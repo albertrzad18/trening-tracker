@@ -13,7 +13,15 @@ data class Totals(
     val duration: Duration,
     val distanceM: Double?,
     val caloriesKcal: Double?,
-)
+) {
+    /** Średnia prędkość ważona czasem (dystans przez czas), `null` bez dystansu. */
+    val avgSpeedKmh: Double?
+        get() = distanceM?.takeIf { it > 0 && duration.seconds > 0 }?.let { it / 1000.0 / (duration.seconds / 3600.0) }
+
+    /** Średnie tempo na 100 m (czas przez dystans), `null` bez dystansu. */
+    val pacePer100mSec: Double?
+        get() = distanceM?.takeIf { it > 0 && duration.seconds > 0 }?.let { duration.seconds / (it / 100.0) }
+}
 
 fun List<Workout>.totals(): Totals = Totals(
     count = size,

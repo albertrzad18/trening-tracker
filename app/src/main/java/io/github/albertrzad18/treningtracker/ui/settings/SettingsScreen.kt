@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.TreningApp
+import io.github.albertrzad18.treningtracker.data.settings.HomeCard
 import io.github.albertrzad18.treningtracker.data.settings.ThemeMode
 import io.github.albertrzad18.treningtracker.ui.common.ListRow
 import io.github.albertrzad18.treningtracker.ui.common.Panel
@@ -144,6 +145,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
         }
+        CardsPanel(state.hiddenCards, settings::setCardVisible)
+        BackgroundSyncPanel()
     }
 
     when (sheet) {
@@ -259,4 +262,95 @@ private fun ThemeMode.labelRes() = when (this) {
     ThemeMode.SYSTEM -> R.string.settings_theme_system
     ThemeMode.LIGHT -> R.string.settings_theme_light
     ThemeMode.DARK -> R.string.settings_theme_dark
+}
+
+/** Przełączniki widoczności kart na Dashboardzie, w Miesiącu i w Treningach. */
+@Composable
+private fun CardsPanel(hidden: Set<HomeCard>, onToggle: (HomeCard, Boolean) -> Unit) {
+    val colors = LocalTtColors.current
+    Panel(modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x6)) {
+        Text(
+            stringResource(R.string.settings_cards_title),
+            style = TtType.title,
+            color = colors.ink,
+            modifier = Modifier.padding(bottom = TtSpace.x2),
+        )
+        HomeCard.entries.forEachIndexed { index, card ->
+            if (index > 0) TtDivider()
+            Row(
+                Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    stringResource(card.labelRes()),
+                    style = TtType.body,
+                    color = colors.ink,
+                    modifier = Modifier.weight(1f),
+                )
+                androidx.compose.material3.Switch(
+                    checked = card !in hidden,
+                    onCheckedChange = { onToggle(card, it) },
+                    colors = androidx.compose.material3.SwitchDefaults.colors(
+                        checkedThumbColor = colors.onAccent,
+                        checkedTrackColor = colors.accent,
+                        uncheckedThumbColor = colors.ink2,
+                        uncheckedTrackColor = colors.bg,
+                        uncheckedBorderColor = colors.line,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Pomoc w synchronizacji bez zaglądania do Huawei Health: skróty do ustawień obu aplikacji pośredniczących
+ * (bateria, autostart) i do samego Health Sync. Apka nie może sama uruchomić pobierania z zegarka.
+ */
+@Composable
+private fun BackgroundSyncPanel() {
+    val context = LocalContext.current
+    val colors = LocalTtColors.current
+    Panel(modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x6)) {
+        Text(
+            stringResource(R.string.settings_bg_title),
+            style = TtType.title,
+            color = colors.ink,
+        )
+        Text(
+            stringResource(R.string.settings_bg_hint),
+            style = TtType.bodyS,
+            color = colors.ink2,
+            modifier = Modifier.padding(top = TtSpace.x2, bottom = TtSpace.x2),
+        )
+        ListRow(
+            title = stringResource(R.string.settings_open_health_sync),
+            onClick = { context.packageManager.getLaunchIntentForPackage("nl.appyhapps.healthsync")?.let(context::startActivity) },
+        )
+        ListRow(
+            title = stringResource(R.string.settings_hs_app_settings),
+            onClick = { openAppSettings(context, "nl.appyhapps.healthsync") },
+        )
+        ListRow(
+            title = stringResource(R.string.settings_hh_app_settings),
+            onClick = { openAppSettings(context, "com.huawei.health") },
+        )
+    }
+}
+
+private fun openAppSettings(context: android.content.Context, packageName: String) {
+    val intent = android.content.Intent(
+        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        android.net.Uri.parse("package:$packageName"),
+    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(intent) }
+}
+
+private fun HomeCard.labelRes() = when (this) {
+    HomeCard.POOL -> R.string.settings_card_pool
+    HomeCard.ROAD -> R.string.settings_card_road
+    HomeCard.TRAINER -> R.string.settings_card_trainer
+    HomeCard.WEEK -> R.string.settings_card_week
+    HomeCard.LATEST -> R.string.settings_card_latest
+    HomeCard.GOALS -> R.string.settings_card_goals
 }

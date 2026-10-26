@@ -431,7 +431,7 @@ fun PrimaryButton(
 
 /** Kąt obrotu ikony: kręci się w kółko, dopóki [loading] jest prawdą, w spoczynku stoi (0°). */
 @Composable
-private fun spinAngle(loading: Boolean): Float {
+internal fun spinAngle(loading: Boolean): Float {
     if (!loading) return 0f
     val angle by rememberInfiniteTransition(label = "spin").animateFloat(
         initialValue = 0f,

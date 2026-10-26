@@ -38,10 +38,24 @@ class DailyStatsTest {
     }
 
     @Test
+    fun bestStepsDayAndRestingCalories() {
+        val days = listOf(
+            DailyStats(LocalDate.of(2026, 10, 19), 6_000, 1_600.0, 400.0),
+            DailyStats(LocalDate.of(2026, 10, 20), 14_500, 1_650.0, 900.0),
+            DailyStats(LocalDate.of(2026, 10, 21), 9_000, null, 300.0),
+        )
+        val totals = days.passiveTotals(range)
+        assertEquals(14_500L, totals.maxSteps)
+        assertEquals(3_250.0, totals.basalKcal!!, 0.001)
+    }
+
+    @Test
     fun missingDataStaysNullInsteadOfZero() {
         val totals = listOf(DailyStats(LocalDate.of(2026, 10, 20), null, null)).passiveTotals(range)
         assertNull(totals.steps)
         assertNull(totals.kcal)
+        assertNull(totals.maxSteps)
+        assertNull(totals.basalKcal)
         assertTrue(totals.isEmpty)
     }
 }

@@ -24,7 +24,7 @@ indoor trainer rides. All data stays on the phone: no server, no accounts. The U
 - **Details** – heart rate, zones, speed, elevation and the route on an OpenStreetMap map.
 - **Stats** – personal records, volume, activity calendar, discipline share, pace and fitness trends.
 - **Summaries and goals** – weeks, months and years with streaks; weekly, monthly or yearly targets.
-- **Sync** – pull down on any main screen, the round button, or "Sync" in More. Runs on app start and every 15 minutes.
+- **Sync** – pull down on any main screen, or "Sync" in More. Runs on app start and every 15 minutes.
 - **Settings** – max heart rate, pool length, theme, and switches to show or hide each card.
 
 Pool workouts show distance in metres, sums in kilometres. Missing data is hidden, never shown as zero.

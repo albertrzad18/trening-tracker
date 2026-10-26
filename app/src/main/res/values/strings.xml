@@ -246,8 +246,9 @@
     <string name="metric_avg_distance">Śr. dystans</string>
     <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>
-    <string name="passive_basal_avg">Śr. kcal / dzień</string>
+    <string name="passive_basal_avg">Śr. łączne / dzień</string>
     <string name="passive_steps_max">Najwięcej kroków</string>
+    <string name="passive_active_avg">Śr. aktywne / dzień</string>
     <string name="passive_basal_only">Spoczynkowe</string>
     <string name="dashboard_burned">Aktywne</string>
     <string name="dashboard_burned_total">Łączne</string>

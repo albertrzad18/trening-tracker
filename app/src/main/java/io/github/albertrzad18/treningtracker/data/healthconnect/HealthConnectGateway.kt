@@ -116,9 +116,13 @@ class HealthConnectGateway(private val context: Context) {
             if (basal) add(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL)
             if (active) add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
         }
+        // Dzisiaj liczymy tylko do teraz: kalorie spoczynkowe Health Connect rozkłada na całą dobę,
+        // więc rano pokazywałby już spalanie z całego dnia (także z godzin, które jeszcze nie minęły).
+        val now = java.time.LocalDateTime.now()
+        val end = toInclusive.plusDays(1).atStartOfDay().let { if (it.isAfter(now)) now else it }
         fun request(origins: Set<DataOrigin>) = AggregateGroupByPeriodRequest(
             metrics = metrics,
-            timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), toInclusive.plusDays(1).atStartOfDay()),
+            timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), end),
             timeRangeSlicer = java.time.Period.ofDays(1),
             dataOriginFilter = origins,
         )

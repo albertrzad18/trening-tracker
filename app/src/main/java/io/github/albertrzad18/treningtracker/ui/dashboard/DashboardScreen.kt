@@ -72,6 +72,7 @@ import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
 import io.github.albertrzad18.treningtracker.ui.common.ttClickable
+import io.github.albertrzad18.treningtracker.ui.format.ValueUnit
 import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
 import io.github.albertrzad18.treningtracker.ui.format.formatCalories
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
@@ -162,9 +163,9 @@ internal fun DashboardContent(
                 item { WeekPanel(week, SummaryGranularity.WEEK, showChange = false) }
             }
             if (period == SummaryGranularity.MONTH) {
-                // Miesiąc: zamiast listy ostatnich treningów trzy karty z podsumowaniem dyscyplin.
-                items(data.perDiscipline.filter { it.discipline.card() !in hiddenCards }, key = { it.discipline.name }) {
-                    DisciplineSummaryPanel(it, emptyText = stringResource(R.string.dashboard_none_month))
+                // Miesiąc: zamiast listy ostatnich treningów karty dyscyplin, tylko tych z treningami w tym miesiącu.
+                items(data.perDiscipline.filter { it.totals.count > 0 && it.discipline.card() !in hiddenCards }, key = { it.discipline.name }) {
+                    DisciplineSummaryPanel(it)
                 }
             } else if (HomeCard.LATEST !in hiddenCards) {
                 item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
@@ -198,18 +199,29 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity, showChange: 
                 style = TtType.headline,
                 color = colors.ink2,
             )
-        } else {
-            Text(
-                stringResource(R.string.dashboard_burned),
-                style = TtType.body.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium),
-                color = colors.ink2,
-            )
-            Spacer(Modifier.height(TtSpace.x1))
-            val kcal = d.week.caloriesKcal
-            if (kcal != null) {
-                BigValue(caloriesParts(kcal), style = TtType.heroXL)
-            } else {
-                BigValue(formatHoursAndMinutes(d.week.duration), style = TtType.heroXL)
+        }
+        // Obok siebie: „Aktywne” (kalorie z treningów) i „Łączne” (spoczynkowe + aktywne z całego okresu, jak na zegarku).
+        val total = d.passive?.kcal
+        val active = d.week.caloriesKcal.takeIf { d.week.count > 0 }
+        if (active != null || total != null || d.week.count > 0) {
+            if (d.week.count == 0) Spacer(Modifier.height(TtSpace.x3))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x4)) {
+                if (d.week.count > 0) {
+                    HeroColumn(
+                        label = stringResource(R.string.dashboard_burned),
+                        value = active?.let { caloriesParts(it) } ?: ValueUnit(formatHoursAndMinutes(d.week.duration), null),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (total != null) {
+                    HeroColumn(
+                        label = stringResource(R.string.dashboard_burned_total),
+                        value = caloriesParts(total),
+                        caption = d.passive.averageKcal?.takeIf { period != SummaryGranularity.DAY }
+                            ?.let { stringResource(R.string.dashboard_avg_per_day, caloriesParts(it).value) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -239,7 +251,8 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity, showChange: 
             Spacer(Modifier.height(TtSpace.x4))
             DisciplineColumns(columns)
         }
-        d.passive?.let { passive ->
+        // Na dole zostają kroki; kalorie łączne są na górze karty obok aktywnych.
+        d.passive?.takeIf { it.steps != null }?.let { passive ->
             Spacer(Modifier.height(TtSpace.x3))
             TtDivider()
             Spacer(Modifier.height(TtSpace.x4))
@@ -521,7 +534,7 @@ private fun DashboardEmpty() {
     }
 }
 
-/** Kroki i kalorie spalane naturalnie w głównej karcie: tylko to, co Health Connect faktycznie podał. */
+/** Kroki w głównej karcie (suma i średnia dzienna): tylko to, co Health Connect faktycznie podał. */
 @Composable
 private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
     val items = listOfNotNull(
@@ -529,9 +542,6 @@ private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
         // Średnia dzienna ma sens tylko dla okresu dłuższego niż jeden dzień.
         passive.averageSteps?.takeIf { period != SummaryGranularity.DAY }
             ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
-        passive.kcal?.let { MetricItem(stringResource(R.string.passive_basal), caloriesParts(it).value, "kcal") },
-        passive.averageKcal?.takeIf { period != SummaryGranularity.DAY }
-            ?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
     )
     MetricGrid(items)
 }
@@ -546,4 +556,21 @@ private fun SummaryGranularity.prevLabel() = when (this) {
     SummaryGranularity.MONTH -> R.string.dashboard_prev_month
     SummaryGranularity.DAY -> R.string.dashboard_prev_day
     else -> R.string.dashboard_prev_week
+}
+
+/** Kolumna na górze karty: etykieta („Aktywne”, „Łączne”), duża liczba z jednostką i opcjonalny dopisek pod spodem. */
+@Composable
+private fun HeroColumn(label: String, value: ValueUnit, modifier: Modifier = Modifier, caption: String? = null) {
+    val colors = LocalTtColors.current
+    Column(modifier) {
+        Text(
+            label,
+            style = TtType.body.copy(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium),
+            color = colors.ink2,
+        )
+        Spacer(Modifier.height(TtSpace.x1))
+        // Dwie kolumny obok siebie: mniejsza liczba niż `hero`, żeby „63 845 kcal” mieściło się na wąskim ekranie.
+        BigValue(value, style = TtType.hero.copy(fontSize = 30.sp, lineHeight = 36.sp, letterSpacing = (-0.4).sp))
+        if (caption != null) Text(caption, style = TtType.bodyS, color = colors.ink2)
+    }
 }

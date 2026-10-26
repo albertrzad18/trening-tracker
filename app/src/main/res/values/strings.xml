@@ -243,9 +243,10 @@
     <string name="metric_avg_distance">Śr. dystans</string>
     <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>
-    <string name="dashboard_none_month">Brak treningów w tym miesiącu</string>
     <string name="passive_basal_avg">Śr. dziennie</string>
-    <string name="dashboard_burned">Aktywnie przepalone ćwiczeniem</string>
+    <string name="dashboard_burned">Aktywne</string>
+    <string name="dashboard_burned_total">Łączne</string>
+    <string name="dashboard_avg_per_day">śr. %1$s kcal / dzień</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
     <string name="dashboard_all_goals">Wszystkie cele</string>

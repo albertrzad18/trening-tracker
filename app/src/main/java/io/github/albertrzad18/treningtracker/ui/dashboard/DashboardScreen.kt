@@ -48,7 +48,6 @@ import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.buildDashboard
 import io.github.albertrzad18.treningtracker.ui.common.BigValue
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineDot
-import io.github.albertrzad18.treningtracker.ui.common.DeltaBadge
 import io.github.albertrzad18.treningtracker.domain.PassiveTotals
 import io.github.albertrzad18.treningtracker.ui.common.MetricGrid
 import io.github.albertrzad18.treningtracker.ui.common.MetricItem
@@ -67,7 +66,6 @@ import io.github.albertrzad18.treningtracker.ui.common.ShareBar
 import io.github.albertrzad18.treningtracker.ui.common.SkeletonBlock
 import io.github.albertrzad18.treningtracker.ui.common.TtDivider
 import io.github.albertrzad18.treningtracker.ui.common.TtIcons
-import io.github.albertrzad18.treningtracker.ui.common.deltaPeriodText
 import io.github.albertrzad18.treningtracker.domain.SummaryGranularity
 import io.github.albertrzad18.treningtracker.ui.common.labelRes
 import io.github.albertrzad18.treningtracker.ui.common.localDateTime
@@ -160,7 +158,7 @@ internal fun DashboardContent(
         ) {
             item { WeekPanel(data, period) }
             weekCard?.takeIf { HomeCard.WEEK !in hiddenCards && (it.week.count > 0 || it.previousWeek.count > 0) }?.let { week ->
-                item { WeekPanel(week, SummaryGranularity.WEEK, showChange = false) }
+                item { WeekPanel(week, SummaryGranularity.WEEK) }
             }
             if (period == SummaryGranularity.MONTH) {
                 // Miesiąc: zamiast listy ostatnich treningów karty dyscyplin, tylko tych z treningami w tym miesiącu.
@@ -175,9 +173,9 @@ internal fun DashboardContent(
     }
 }
 
-/** Najważniejszy kafelek: ile przepalonych kalorii, podział na dyscypliny i porównanie z poprzednim tygodniem. */
+/** Najważniejszy kafelek: kalorie aktywne i łączne, podział na dyscypliny i paski czasu na tle poprzedniego okresu. */
 @Composable
-private fun WeekPanel(d: DashboardData, period: SummaryGranularity, showChange: Boolean = true) {
+private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
     val colors = LocalTtColors.current
     Panel {
         LabelText(
@@ -229,12 +227,6 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity, showChange: 
             LabelText(stringResource(R.string.dashboard_exercises), modifier = Modifier.padding(top = TtSpace.x2))
         }
         d.perDiscipline.filter { it.totals.count > 0 }.forEach { DisciplineSplitRow(it) }
-        val change = d.caloriesChangePercent ?: d.durationChangePercent
-        // Karta „Dziś” i karta tygodnia pod nią nie pokazują zmiany procentowej.
-        if (showChange && change != null && d.week.count > 0 && period != SummaryGranularity.DAY) {
-            Spacer(Modifier.height(TtSpace.x1))
-            DeltaBadge(change, text = deltaPeriodText(change, period))
-        }
         // Dzień z treningiem tylko jednej dyscypliny: paski i kolumny powtarzałyby wiersz wyżej, więc ich nie ma.
         val singleDiscipline = period == SummaryGranularity.DAY && d.perDiscipline.count { it.totals.count > 0 } <= 1
         if (d.week.count > 0 && !singleDiscipline) {

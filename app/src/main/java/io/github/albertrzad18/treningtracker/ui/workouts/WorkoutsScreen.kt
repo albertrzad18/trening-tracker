@@ -249,15 +249,29 @@ private fun WorkoutList(
     onOpenWorkout: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var summaryOpen by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     val hidden = (LocalContext.current.applicationContext as TreningApp).settings.state.collectAsStateWithLifecycle().value.hiddenCards
-    LazyColumn(modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = TtSpace.x6)) {
-        item(key = "summary") { SummaryCard(result) }
+    LazyColumn(
+        modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = TtSpace.x1, bottom = TtSpace.x6),
+    ) {
+        // Suma jest domyślnie schowana; przycisk na górze listy ją rozwija i zwija.
+        item(key = "summary-toggle") {
+            SecondaryButton(
+                text = stringResource(if (summaryOpen) R.string.list_sum_hide else R.string.list_sum_show),
+                onClick = { summaryOpen = !summaryOpen },
+                icon = if (summaryOpen) TtIcons.ExpandLess else TtIcons.ExpandMore,
+                small = true,
+                modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x1, bottom = TtSpace.x1),
+            )
+        }
+        if (summaryOpen) item(key = "summary") { SummaryCard(result) }
         // Te same karty dyscyplin co w zakładce Miesiąc, ale dla widocznych treningów (po filtrach).
         items(
             result.workouts.perDiscipline().filter { it.totals.count > 0 && it.discipline.card() !in hidden },
             key = { "disc-${it.discipline.name}" },
         ) {
-            Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(bottom = TtSpace.x1)) { DisciplineSummaryPanel(it) }
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(vertical = TtSpace.x1)) { DisciplineSummaryPanel(it) }
         }
         if (result.groups.isNotEmpty()) {
             result.groups.forEach { group ->

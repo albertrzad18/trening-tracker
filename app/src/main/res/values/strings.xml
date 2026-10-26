@@ -238,6 +238,10 @@
     <string name="dashboard_exercises">Ćwiczenia</string>
     <string name="metric_workouts">Treningi</string>
     <string name="metric_avg_pace">Śr. tempo</string>
+    <string name="list_sum_show">Pokaż sumę</string>
+    <string name="list_sum_hide">Ukryj sumę</string>
+    <string name="metric_avg_distance">Śr. dystans</string>
+    <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>
     <string name="dashboard_none_month">Brak treningów w tym miesiącu</string>
     <string name="passive_basal_avg">Śr. dziennie</string>

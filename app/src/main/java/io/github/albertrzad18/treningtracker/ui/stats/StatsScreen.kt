@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -500,8 +502,6 @@ private fun CumulativePanel(d: StatsData) {
                             points = points.map { it.dayOfYear.toDouble() to it.km },
                             color = colors.ink2,
                             width = 1.5.dp,
-                            endLabel = "${d.thisYear - 1} · ${formatNumberShort(points.last().km)}",
-                            labelBelow = points.last().km <= (current.lastOrNull()?.km ?: 0.0),
                         )
                     },
                     current.takeIf { it.size >= 2 }?.let { points ->
@@ -510,7 +510,7 @@ private fun CumulativePanel(d: StatsData) {
                             color = colors.ink,
                             width = 2.5.dp,
                             areaAlpha = 0.12f,
-                            endLabel = "${d.thisYear} · ${formatNumberShort(points.last().km)}",
+                            endDot = true,
                         )
                     },
                 ),
@@ -519,6 +519,19 @@ private fun CumulativePanel(d: StatsData) {
                 },
                 zeroBased = true,
             )
+            // Legenda pod wykresem zamiast podpisów przy liniach: linie kończą się w różnych miejscach
+            // (ten rok dziś, poprzedni w grudniu), więc podpisy nachodziły na siebie i na linie.
+            androidx.compose.foundation.layout.FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(TtSpace.x4),
+                modifier = Modifier.padding(top = TtSpace.x2),
+            ) {
+                current.lastOrNull()?.takeIf { current.size >= 2 }?.let {
+                    CumulativeLegend(colors.ink, 2.5.dp, "${d.thisYear} · ${formatNumberShort(it.km)} km")
+                }
+                previous.lastOrNull()?.takeIf { previous.size >= 2 }?.let {
+                    CumulativeLegend(colors.ink2, 1.5.dp, "${d.thisYear - 1} · ${formatNumberShort(it.km)} km")
+                }
+            }
         }
     }
 }
@@ -690,4 +703,17 @@ private fun androidx.compose.foundation.lazy.LazyListScope.recordsItems(
         }
     }
     item(key = "records-periods") { io.github.albertrzad18.treningtracker.ui.records.PeriodPanel(records) }
+}
+
+/** Pozycja legendy wykresu narastającego: kreska w kolorze i grubości linii oraz rok z sumą kilometrów. */
+@Composable
+private fun CumulativeLegend(color: androidx.compose.ui.graphics.Color, thickness: androidx.compose.ui.unit.Dp, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        androidx.compose.foundation.layout.Box(
+            Modifier
+                .size(width = 16.dp, height = thickness)
+                .background(color, RoundedCornerShape(1.dp)),
+        )
+        Text(text, style = TtType.caption.copy(fontWeight = FontWeight.SemiBold), color = color)
+    }
 }

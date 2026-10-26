@@ -20,7 +20,7 @@ indoor trainer rides. All data stays on the phone: no server, no accounts. The U
 - **Dashboard** – today's card (burned calories, steps, total burned) and the whole week below it.
 - **Month** – the same card for the month plus one summary card per discipline: time, workouts, calories,
   distance and average pace (pool) or speed (road bike).
-- **Workouts** – sortable list grouped by month, filters, totals and the same discipline cards.
+- **Workouts** – the same discipline cards, a sortable list grouped by month, filters, and totals behind a "Show sum" button.
 - **Details** – heart rate, zones, speed, elevation and the route on an OpenStreetMap map.
 - **Stats** – personal records, volume, activity calendar, discipline share, pace and fitness trends.
 - **Summaries and goals** – weeks, months and years with streaks; weekly, monthly or yearly targets.

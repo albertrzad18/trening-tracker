@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Ikona: płonący skręt ułożony ukośnie, z żarem i płomieniem na końcu.
-  Skręt rysujemy poziomo i obracamy grupą o -40° wokół (52,62); płomień jest poza grupą,
-  żeby zawsze strzelał pionowo w górę. Wszystko mieści się w bezpiecznej strefie ikony (koło r=33 wokół środka).
+  Ikona: pływak kraulem nad dwiema falami. Biała sylwetka (głowa, tułów, ręka w przenoszeniu, noga),
+  fale w kolorze basenu. Wszystko mieści się w bezpiecznej strefie ikony (koło r=33 wokół środka 54,54).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -10,37 +9,38 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <group
-        android:pivotX="52"
-        android:pivotY="62"
-        android:rotation="-40">
-        <!-- Ustnik z tektury -->
-        <path
-            android:fillColor="#C8A27A"
-            android:pathData="M28,58.5 L34,58.2 L34,65.8 L28,65.5 Z" />
-        <path
-            android:pathData="M30.5,58.4 L30.5,65.6 M32.5,58.3 L32.5,65.7"
-            android:strokeColor="#A07D58"
-            android:strokeWidth="0.8" />
-        <!-- Bibułka, lekko rozszerzająca się ku końcowi -->
-        <path
-            android:fillColor="#F5EEDF"
-            android:pathData="M34,58.2 L72,57 Q74.5,62 72,67 L34,65.8 Z" />
-        <!-- Popiół -->
-        <path
-            android:fillColor="#8A8A8A"
-            android:pathData="M72,57 Q74.5,62 72,67 L74,66.5 Q76.5,62 74,57.5 Z" />
-        <!-- Żar -->
-        <path
-            android:fillColor="#FF5722"
-            android:pathData="M74,57.5 Q76.5,62 74,66.5 Q77.5,64 77.5,62 Q77.5,60 74,57.5 Z" />
-    </group>
+    <!-- Głowa -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36.5,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <!-- Tułów -->
+    <path
+        android:pathData="M45,55 L68,59"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round" />
+    <!-- Ręka przenoszona nad wodą, wyciągnięta do przodu -->
+    <path
+        android:pathData="M50,55 Q46,36 29,42"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <!-- Noga w kopnięciu -->
+    <path
+        android:pathData="M68,59 L79,54"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
 
-    <!-- Płomień: zewnętrzny pomarańczowy i wewnętrzny żółty -->
+    <!-- Fale -->
     <path
-        android:fillColor="#FF9800"
-        android:pathData="M71,47 C62,44 62,35 68,28 C68,34 73,35 72,29 C80,35 80,44 71,47 Z" />
+        android:pathData="M27,67 q5.5,-5 11,0 t11,0 t11,0 t11,0 t11,0"
+        android:strokeColor="#4FC3F7"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
     <path
-        android:fillColor="#FFD54F"
-        android:pathData="M71,45 C67,43 67,38 70,34 C70.5,37 73,38 73,35 C76,39 75,43 71,45 Z" />
+        android:pathData="M33,77 q5.5,-5 11,0 t11,0 t11,0 t11,0"
+        android:strokeColor="#1E88E5"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
 </vector>

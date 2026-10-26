@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Wersja jednokolorowa dla motywowanych ikon Androida 13+: ten sam skręt i płomień, bez kolorów. -->
+<!-- Wersja jednokolorowa dla motywowanych ikon Androida 13+: ten sam pływak i fale, bez kolorów. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -7,18 +7,32 @@
     android:viewportHeight="108"
     android:tint="#FFFFFF">
 
-    <group
-        android:pivotX="52"
-        android:pivotY="62"
-        android:rotation="-40">
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M28,58.5 L72,57 Q74.5,62 72,67 L28,65.5 Z" />
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M73.5,57.5 Q76,62 73.5,66.5 Q77.5,64 77.5,62 Q77.5,60 73.5,57.5 Z" />
-    </group>
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M71,47 C62,44 62,35 68,28 C68,34 73,35 72,29 C80,35 80,44 71,47 Z" />
+        android:pathData="M36.5,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <path
+        android:pathData="M45,55 L68,59"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M50,55 Q46,36 29,42"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M68,59 L79,54"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M27,67 q5.5,-5 11,0 t11,0 t11,0 t11,0 t11,0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M33,77 q5.5,-5 11,0 t11,0 t11,0 t11,0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
 </vector>

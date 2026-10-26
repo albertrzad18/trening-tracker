@@ -10,6 +10,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatHeartRate
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.formatPacePer100m
 import io.github.albertrzad18.treningtracker.ui.format.formatSpeedKmh
+import io.github.albertrzad18.treningtracker.ui.format.formatWorkoutDistance
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -17,7 +18,7 @@ import java.time.ZoneId
 fun Workout.paceOrSpeedText(): String? =
     if (discipline == Discipline.POOL) pacePer100mSec?.let(::formatPacePer100m) else avgSpeedKmh?.let(::formatSpeedKmh)
 
-fun Workout.distanceText(): String? = distanceM?.let(::formatDistanceKm)
+fun Workout.distanceText(): String? = distanceM?.let { formatWorkoutDistance(discipline, it) }
 fun Workout.caloriesText(): String? = caloriesKcal?.let(::formatCalories)
 fun Workout.avgHeartRateText(): String? = avgHeartRate?.let(::formatHeartRate)
 fun Workout.durationText(): String = formatDuration(duration)

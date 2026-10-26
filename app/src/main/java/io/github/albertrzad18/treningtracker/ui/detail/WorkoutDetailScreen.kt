@@ -68,6 +68,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatKmShort
 import io.github.albertrzad18.treningtracker.ui.format.heartRateParts
 import io.github.albertrzad18.treningtracker.ui.format.paceParts
 import io.github.albertrzad18.treningtracker.ui.format.speedParts
+import io.github.albertrzad18.treningtracker.ui.format.workoutDistanceParts
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtShape
 import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
@@ -239,7 +240,7 @@ private fun HeroPanel(workout: Workout, comparison: AverageComparison?) {
             workout.distanceM?.let { meters ->
                 HeroValue(
                     label = stringResource(R.string.metric_distance),
-                    parts = distanceParts(meters),
+                    parts = workoutDistanceParts(workout.discipline, meters),
                     change = comparison?.distanceChangePercent,
                     modifier = Modifier.weight(1f),
                 )

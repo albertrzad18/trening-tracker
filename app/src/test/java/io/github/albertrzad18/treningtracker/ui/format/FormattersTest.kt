@@ -17,6 +17,22 @@ class FormattersTest {
     }
 
     @Test
+    fun distanceRoundsHalfUp() {
+        // 1250 m to 1,25 km: HALF_EVEN dawało 1,2, a zegarek i zdrowy rozsądek mówią 1,3.
+        assertEquals("1,3${nbsp}km", formatDistanceKm(1250.0))
+    }
+
+    @Test
+    fun poolWorkoutDistanceIsInMeters() {
+        val pool = io.github.albertrzad18.treningtracker.domain.Discipline.POOL
+        val road = io.github.albertrzad18.treningtracker.domain.Discipline.ROAD
+        assertEquals("1${nbsp}250${nbsp}m", formatWorkoutDistance(pool, 1250.0))
+        assertEquals("25,0${nbsp}km", formatWorkoutDistance(road, 25_000.0))
+        assertEquals("1${nbsp}250", workoutDistanceParts(pool, 1250.0).value)
+        assertEquals("m", workoutDistanceParts(pool, 1250.0).unit)
+    }
+
+    @Test
     fun duration() {
         assertEquals("1:23:45", formatDuration(Duration.ofSeconds(5025)))
         assertEquals("0:05:07", formatDuration(Duration.ofSeconds(307)))

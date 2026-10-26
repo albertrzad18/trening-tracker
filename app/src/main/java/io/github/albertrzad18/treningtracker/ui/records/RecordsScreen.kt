@@ -51,6 +51,7 @@ import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.paceParts
 import io.github.albertrzad18.treningtracker.ui.format.speedParts
+import io.github.albertrzad18.treningtracker.ui.format.workoutDistanceParts
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtShape
 import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
@@ -253,7 +254,7 @@ private fun RecordKind.labelRes() = when (this) {
 
 /** Wartość rekordu rozbita na liczbę i jednostkę. */
 private fun PersonalRecord.parts(): ValueUnit = when (kind) {
-    RecordKind.LONGEST_DISTANCE -> distanceParts(value)
+    RecordKind.LONGEST_DISTANCE -> workoutDistanceParts(discipline, value)
     RecordKind.LONGEST_DURATION -> ValueUnit(formatDuration(Duration.ofSeconds(value.toLong())), null)
     RecordKind.BEST_AVG_SPEED -> speedParts(value)
     RecordKind.BEST_PACE -> paceParts(value)

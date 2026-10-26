@@ -16,7 +16,24 @@ private fun symbols() = DecimalFormatSymbols(PL).apply {
     decimalSeparator = ','
 }
 
-private fun number(pattern: String, value: Double): String = DecimalFormat(pattern, symbols()).format(value)
+/** Zaokrąglamy „od połowy w górę” (1,25 → 1,3). Domyślne HALF_EVEN dawało 1,2 i rozjeżdżało się z zegarkiem. */
+private fun number(pattern: String, value: Double): String =
+    DecimalFormat(pattern, symbols()).apply { roundingMode = java.math.RoundingMode.HALF_UP }.format(value)
+
+/** `1 250 m`: pojedynczy trening na basenie liczymy w metrach, tak jak na zegarku. */
+fun formatDistanceM(meters: Double): String = number("#,##0", meters) + " m"
+
+/** Dystans jednego treningu: metry dla basenu, kilometry dla reszty. Sumy (tydzień, miesiąc) zostają w km. */
+fun formatWorkoutDistance(discipline: io.github.albertrzad18.treningtracker.domain.Discipline, meters: Double): String =
+    if (discipline == io.github.albertrzad18.treningtracker.domain.Discipline.POOL) formatDistanceM(meters) else formatDistanceKm(meters)
+
+/** To samo co [formatWorkoutDistance], rozbite na liczbę i jednostkę (do dużych kafelków). */
+fun workoutDistanceParts(discipline: io.github.albertrzad18.treningtracker.domain.Discipline, meters: Double) =
+    if (discipline == io.github.albertrzad18.treningtracker.domain.Discipline.POOL) {
+        ValueUnit(number("#,##0", meters), "m")
+    } else {
+        distanceParts(meters)
+    }
 
 /** `1 234,5 km` (spacja w liczbie to twarda spacja, żeby tekst się nie łamał). */
 fun formatDistanceKm(meters: Double): String = number("#,##0.0", meters / 1000.0) + " km"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Trening Tracker</string>
+    <string name="app_name">TTracker</string>
 
     <string name="discipline_pool">Basen</string>
     <string name="discipline_road">Rower</string>
@@ -256,7 +256,7 @@
     <string name="dashboard_all_goals">Wszystkie cele</string>
     <string name="dashboard_empty_step_1">Health Sync przesyła treningi z Huawei Health</string>
     <string name="dashboard_empty_step_2">Health Connect zbiera je na telefonie</string>
-    <string name="dashboard_empty_step_3">trening-tracker je czyta i pokazuje</string>
+    <string name="dashboard_empty_step_3">TTracker je czyta i pokazuje</string>
 
     <!-- Lista treningów (redesign) -->
     <string name="unit_workout_one">trening</string>
@@ -339,12 +339,12 @@
     <string name="debug_debug_only">Tylko wersja debug</string>
 
     <!-- Ekrany powitalne -->
-    <string name="onboarding_wordmark">trening-tracker</string>
+    <string name="onboarding_wordmark">TTracker</string>
     <string name="onboarding_headline">Twoje treningi z zegarka, na telefonie.</string>
     <string name="onboarding_step_watch">Zegarek Huawei</string>
     <string name="onboarding_step_huawei_health">Huawei Health</string>
     <string name="onboarding_step_health_sync">Health Sync</string>
     <string name="onboarding_step_health_connect">Health Connect</string>
-    <string name="onboarding_step_app">trening-tracker</string>
+    <string name="onboarding_step_app">TTracker</string>
     <string name="onboarding_loading">Wczytuję treningi…</string>
 </resources>

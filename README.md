@@ -1,6 +1,6 @@
 # trening-tracker
 
-An Android app that shows workouts recorded by a Huawei Watch GT5: pool swimming, outdoor cycling and
+**TTracker** – an Android app that shows workouts recorded by a Huawei Watch GT5: pool swimming, outdoor cycling and
 indoor trainer rides. All data stays on the phone: no server, no accounts. The UI is in Polish.
 
 | Dashboard | Month | Workouts |

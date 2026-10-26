@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Ikona: pierścień złożony z trzech łuków w kolorach dyscyplin
-  (basen niebieski, rower zielony, trenażer pomarańczowy).
+  Ikona: płonący skręt ułożony ukośnie, z żarem i płomieniem na końcu.
+  Skręt rysujemy poziomo i obracamy grupą o -40° wokół (52,62); płomień jest poza grupą,
+  żeby zawsze strzelał pionowo w górę. Wszystko mieści się w bezpiecznej strefie ikony (koło r=33 wokół środka).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -9,31 +10,37 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <path
-        android:pathData="M54,26 A28,28 0 0 1 78.25,68"
-        android:strokeColor="#1E88E5"
-        android:strokeWidth="9"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M78.25,68 A28,28 0 0 1 29.75,68"
-        android:strokeColor="#43A047"
-        android:strokeWidth="9"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M29.75,68 A28,28 0 0 1 54,26"
-        android:strokeColor="#FB8C00"
-        android:strokeWidth="9"
-        android:strokeLineCap="round" />
+    <group
+        android:pivotX="52"
+        android:pivotY="62"
+        android:rotation="-40">
+        <!-- Ustnik z tektury -->
+        <path
+            android:fillColor="#C8A27A"
+            android:pathData="M28,58.5 L34,58.2 L34,65.8 L28,65.5 Z" />
+        <path
+            android:pathData="M30.5,58.4 L30.5,65.6 M32.5,58.3 L32.5,65.7"
+            android:strokeColor="#A07D58"
+            android:strokeWidth="0.8" />
+        <!-- Bibułka, lekko rozszerzająca się ku końcowi -->
+        <path
+            android:fillColor="#F5EEDF"
+            android:pathData="M34,58.2 L72,57 Q74.5,62 72,67 L34,65.8 Z" />
+        <!-- Popiół -->
+        <path
+            android:fillColor="#8A8A8A"
+            android:pathData="M72,57 Q74.5,62 72,67 L74,66.5 Q76.5,62 74,57.5 Z" />
+        <!-- Żar -->
+        <path
+            android:fillColor="#FF5722"
+            android:pathData="M74,57.5 Q76.5,62 74,66.5 Q77.5,64 77.5,62 Q77.5,60 74,57.5 Z" />
+    </group>
 
-    <!-- Wskazówka stopera w środku -->
+    <!-- Płomień: zewnętrzny pomarańczowy i wewnętrzny żółty -->
     <path
-        android:pathData="M54,54 L54,40"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
+        android:fillColor="#FF9800"
+        android:pathData="M71,47 C62,44 62,35 68,28 C68,34 73,35 72,29 C80,35 80,44 71,47 Z" />
     <path
-        android:pathData="M54,54 L64,60"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
+        android:fillColor="#FFD54F"
+        android:pathData="M71,45 C67,43 67,38 70,34 C70.5,37 73,38 73,35 C76,39 75,43 71,45 Z" />
 </vector>

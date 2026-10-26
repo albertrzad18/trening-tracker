@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,18 +18,16 @@ import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.paceParts
 import io.github.albertrzad18.treningtracker.ui.format.speedParts
 import io.github.albertrzad18.treningtracker.ui.format.workoutDistanceParts
-import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
-import io.github.albertrzad18.treningtracker.ui.theme.TtType
 
 /**
  * Karta dyscypliny: czas, liczba treningów i przepalone kalorie, a dla basenu i roweru dystans oraz
  * (basen) średnie tempo albo (rower) średnia prędkość. Brakujące dane są ukryte, nie pokazujemy zer.
  * Używana w zakładce Miesiąc i na ekranie Treningi, więc obie pokazują te same liczby.
+ * Dyscyplin bez treningów nie pokazujemy wcale: wywołujący pomija je, zanim narysuje kartę.
  */
 @Composable
-fun DisciplineSummaryPanel(item: DisciplineTotals, emptyText: String? = null) {
-    val colors = LocalTtColors.current
+fun DisciplineSummaryPanel(item: DisciplineTotals) {
     val totals = item.totals
     Panel {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -38,10 +35,6 @@ fun DisciplineSummaryPanel(item: DisciplineTotals, emptyText: String? = null) {
             LabelText(stringResource(item.discipline.labelRes()))
         }
         Spacer(Modifier.height(TtSpace.x3))
-        if (totals.count == 0) {
-            Text(emptyText.orEmpty(), style = TtType.body, color = colors.ink2)
-            return@Panel
-        }
         val hasDistance = item.discipline != Discipline.TRAINER
         val pace = totals.pacePer100mSec?.takeIf { item.discipline == Discipline.POOL }?.let { paceParts(it) }
         val avgDuration = totals.averageDuration?.let {

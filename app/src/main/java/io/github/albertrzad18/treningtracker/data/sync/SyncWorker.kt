@@ -17,26 +17,33 @@ import java.util.concurrent.TimeUnit
 /** Zadanie w tle: synchronizuje Health Connect → Room. Błędy zapisuje w [SyncPrefs], nie wymusza ponawiania. */
 class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        (applicationContext as TreningApp).syncRepository.sync()
+        (applicationContext as TreningApp).syncRepository.sync(forceFull = inputData.getBoolean(KEY_FULL, false))
         return Result.success()
     }
 }
+
+/** Klucz danych wejściowych: `true` = pełny odczyt całej historii od nowa. */
+const val KEY_FULL = "full"
 
 object SyncScheduler {
     private const val PERIODIC = "sync_periodic"
     private const val NOW = "sync_now"
 
-    /** Cykliczna synchronizacja co 6 godzin (minimum WorkManagera to 15 minut). */
+    /** Cykliczna synchronizacja co 15 minut (to minimum WorkManagera); Android może ją opóźnić przy oszczędzaniu baterii. */
     fun schedulePeriodic(context: Context) {
-        val request = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS).build()
+        val request = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build()
         WorkManager.getInstance(context)
-            .enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, request)
+            .enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
     /** Jednorazowa synchronizacja od razu (start apki, przycisk „Synchronizuj teraz”). */
-    fun syncNow(context: Context) {
-        WorkManager.getInstance(context)
-            .enqueueUniqueWork(NOW, ExistingWorkPolicy.REPLACE, OneTimeWorkRequestBuilder<SyncWorker>().build())
+    fun syncNow(context: Context, full: Boolean = false) {
+        val request = OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(androidx.work.workDataOf(KEY_FULL to full))
+            .build()
+        // Zwykła synchronizacja nie przerywa trwającej (np. pełnego odczytu historii), a pełny odczyt zastępuje zwykłą.
+        val policy = if (full) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
+        WorkManager.getInstance(context).enqueueUniqueWork(NOW, policy, request)
     }
 
     /** Czy synchronizacja właśnie trwa (ręczna albo cykliczna): do animacji przycisków. */

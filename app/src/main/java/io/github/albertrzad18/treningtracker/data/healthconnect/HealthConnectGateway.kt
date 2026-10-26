@@ -128,6 +128,39 @@ class HealthConnectGateway(private val context: Context) {
         }
     }
 
+    /**
+     * Diagnostyka dnia [date]: kroki i kalorie z agregatu Health Connect oraz surowe rekordy pogrupowane po źródle.
+     * Jeśli suma surowych rekordów jest większa od agregatu albo źródeł jest kilka, liczby mogą się rozjeżdżać z zegarkiem.
+     */
+    suspend fun dayBreakdown(date: java.time.LocalDate, granted: Set<String>): String = buildString {
+        val range = TimeRangeFilter.between(date.atStartOfDay(), date.plusDays(1).atStartOfDay())
+        appendLine("Dzień $date")
+        fun can(record: KClass<out Record>) = HealthPermission.getReadPermission(record) in granted
+
+        if (can(StepsRecord::class)) {
+            val total = client.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), range))[StepsRecord.COUNT_TOTAL]
+            appendLine("Kroki (agregat): ${total ?: "brak"}")
+            client.readRecords(ReadRecordsRequest(StepsRecord::class, range)).records
+                .groupBy { it.metadata.dataOrigin.packageName }
+                .forEach { (pkg, list) -> appendLine("  $pkg: ${list.sumOf { it.count }} (${list.size} rek.)") }
+        }
+        if (can(ActiveCaloriesBurnedRecord::class)) {
+            val total = client.aggregate(AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), range))[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
+            appendLine("Kcal aktywne (agregat): ${total?.inKilocalories?.toInt() ?: "brak"}")
+            client.readRecords(ReadRecordsRequest(ActiveCaloriesBurnedRecord::class, range)).records
+                .groupBy { it.metadata.dataOrigin.packageName }
+                .forEach { (pkg, list) -> appendLine("  $pkg: ${list.sumOf { it.energy.inKilocalories }.toInt()} (${list.size} rek.)") }
+        }
+        if (can(BasalMetabolicRateRecord::class)) {
+            val total = client.aggregate(AggregateRequest(setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL), range))[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]
+            appendLine("Kcal spoczynkowe (agregat): ${total?.inKilocalories?.toInt() ?: "brak"}")
+        }
+        if (can(TotalCaloriesBurnedRecord::class)) {
+            val total = client.aggregate(AggregateRequest(setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL), range))[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
+            appendLine("Kcal łącznie wg Health Connect: ${total?.inKilocalories?.toInt() ?: "brak"}")
+        }
+    }.trim()
+
     val historyPermission = "android.permission.health.READ_HEALTH_DATA_HISTORY"
 
     fun isHistoryAvailable(): Boolean =

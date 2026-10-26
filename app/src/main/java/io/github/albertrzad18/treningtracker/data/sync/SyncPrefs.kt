@@ -13,6 +13,11 @@ class SyncPrefs(context: Context) {
         get() = prefs.getString(KEY_TOKEN, null)
         set(value) = prefs.edit().putString(KEY_TOKEN, value).apply()
 
+    /** Czy ostatni pełny odczyt miał uprawnienie do historii; bez niego Health Connect pokazuje tylko 30 dni wstecz. */
+    var fullReadHadHistory: Boolean
+        get() = prefs.getBoolean(KEY_FULL_HISTORY, false)
+        set(value) = prefs.edit().putBoolean(KEY_FULL_HISTORY, value).apply()
+
     private val _status = MutableStateFlow(readStatus())
 
     /** Obserwowalny status do ekranu „Więcej”. */
@@ -35,6 +40,7 @@ class SyncPrefs(context: Context) {
 
     private companion object {
         const val KEY_TOKEN = "changes_token"
+        const val KEY_FULL_HISTORY = "full_read_had_history"
         const val KEY_LAST_SYNC = "last_sync"
         const val KEY_LAST_ERROR = "last_error"
     }

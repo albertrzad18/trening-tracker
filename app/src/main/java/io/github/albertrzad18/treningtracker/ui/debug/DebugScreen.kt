@@ -145,6 +145,11 @@ private fun ReportTable(report: DebugState.Report) {
                 )
             }
         }
+        if (report.today.isNotEmpty()) {
+            Panel {
+                Text(report.today, style = TtType.mono, color = colors.ink)
+            }
+        }
         SecondaryButton(
             text = stringResource(R.string.debug_copy),
             onClick = { clipboard.setText(AnnotatedString(report.text)) },

@@ -33,6 +33,8 @@ sealed interface DebugState {
         val rows: List<DebugRow>,
         val from: LocalDate?,
         val to: LocalDate?,
+        /** Rozbicie dzisiejszych kroków i kalorii na źródła (do porównania z zegarkiem). */
+        val today: String = "",
     ) : DebugState
     data class Error(val message: String) : DebugState
 }
@@ -120,8 +122,10 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         val sessions = gateway.readSessions(now.minus(days.toLong(), ChronoUnit.DAYS), now)
         val probes = sessions.map { gateway.probe(it, granted) }
         val zone = ZoneId.systemDefault()
+        val today = runCatching { gateway.dayBreakdown(LocalDate.now(), granted) }.getOrElse { "Błąd: ${it.message}" }
         return DebugState.Report(
-            text = buildReport(probes, days, getApplication<Application>().resources),
+            text = buildReport(probes, days, getApplication<Application>().resources) + "\n\n" + today,
+            today = today,
             rows = reportRows(probes),
             from = probes.minByOrNull { it.start }?.start?.atZone(zone)?.toLocalDate(),
             to = probes.maxByOrNull { it.start }?.let { it.start.plusSeconds(it.durationSeconds) }

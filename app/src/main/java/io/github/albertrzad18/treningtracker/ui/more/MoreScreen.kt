@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -123,6 +124,8 @@ fun MoreScreen(
             }
         }
 
+        HistoryPanel()
+
         Panel {
             LabelText(stringResource(R.string.more_group_overview), modifier = Modifier.padding(bottom = TtSpace.x2))
             ListRow(
@@ -182,5 +185,52 @@ fun MoreScreen(
         }
         Spacer(Modifier.height(TtSpace.x1))
     }
+    }
+}
+
+/**
+ * Dane historyczne: bez uprawnienia do historii Health Connect pokazuje apce tylko 30 dni wstecz,
+ * więc starsze treningi z Health Sync są niewidoczne. Panel pozwala to uprawnienie nadać
+ * i wczytać całą historię od nowa.
+ */
+@Composable
+private fun HistoryPanel() {
+    val context = LocalContext.current
+    val gateway = (context.applicationContext as TreningApp).gateway
+    val colors = LocalTtColors.current
+    var refresh by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var missing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
+    androidx.compose.runtime.LaunchedEffect(refresh) {
+        missing = runCatching { gateway.isHistoryAvailable() }.getOrDefault(false)
+            .let { available -> if (!available) null else gateway.historyPermission !in gateway.grantedPermissions() }
+    }
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.health.connect.client.PermissionController.createRequestPermissionResultContract(),
+    ) {
+        refresh++
+        // Po nadaniu uprawnienia od razu wczytujemy całą historię.
+        SyncScheduler.syncNow(context, full = true)
+    }
+    val state = missing ?: return
+    Panel {
+        LabelText(stringResource(R.string.history_title), modifier = Modifier.padding(bottom = TtSpace.x2))
+        Text(
+            stringResource(if (state) R.string.history_missing else R.string.history_ok),
+            style = TtType.bodyS,
+            color = colors.ink2,
+        )
+        Spacer(Modifier.height(TtSpace.x3))
+        if (state) {
+            SecondaryButton(
+                text = stringResource(R.string.history_grant),
+                onClick = { launcher.launch(setOf(gateway.historyPermission)) },
+            )
+        } else {
+            SecondaryButton(
+                text = stringResource(R.string.history_reload),
+                onClick = { SyncScheduler.syncNow(context, full = true) },
+                icon = TtIcons.Sync,
+            )
+        }
     }
 }

@@ -39,9 +39,9 @@ class SyncRepository(
 ) {
     private val lock = Mutex()
 
-    suspend fun sync(): SyncResult = lock.withLock {
+    suspend fun sync(forceFull: Boolean = false): SyncResult = lock.withLock {
         try {
-            doSync().also { result ->
+            doSync(forceFull).also { result ->
                 when (result) {
                     is SyncResult.Success -> prefs.saveSuccess(clock().toEpochMilli())
                     is SyncResult.Failed -> prefs.saveError(result.message)
@@ -55,7 +55,7 @@ class SyncRepository(
         }
     }
 
-    private suspend fun doSync(): SyncResult {
+    private suspend fun doSync(forceFull: Boolean): SyncResult {
         if (gateway.sdkStatus() != HealthConnectClient.SDK_AVAILABLE) return SyncResult.Unavailable
         val granted = gateway.grantedPermissions()
         if (HealthPermission.getReadPermission(ExerciseSessionRecord::class) !in granted) return SyncResult.NoPermission
@@ -63,9 +63,11 @@ class SyncRepository(
         val now = clock()
         var changed = 0
         val token = prefs.changesToken
-        var needFullRead = token == null
+        val historyGranted = gateway.historyPermission in granted
+        // Pełny odczyt także wtedy, gdy uprawnienie do historii doszło później: Changes API nie odda starszych danych.
+        var needFullRead = token == null || forceFull || (historyGranted && !prefs.fullReadHadHistory)
 
-        if (token != null) {
+        if (!needFullRead && token != null) {
             // Wyjątek (np. nieprawidłowy token) traktujemy tak samo jak wygaśnięcie: pełny odczyt.
             val applied = runCatching { applyChanges(token, granted, now.toEpochMilli()) }.getOrNull()
             if (applied == null || applied == EXPIRED) needFullRead = true else changed += applied
@@ -77,6 +79,7 @@ class SyncRepository(
             val days = if (gateway.historyPermission in granted) FULL_HISTORY_DAYS else LIMITED_DAYS
             changed += upsertSessions(now.minus(days, ChronoUnit.DAYS), now, granted)
             prefs.changesToken = newToken
+            prefs.fullReadHadHistory = historyGranted
         } else {
             // Tętno i kalorie mogą dojść po zakończeniu sesji, a Changes API śledzi tylko same sesje.
             changed += upsertSessions(now.minus(RECENT_DAYS, ChronoUnit.DAYS), now, granted)

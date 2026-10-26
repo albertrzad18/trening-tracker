@@ -312,7 +312,7 @@ fun TtChip(
             .ttClickable(onClick = onClick)
             .padding(start = paddingStart, end = paddingEnd),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
+        horizontalArrangement = Arrangement.spacedBy(TtSpace.x2, Alignment.CenterHorizontally),
     ) {
         leading?.invoke()
         Text(label, style = TtType.labelPlain, color = textColor, maxLines = 1)
@@ -351,6 +351,8 @@ fun PeriodMenuChip(
     selected: PeriodFilter,
     onSelect: (PeriodFilter) -> Unit,
     modifier: Modifier = Modifier,
+    /** `true` w siatce filtrów: chip rozciąga się na całą komórkę. */
+    fillWidth: Boolean = false,
 ) {
     val colors = LocalTtColors.current
     var open by remember { mutableStateOf(false) }
@@ -358,6 +360,7 @@ fun PeriodMenuChip(
         TtChip(
             label = stringResource(selected.labelRes()),
             onClick = { open = true },
+            modifier = if (fillWidth) Modifier.fillMaxWidth() else Modifier,
             paddingEnd = 10.dp,
             trailing = {
                 Icon(TtIcons.DropDown, contentDescription = null, tint = colors.ink, modifier = Modifier.size(20.dp))
@@ -686,8 +689,8 @@ fun CaptionText(
 
 
 /**
- * Pasek filtrów: chipy dyscyplin i menu okresu w jednym wierszu.
- * Gdy ekran jest zbyt wąski, wiersz przewija się poziomo (nic nie przechodzi do drugiej linii ani nie jest ucinane).
+ * Pasek filtrów w siatce 2×2: Basen i Rower w pierwszym rzędzie, Trenażer i menu okresu w drugim.
+ * Każdy chip zajmuje połowę szerokości, więc nic nie wystaje poza ekran i nie trzeba przewijać.
  */
 @Composable
 fun FilterBar(
@@ -698,26 +701,29 @@ fun FilterBar(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalTtColors.current
-    Row(
-        modifier
-            .fillMaxWidth()
-            .horizontalScroll(androidx.compose.foundation.rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(TtSpace.x2),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Discipline.entries.forEach { discipline ->
-            val isSelected = discipline in disciplines
-            TtChip(
-                label = stringResource(discipline.labelRes()),
-                onClick = { onToggleDiscipline(discipline) },
-                selected = isSelected,
-                background = if (isSelected) colors.container(discipline) else Color.Transparent,
-                border = if (isSelected) colors.of(discipline) else colors.line,
-                leading = { DisciplineDot(discipline) },
-                paddingStart = 10.dp,
-                paddingEnd = 10.dp,
-            )
+    @Composable
+    fun disciplineChip(discipline: Discipline, cellModifier: Modifier) {
+        val isSelected = discipline in disciplines
+        TtChip(
+            label = stringResource(discipline.labelRes()),
+            onClick = { onToggleDiscipline(discipline) },
+            modifier = cellModifier,
+            selected = isSelected,
+            background = if (isSelected) colors.container(discipline) else Color.Transparent,
+            border = if (isSelected) colors.of(discipline) else colors.line,
+            leading = { DisciplineDot(discipline) },
+            paddingStart = 10.dp,
+            paddingEnd = 10.dp,
+        )
+    }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+            disciplineChip(Discipline.POOL, Modifier.weight(1f))
+            disciplineChip(Discipline.ROAD, Modifier.weight(1f))
         }
-        PeriodMenuChip(period, onPeriod)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x2)) {
+            disciplineChip(Discipline.TRAINER, Modifier.weight(1f))
+            PeriodMenuChip(period, onPeriod, Modifier.weight(1f), fillWidth = true)
+        }
     }
 }

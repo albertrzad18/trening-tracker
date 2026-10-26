@@ -75,6 +75,8 @@ import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
 import io.github.albertrzad18.treningtracker.ui.format.formatCalories
 import io.github.albertrzad18.treningtracker.ui.format.formatDateTime
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
+import io.github.albertrzad18.treningtracker.ui.format.formatDistanceM
+import io.github.albertrzad18.treningtracker.ui.format.formatWorkoutDistance
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.formatDayMonth
@@ -198,13 +200,14 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
                 color = colors.ink2,
             )
         }
-        // Obok siebie: „Aktywne” (kalorie z treningów) i „Łączne” (spoczynkowe + aktywne z całego okresu, jak na zegarku).
+        // Obok siebie: „Aktywne” (kalorie w ruchu z całego okresu, jak w Huawei Health) i „Łączne” (spoczynkowe + aktywne).
+        // Bez danych dziennych o ruchu „Aktywne” to kalorie z samych treningów.
         val total = d.passive?.kcal
-        val active = d.week.caloriesKcal.takeIf { d.week.count > 0 }
+        val active = d.passive?.activeKcal ?: d.week.caloriesKcal.takeIf { d.week.count > 0 }
         if (active != null || total != null || d.week.count > 0) {
             if (d.week.count == 0) Spacer(Modifier.height(TtSpace.x3))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(TtSpace.x4)) {
-                if (d.week.count > 0) {
+                if (active != null || d.week.count > 0) {
                     HeroColumn(
                         label = stringResource(R.string.dashboard_burned),
                         value = active?.let { caloriesParts(it) } ?: ValueUnit(formatHoursAndMinutes(d.week.duration), null),
@@ -281,7 +284,7 @@ private fun DisciplineSplitRow(item: DisciplineTotals) {
                 softWrap = false,
             )
             Text(
-                item.totals.distanceM?.let(::formatDistanceKm).orEmpty(),
+                item.totals.distanceM?.let { formatWorkoutDistance(item.discipline, it) }.orEmpty(),
                 style = TtType.bodyS,
                 color = colors.ink2,
                 textAlign = TextAlign.End,
@@ -395,7 +398,7 @@ private fun DisciplineColumns(items: List<DisciplineTotals>) {
 @Composable
 private fun columnValue(item: DisciplineTotals): String = when (item.discipline) {
     Discipline.ROAD -> item.totals.distanceM?.let(::formatDistanceKm) ?: "0 km"
-    Discipline.POOL -> item.totals.distanceM?.let(::formatDistanceKm).orEmpty()
+    Discipline.POOL -> item.totals.distanceM?.let(::formatDistanceM).orEmpty()
     Discipline.TRAINER -> if (item.totals.duration.isZero) "" else formatHoursAndMinutes(item.totals.duration)
 }
 
@@ -434,7 +437,7 @@ private fun LatestPanel(latest: List<Workout>, onOpenWorkout: (String) -> Unit, 
                         color = colors.ink,
                     )
                     // Trenażer zwykle nie ma dystansu, więc pokazujemy kalorie.
-                    val second = workout.distanceM?.let(::formatDistanceKm)
+                    val second = workout.distanceM?.let { formatWorkoutDistance(workout.discipline, it) }
                         ?: workout.caloriesKcal?.let(::formatCalories)
                     if (second != null) Text(second, style = TtType.bodyS, color = colors.ink2)
                 }

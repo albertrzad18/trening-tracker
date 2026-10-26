@@ -16,7 +16,8 @@ data class DailyStats(
 /**
  * Sumy z dni okresu. Pola są `null`, gdy w okresie nie ma żadnej wartości (nie pokazujemy zer).
  * [averageSteps] liczymy tylko z dni, które mają kroki, a [averageKcal] tylko z dni z kaloriami.
- * [maxSteps] to najlepszy dzień okresu, a [basalKcal] same kalorie spoczynkowe (bez ruchu).
+ * [maxSteps] to najlepszy dzień okresu, [basalKcal] same kalorie spoczynkowe (bez ruchu),
+ * a [activeKcal] same aktywne (to, co Huawei Health nazywa „kalorie w ruchu”).
  */
 data class PassiveTotals(
     val steps: Long?,
@@ -25,6 +26,7 @@ data class PassiveTotals(
     val averageKcal: Double? = null,
     val maxSteps: Long? = null,
     val basalKcal: Double? = null,
+    val activeKcal: Double? = null,
 ) {
     val isEmpty: Boolean get() = steps == null && kcal == null
 }
@@ -34,6 +36,7 @@ fun List<DailyStats>.passiveTotals(range: DateRange): PassiveTotals {
     val stepDays = days.mapNotNull { it.steps }
     val kcal = days.mapNotNull { it.totalKcal }
     val basal = days.mapNotNull { it.basalKcal }
+    val active = days.mapNotNull { it.activeKcal }
     return PassiveTotals(
         steps = stepDays.takeIf { it.isNotEmpty() }?.sum(),
         averageSteps = stepDays.takeIf { it.isNotEmpty() }?.let { it.sum() / it.size },
@@ -41,5 +44,6 @@ fun List<DailyStats>.passiveTotals(range: DateRange): PassiveTotals {
         averageKcal = kcal.takeIf { it.isNotEmpty() }?.average(),
         maxSteps = stepDays.maxOrNull(),
         basalKcal = basal.takeIf { it.isNotEmpty() }?.sum(),
+        activeKcal = active.takeIf { it.isNotEmpty() }?.sum(),
     )
 }

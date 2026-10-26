@@ -47,6 +47,7 @@ class DailyStatsTest {
         val totals = days.passiveTotals(range)
         assertEquals(14_500L, totals.maxSteps)
         assertEquals(3_250.0, totals.basalKcal!!, 0.001)
+        assertEquals(1_600.0, totals.activeKcal!!, 0.001)
     }
 
     @Test

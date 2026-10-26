@@ -7,6 +7,7 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.changes.DeletionChange
 import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import io.github.albertrzad18.treningtracker.data.db.WorkoutEntity
@@ -98,8 +99,12 @@ class HealthConnectGateway(private val context: Context) {
     val dailyPermissions: Set<String> = DAILY_KINDS.map { HealthPermission.getReadPermission(it) }.toSet()
 
     /**
-     * Kroki i kalorie spalane naturalnie dzień po dniu. Agregacja Health Connect sama łączy źródła
-     * (telefon i zegarek) bez podwójnego liczenia. Metryki bez uprawnienia pomijamy.
+     * Kroki i kalorie (spoczynkowe, aktywne) dzień po dniu. Metryki bez uprawnienia pomijamy.
+     *
+     * Health Connect sumuje dane ze wszystkich aplikacji, np. kroki z zegarka (przez Health Sync) i z krokomierza
+     * telefonu, a łączy je tylko tam, gdzie zakresy czasu się pokrywają. Wychodziło przez to więcej kroków niż
+     * w Huawei Health. Dlatego każdą metrykę bierzemy tylko z Health Sync, jeśli Health Sync ją w ogóle zapisuje;
+     * w przeciwnym razie (np. inna apka pośrednicząca) zostaje suma ze wszystkich źródeł.
      */
     suspend fun readDailyStats(from: java.time.LocalDate, toInclusive: java.time.LocalDate, granted: Set<String>): List<DailyStats> {
         val steps = HealthPermission.getReadPermission(StepsRecord::class) in granted
@@ -111,19 +116,28 @@ class HealthConnectGateway(private val context: Context) {
             if (basal) add(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL)
             if (active) add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
         }
-        val result = client.aggregateGroupByPeriod(
-            AggregateGroupByPeriodRequest(
-                metrics = metrics,
-                timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), toInclusive.plusDays(1).atStartOfDay()),
-                timeRangeSlicer = java.time.Period.ofDays(1),
-            ),
+        fun request(origins: Set<DataOrigin>) = AggregateGroupByPeriodRequest(
+            metrics = metrics,
+            timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), toInclusive.plusDays(1).atStartOfDay()),
+            timeRangeSlicer = java.time.Period.ofDays(1),
+            dataOriginFilter = origins,
         )
-        return result.map { day ->
+        val all = client.aggregateGroupByPeriod(request(emptySet()))
+        val fromSync = client.aggregateGroupByPeriod(request(setOf(DataOrigin(HEALTH_SYNC_PACKAGE))))
+        val syncByDate = fromSync.associateBy { it.startTime.toLocalDate() }
+        // Metryka „należy” do Health Sync, gdy w całym zakresie ma choć jedną wartość od Health Sync.
+        fun <T : Any> hasSync(metric: AggregateMetric<T>) = fromSync.any { it.result[metric] != null }
+        val stepsFromSync = hasSync(StepsRecord.COUNT_TOTAL)
+        val basalFromSync = hasSync(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL)
+        val activeFromSync = hasSync(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
+        return all.map { day ->
+            val date = day.startTime.toLocalDate()
+            val sync = syncByDate[date]?.result
             DailyStats(
-                date = day.startTime.toLocalDate(),
-                steps = day.result[StepsRecord.COUNT_TOTAL],
-                basalKcal = day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories,
-                activeKcal = day.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
+                date = date,
+                steps = if (stepsFromSync) sync?.get(StepsRecord.COUNT_TOTAL) else day.result[StepsRecord.COUNT_TOTAL],
+                basalKcal = (if (basalFromSync) sync?.get(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL) else day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL])?.inKilocalories,
+                activeKcal = (if (activeFromSync) sync?.get(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL) else day.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL])?.inKilocalories,
             )
         }
     }
@@ -313,3 +327,6 @@ class HealthConnectGateway(private val context: Context) {
 
 /** Rekordy dzienne czytane osobno od treningów. */
 private val DAILY_KINDS = listOf(StepsRecord::class, BasalMetabolicRateRecord::class, ActiveCaloriesBurnedRecord::class)
+
+/** Pakiet Health Sync: przez niego dane z zegarka Huawei trafiają do Health Connect. */
+const val HEALTH_SYNC_PACKAGE = "nl.appyhapps.healthsync"

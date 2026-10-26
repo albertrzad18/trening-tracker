@@ -9,7 +9,7 @@
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_month">Miesiąc</string>
     <string name="nav_workouts">Treningi</string>
-    <string name="nav_stats">Wykresy</string>
+    <string name="nav_stats">Statsy</string>
     <string name="nav_more">Więcej</string>
     <string name="back">Wróć</string>
 
@@ -252,6 +252,7 @@
     <string name="stats_tab_share">Udział</string>
     <string name="stats_tab_rhythm">Rytm</string>
     <string name="stats_tab_progress">Postęp</string>
+    <string name="stats_tab_records">Rekordy</string>
     <string name="chart_heatmap_unit">dni z treningiem</string>
     <string name="chart_share_unit">łącznie</string>
     <string name="chart_efficiency_unit">km/h na 100 uderzeń</string>

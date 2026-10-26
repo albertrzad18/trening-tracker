@@ -398,7 +398,7 @@ private fun MainScaffold() {
                 )
             }
             composable(Routes.WORKOUTS) { WorkoutsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
-            composable(Routes.STATS) { StatsScreen() }
+            composable(Routes.STATS) { StatsScreen(onOpenWorkout = { nav.navigate(Routes.detail(it)) }) }
             composable(Routes.MORE) {
                 MoreScreen(
                     onOpenDiagnostics = { nav.navigate(Routes.DEBUG) },

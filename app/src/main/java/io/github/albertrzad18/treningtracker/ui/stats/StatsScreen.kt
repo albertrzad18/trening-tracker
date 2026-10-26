@@ -101,13 +101,13 @@ import java.time.YearMonth
 import java.time.ZoneId
 
 /** Zakładki na ekranie Statystyki. */
-enum class StatsTab { VOLUME, CALENDAR, SHARE, RHYTHM, PROGRESS }
+enum class StatsTab { RECORDS, VOLUME, CALENDAR, SHARE, RHYTHM, PROGRESS }
 
 data class StatsFilters(
     val disciplines: Set<Discipline> = emptySet(),
     val period: PeriodFilter = PeriodFilter.YEAR,
     val metric: StatsMetric = StatsMetric.TIME,
-    val tab: StatsTab = StatsTab.VOLUME,
+    val tab: StatsTab = StatsTab.RECORDS,
     val trendDiscipline: Discipline = Discipline.POOL,
 )
 
@@ -179,9 +179,14 @@ class StatsViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun StatsScreen(vm: StatsViewModel = viewModel()) {
+fun StatsScreen(
+    onOpenWorkout: (String) -> Unit,
+    vm: StatsViewModel = viewModel(),
+    recordsVm: io.github.albertrzad18.treningtracker.ui.records.RecordsViewModel = viewModel(),
+) {
     val filters by vm.filters.collectAsStateWithLifecycle()
     val data by vm.data.collectAsStateWithLifecycle()
+    val records by recordsVm.data.collectAsStateWithLifecycle()
     StatsContent(
         filters = filters,
         data = data,
@@ -190,6 +195,8 @@ fun StatsScreen(vm: StatsViewModel = viewModel()) {
         onTab = vm::setTab,
         onMetric = vm::setMetric,
         onTrendDiscipline = vm::setTrendDiscipline,
+        records = records,
+        onOpenWorkout = onOpenWorkout,
     )
 }
 
@@ -203,6 +210,8 @@ internal fun StatsContent(
     onTab: (StatsTab) -> Unit,
     onMetric: (StatsMetric) -> Unit,
     onTrendDiscipline: (Discipline) -> Unit,
+    records: io.github.albertrzad18.treningtracker.ui.records.RecordsData? = null,
+    onOpenWorkout: (String) -> Unit = {},
 ) {
     val colors = LocalTtColors.current
     val d = data
@@ -246,6 +255,7 @@ internal fun StatsContent(
                         item { TrendPanel(d, filters, onTrendDiscipline) }
                         item { FormPanel(d) }
                     }
+                    StatsTab.RECORDS -> recordsItems(records, filters, onOpenWorkout)
                 }
             }
         }
@@ -298,6 +308,7 @@ private fun StatsTab.labelRes() = when (this) {
     StatsTab.SHARE -> R.string.stats_tab_share
     StatsTab.RHYTHM -> R.string.stats_tab_rhythm
     StatsTab.PROGRESS -> R.string.stats_tab_progress
+    StatsTab.RECORDS -> R.string.stats_tab_records
 }
 
 /** Objętość: słupki warstwowe po miesiącach (albo dniach) z przełącznikiem metryki. */
@@ -658,4 +669,25 @@ private fun StatsSkeleton() {
         SkeletonBlock(height = 20.dp, width = 180.dp)
         SkeletonBlock(height = 110.dp)
     }
+}
+
+/**
+ * Zakładka Rekordy: te same panele co dawny ekran „Rekordy” (panel na dyscyplinę i „Najlepsze okresy”),
+ * z uwzględnieniem filtra dyscyplin. Dotknięcie rekordu otwiera trening, w którym padł.
+ */
+private fun androidx.compose.foundation.lazy.LazyListScope.recordsItems(
+    records: io.github.albertrzad18.treningtracker.ui.records.RecordsData?,
+    filters: StatsFilters,
+    onOpenWorkout: (String) -> Unit,
+) {
+    if (records == null) return
+    records.perDiscipline.forEach { (discipline, list) ->
+        val shown = filters.disciplines.isEmpty() || discipline in filters.disciplines
+        if (shown && list.isNotEmpty()) {
+            item(key = "records-${discipline.name}") {
+                io.github.albertrzad18.treningtracker.ui.records.DisciplinePanel(discipline, list, onOpenWorkout)
+            }
+        }
+    }
+    item(key = "records-periods") { io.github.albertrzad18.treningtracker.ui.records.PeriodPanel(records) }
 }

@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.domain.Discipline
@@ -30,6 +31,10 @@ import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtColors
 import java.time.YearMonth
 
+private val LABEL_WIDTH = 24.dp
+private val GAP = 3.dp
+private val WEEKDAY_LABELS = listOf("pn", "", "śr", "", "pt", "", "nd")
+
 /**
  * Kalendarz aktywności: kolumna to tydzień, kółko to dzień (od poniedziałku u góry).
  * Kolor bierzemy z dyscypliny, która zajęła w danym dniu najwięcej czasu, a nasycenie
@@ -38,56 +43,55 @@ import java.time.YearMonth
 @Composable
 fun ActivityHeatmap(data: HeatmapData, modifier: Modifier = Modifier) {
     val colors = LocalTtColors.current
-    val gap = 3.dp
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        MonthLabels(data, gap)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Column(Modifier.width(18.dp)) {
-                // Podpisujemy co drugi dzień tygodnia, żeby kolumna była wąska.
-                listOf("pn", "", "śr", "", "pt", "", "nd").forEach { label ->
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                        if (label.isNotEmpty()) CaptionText(label)
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val weeks = data.weeks.size.coerceAtLeast(1)
+        // Rozmiar kółka liczymy raz, żeby podpisy dni i siatka miały tę samą wysokość wierszy.
+        val cell: Dp = ((maxWidth - LABEL_WIDTH - GAP * (weeks - 1)) / weeks).coerceAtMost(14.dp)
+        val gridHeight = cell * 7 + GAP * 6
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            MonthLabels(data, cell)
+            Row {
+                Column(Modifier.width(LABEL_WIDTH).height(gridHeight), verticalArrangement = Arrangement.spacedBy(GAP)) {
+                    WEEKDAY_LABELS.forEach { label ->
+                        Box(Modifier.height(cell), contentAlignment = Alignment.CenterStart) {
+                            if (label.isNotEmpty()) CaptionText(label)
+                        }
+                    }
+                }
+                Canvas(Modifier.height(gridHeight).weight(1f)) {
+                    val cellPx = cell.toPx()
+                    val step = cellPx + GAP.toPx()
+                    data.weeks.forEachIndexed { x, week ->
+                        week.forEachIndexed { y, day ->
+                            drawCircle(
+                                color = cellColor(day.minutes, day.dominant, data.maxMinutes, colors),
+                                radius = cellPx / 2f,
+                                center = Offset(x * step + cellPx / 2f, y * step + cellPx / 2f),
+                            )
+                        }
                     }
                 }
             }
-            Cells(data, colors, gap, Modifier.weight(1f))
+            Legend(colors)
         }
-        Legend(colors)
     }
 }
 
+/** Nazwa miesiąca nad pierwszym tygodniem, który do niego należy; etykieta może wyjść poza swoją kolumnę. */
 @Composable
-private fun MonthLabels(data: HeatmapData, gap: androidx.compose.ui.unit.Dp) {
-    // Nazwa miesiąca pojawia się nad pierwszym tygodniem, który do niego należy.
-    val labels = data.weeks.map { week -> week.first().date }
-    Row(Modifier.fillMaxWidth().padding(start = 24.dp), horizontalArrangement = Arrangement.spacedBy(gap)) {
+private fun MonthLabels(data: HeatmapData, cell: Dp) {
+    Row(Modifier.width(LABEL_WIDTH + (cell + GAP) * data.weeks.size)) {
+        Box(Modifier.width(LABEL_WIDTH))
         var previous: YearMonth? = null
-        labels.forEach { date ->
-            val month = YearMonth.from(date)
+        data.weeks.forEach { week ->
+            val month = YearMonth.from(week.first().date)
             val show = month != previous
             previous = month
-            Box(Modifier.weight(1f)) {
-                if (show) CaptionText(formatMonthShort(month))
-            }
-        }
-    }
-}
-
-@Composable
-private fun Cells(data: HeatmapData, colors: TtColors, gap: androidx.compose.ui.unit.Dp, modifier: Modifier) {
-    BoxWithConstraints(modifier) {
-        val weeks = data.weeks.size.coerceAtLeast(1)
-        val cell = ((maxWidth - gap * (weeks - 1)) / weeks).coerceAtMost(14.dp)
-        Canvas(Modifier.fillMaxWidth().height(cell * 7 + gap * 6)) {
-            val cellPx = cell.toPx()
-            val step = cellPx + gap.toPx()
-            data.weeks.forEachIndexed { x, week ->
-                week.forEachIndexed { y, day ->
-                    val color = cellColor(day.minutes, day.dominant, data.maxMinutes, colors)
-                    drawCircle(
-                        color = color,
-                        radius = cellPx / 2f,
-                        center = Offset(x * step + cellPx / 2f, y * step + cellPx / 2f),
+            Box(Modifier.width(cell + GAP)) {
+                if (show) {
+                    CaptionText(
+                        formatMonthShort(month),
+                        modifier = Modifier.wrapContentWidth(align = Alignment.Start, unbounded = true),
                     )
                 }
             }

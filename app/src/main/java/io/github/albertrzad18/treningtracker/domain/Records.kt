@@ -99,7 +99,8 @@ fun List<Workout>.recordHistory(kind: RecordKind, discipline: Discipline, zone: 
     val result = mutableListOf<PersonalRecord>()
     var best: Double? = null
     values.forEach { (workout, value) ->
-        val better = best == null || if (lower) value < best!! else value > best!!
+        val current = best
+        val better = current == null || if (lower) value < current else value > current
         if (better) {
             best = value
             result += PersonalRecord(kind, discipline, value, workout.id, workout.startLocal(zone).toLocalDate())

@@ -140,7 +140,7 @@ internal fun RecordsContent(data: RecordsData?, onBack: () -> Unit, onOpenWorkou
 }
 
 @Composable
-private fun DisciplinePanel(
+internal fun DisciplinePanel(
     discipline: Discipline,
     records: List<PersonalRecord>,
     onOpen: (String) -> Unit,
@@ -198,7 +198,7 @@ private fun DisciplinePanel(
 }
 
 @Composable
-private fun PeriodPanel(d: RecordsData) {
+internal fun PeriodPanel(d: RecordsData) {
     val colors = LocalTtColors.current
     Panel {
         Text(

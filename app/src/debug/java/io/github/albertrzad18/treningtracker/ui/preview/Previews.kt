@@ -95,13 +95,13 @@ private fun WorkoutsEmpty() = PreviewFrame(dark = false) {
 @Preview(name = "Statystyki · dane · jasny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun StatsLight() = PreviewFrame(dark = false) {
-    StatsContent(Sample.statsFilters, Sample.stats, {}, {}, {}, {}, {})
+    StatsContent(Sample.statsFilters, Sample.stats, {}, {}, {}, {}, {}, Sample.records)
 }
 
 @Preview(name = "Statystyki · dane · ciemny", widthDp = WIDTH, heightDp = HEIGHT)
 @Composable
 private fun StatsDark() = PreviewFrame(dark = true) {
-    StatsContent(Sample.statsFilters, Sample.stats, {}, {}, {}, {}, {})
+    StatsContent(Sample.statsFilters, Sample.stats, {}, {}, {}, {}, {}, Sample.records)
 }
 
 @Preview(name = "Statystyki · ładowanie", widthDp = WIDTH, heightDp = HEIGHT)

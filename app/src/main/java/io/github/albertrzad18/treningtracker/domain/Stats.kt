@@ -172,8 +172,7 @@ data class CumulativePoint(val dayOfYear: Int, val km: Double)
  * Dla bieżącego roku linia kończy się na [today], żeby nie udawać, że rok już minął.
  */
 fun List<Workout>.cumulativeDistance(year: Int, zone: ZoneId, today: LocalDate): List<CumulativePoint> {
-    val days = filter { it.distanceM != null }
-        .map { it.startLocal(zone).toLocalDate() to it.distanceM!! }
+    val days = mapNotNull { w -> w.distanceM?.let { w.startLocal(zone).toLocalDate() to it } }
         .filter { (date, _) -> date.year == year }
         .groupBy({ it.first }, { it.second })
         .toSortedMap()

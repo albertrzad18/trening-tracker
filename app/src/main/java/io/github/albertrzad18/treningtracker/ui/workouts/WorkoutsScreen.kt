@@ -71,6 +71,7 @@ import io.github.albertrzad18.treningtracker.ui.common.MetricItem
 import io.github.albertrzad18.treningtracker.ui.common.Panel
 import io.github.albertrzad18.treningtracker.ui.format.caloriesParts
 import io.github.albertrzad18.treningtracker.ui.format.distanceParts
+import io.github.albertrzad18.treningtracker.ui.format.workoutDistanceParts
 import io.github.albertrzad18.treningtracker.ui.format.formatNumberShort
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.common.PeriodMenuChip
@@ -312,7 +313,7 @@ private fun MonthHeader(group: MonthGroup, collapsed: Boolean, onClick: () -> Un
                 tint = colors.ink2,
             )
         }
-        Text(group.totals.summaryText(), style = TtType.bodyS, color = colors.ink2)
+        Text(group.totals.summaryText(pool = group.workouts.all { it.discipline == Discipline.POOL }), style = TtType.bodyS, color = colors.ink2)
         TtDivider()
     }
 }
@@ -411,7 +412,11 @@ private fun SummaryCard(result: WorkoutListResult) {
             Spacer(Modifier.height(TtSpace.x3))
             MetricGrid(
                 listOfNotNull(
-                    totals.distanceM?.let { MetricItem(stringResource(R.string.metric_distance), distanceParts(it).value, "km") },
+                    // Sam basen (filtr): dystans w metrach, inaczej w km.
+                    totals.distanceM?.let { meters ->
+                        val parts = if (result.workouts.all { it.discipline == Discipline.POOL }) workoutDistanceParts(Discipline.POOL, meters) else distanceParts(meters)
+                        MetricItem(stringResource(R.string.metric_distance), parts.value, parts.unit)
+                    },
                     totals.caloriesKcal?.let { MetricItem(stringResource(R.string.metric_calories), caloriesParts(it).value, "kcal") },
                     result.averageDuration?.let { MetricItem(stringResource(R.string.list_avg_label), formatDuration(it)) },
                     result.workouts.maxByOrNull { it.duration }?.let {

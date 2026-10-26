@@ -360,7 +360,7 @@ private fun DisciplineRow(item: DisciplineTotals) {
             modifier = Modifier.width(76.dp),
         )
         Text(
-            item.totals.summaryText(),
+            item.totals.summaryText(pool = item.discipline == io.github.albertrzad18.treningtracker.domain.Discipline.POOL),
             style = TtType.bodyS,
             color = colors.ink2,
             textAlign = TextAlign.End,

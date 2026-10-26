@@ -45,8 +45,9 @@ fun DisciplineSummaryPanel(item: DisciplineTotals, period: String? = null) {
         val items = listOfNotNull(
             MetricItem(stringResource(R.string.metric_time), formatHoursAndMinutes(totals.duration)),
             MetricItem(stringResource(R.string.metric_workouts), totals.count.toString()),
-            totals.distanceM?.takeIf { hasDistance }
-                ?.let { MetricItem(stringResource(R.string.metric_distance), distanceParts(it).value, "km") },
+            // Basen w metrach (1 250 m, a nie zaokrąglone 1,3 km), rower w km.
+            totals.distanceM?.takeIf { hasDistance }?.let { workoutDistanceParts(item.discipline, it) }
+                ?.let { MetricItem(stringResource(R.string.metric_distance), it.value, it.unit) },
             pace?.let { MetricItem(stringResource(R.string.metric_avg_pace), it.value, it.unit) },
             totals.avgSpeedKmh?.takeIf { item.discipline == Discipline.ROAD }
                 ?.let { MetricItem(stringResource(R.string.metric_avg_speed), speedParts(it).value, "km/h") },

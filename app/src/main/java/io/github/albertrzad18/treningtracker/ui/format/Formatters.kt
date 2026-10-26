@@ -23,7 +23,7 @@ private fun number(pattern: String, value: Double): String =
 /** `1 250 m`: pojedynczy trening na basenie liczymy w metrach, tak jak na zegarku. */
 fun formatDistanceM(meters: Double): String = number("#,##0", meters) + " m"
 
-/** Dystans jednego treningu: metry dla basenu, kilometry dla reszty. Sumy (tydzień, miesiąc) zostają w km. */
+/** Dystans basenu w metrach (pojedynczy trening i sumy: liczy się każde 25 m), reszty w km. */
 fun formatWorkoutDistance(discipline: io.github.albertrzad18.treningtracker.domain.Discipline, meters: Double): String =
     if (discipline == io.github.albertrzad18.treningtracker.domain.Discipline.POOL) formatDistanceM(meters) else formatDistanceKm(meters)
 

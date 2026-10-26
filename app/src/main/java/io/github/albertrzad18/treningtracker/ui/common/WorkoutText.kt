@@ -5,6 +5,7 @@ import io.github.albertrzad18.treningtracker.domain.Totals
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.ui.format.formatCalories
 import io.github.albertrzad18.treningtracker.ui.format.formatDistanceKm
+import io.github.albertrzad18.treningtracker.ui.format.formatDistanceM
 import io.github.albertrzad18.treningtracker.ui.format.formatDuration
 import io.github.albertrzad18.treningtracker.ui.format.formatHeartRate
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
@@ -25,9 +26,9 @@ fun Workout.durationText(): String = formatDuration(duration)
 
 fun Workout.localDateTime(zone: ZoneId): LocalDateTime = startLocal(zone).toLocalDateTime()
 
-/** Jedna linia podsumowania: czas, a dystans i kalorie tylko jeśli są. Sumy podajemy w godzinach i minutach. */
-fun Totals.summaryText(): String = buildList {
+/** Jedna linia podsumowania: czas, a dystans i kalorie tylko jeśli są. [pool] = same treningi na basenie, dystans w metrach. */
+fun Totals.summaryText(pool: Boolean = false): String = buildList {
     add(formatHoursAndMinutes(duration))
-    distanceM?.let { add(formatDistanceKm(it)) }
+    distanceM?.let { add(if (pool) formatDistanceM(it) else formatDistanceKm(it)) }
     caloriesKcal?.let { add(formatCalories(it)) }
 }.joinToString(" · ")

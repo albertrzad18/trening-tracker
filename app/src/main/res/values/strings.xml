@@ -226,6 +226,7 @@
     <string name="settings_card_pool">Podsumowanie: Basen</string>
     <string name="settings_card_road">Podsumowanie: Rower</string>
     <string name="settings_card_trainer">Podsumowanie: Trenażer</string>
+    <string name="settings_card_sum">Suma w Treningach</string>
     <string name="settings_card_week">Tydzień pod kartą dnia</string>
     <string name="settings_card_latest">Ostatnie treningi</string>
     <string name="settings_card_goals">Cele</string>
@@ -242,8 +243,6 @@
     <string name="dashboard_exercises">Ćwiczenia</string>
     <string name="metric_workouts">Treningi</string>
     <string name="metric_avg_pace">Śr. tempo</string>
-    <string name="list_sum_show">Pokaż sumę</string>
-    <string name="list_sum_hide">Ukryj sumę</string>
     <string name="metric_avg_distance">Śr. dystans</string>
     <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>

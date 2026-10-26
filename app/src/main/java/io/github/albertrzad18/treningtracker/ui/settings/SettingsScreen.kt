@@ -350,6 +350,7 @@ private fun HomeCard.labelRes() = when (this) {
     HomeCard.POOL -> R.string.settings_card_pool
     HomeCard.ROAD -> R.string.settings_card_road
     HomeCard.TRAINER -> R.string.settings_card_trainer
+    HomeCard.SUM -> R.string.settings_card_sum
     HomeCard.WEEK -> R.string.settings_card_week
     HomeCard.LATEST -> R.string.settings_card_latest
     HomeCard.GOALS -> R.string.settings_card_goals

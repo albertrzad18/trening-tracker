@@ -47,6 +47,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.albertrzad18.treningtracker.R
 import io.github.albertrzad18.treningtracker.TreningApp
+import io.github.albertrzad18.treningtracker.data.settings.HomeCard
 import io.github.albertrzad18.treningtracker.data.settings.card
 import io.github.albertrzad18.treningtracker.domain.perDiscipline
 import io.github.albertrzad18.treningtracker.ui.common.DisciplineSummaryPanel
@@ -252,23 +253,13 @@ private fun WorkoutList(
     onOpenWorkout: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var summaryOpen by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     val hidden = (LocalContext.current.applicationContext as TreningApp).settings.state.collectAsStateWithLifecycle().value.hiddenCards
     LazyColumn(
         modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(top = TtSpace.x1, bottom = TtSpace.x6),
     ) {
-        // Suma jest domyślnie schowana; przycisk na górze listy ją rozwija i zwija.
-        item(key = "summary-toggle") {
-            SecondaryButton(
-                text = stringResource(if (summaryOpen) R.string.list_sum_hide else R.string.list_sum_show),
-                onClick = { summaryOpen = !summaryOpen },
-                icon = if (summaryOpen) TtIcons.ExpandLess else TtIcons.ExpandMore,
-                small = true,
-                modifier = Modifier.padding(horizontal = TtSpace.screenMargin).padding(top = TtSpace.x1, bottom = TtSpace.x1),
-            )
-        }
-        if (summaryOpen) item(key = "summary") { SummaryCard(result) }
+        // Suma na górze listy; można ją schować w Ustawieniach → Karty.
+        if (HomeCard.SUM !in hidden) item(key = "summary") { SummaryCard(result) }
         // Te same karty dyscyplin co w zakładce Miesiąc, ale dla widocznych treningów (po filtrach).
         items(
             result.workouts.perDiscipline().filter { it.totals.count > 0 && it.discipline.card() !in hidden },

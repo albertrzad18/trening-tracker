@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 /** Motyw apki: zgodnie z systemem, zawsze jasny albo zawsze ciemny. */
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-/** Karty, które można pokazać albo schować w Ustawieniach (Dashboard, Miesiąc i Treningi). */
-enum class HomeCard { POOL, ROAD, TRAINER, WEEK, LATEST, GOALS }
+/** Karty, które można pokazać albo schować w Ustawieniach (Dashboard, Miesiąc i Treningi). SUM to suma na ekranie Treningi. */
+enum class HomeCard { POOL, ROAD, TRAINER, SUM, WEEK, LATEST, GOALS }
 
 /** Ustawienia użytkownika: tętno maksymalne (do stref), długość basenu, motyw i schowane karty. */
 data class Settings(

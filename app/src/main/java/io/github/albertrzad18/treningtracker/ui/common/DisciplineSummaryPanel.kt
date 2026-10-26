@@ -18,6 +18,7 @@ import io.github.albertrzad18.treningtracker.ui.format.distanceParts
 import io.github.albertrzad18.treningtracker.ui.format.formatHoursAndMinutes
 import io.github.albertrzad18.treningtracker.ui.format.paceParts
 import io.github.albertrzad18.treningtracker.ui.format.speedParts
+import io.github.albertrzad18.treningtracker.ui.format.workoutDistanceParts
 import io.github.albertrzad18.treningtracker.ui.theme.LocalTtColors
 import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
 import io.github.albertrzad18.treningtracker.ui.theme.TtType
@@ -43,17 +44,27 @@ fun DisciplineSummaryPanel(item: DisciplineTotals, emptyText: String? = null) {
         }
         val hasDistance = item.discipline != Discipline.TRAINER
         val pace = totals.pacePer100mSec?.takeIf { item.discipline == Discipline.POOL }?.let { paceParts(it) }
-        MetricGrid(
-            listOfNotNull(
-                MetricItem(stringResource(R.string.metric_time), formatHoursAndMinutes(totals.duration)),
-                MetricItem(stringResource(R.string.metric_workouts), totals.count.toString()),
-                totals.distanceM?.takeIf { hasDistance }
-                    ?.let { MetricItem(stringResource(R.string.metric_distance), distanceParts(it).value, "km") },
-                pace?.let { MetricItem(stringResource(R.string.metric_avg_pace), it.value, it.unit) },
-                totals.avgSpeedKmh?.takeIf { item.discipline == Discipline.ROAD }
-                    ?.let { MetricItem(stringResource(R.string.metric_avg_speed), speedParts(it).value, "km/h") },
-                totals.caloriesKcal?.let { MetricItem(stringResource(R.string.dashboard_burned_month), caloriesParts(it).value, "kcal") },
-            ),
+        val avgDuration = totals.averageDuration?.let {
+            MetricItem(stringResource(R.string.metric_avg_duration), formatHoursAndMinutes(it))
+        }
+        val items = listOfNotNull(
+            MetricItem(stringResource(R.string.metric_time), formatHoursAndMinutes(totals.duration)),
+            MetricItem(stringResource(R.string.metric_workouts), totals.count.toString()),
+            totals.distanceM?.takeIf { hasDistance }
+                ?.let { MetricItem(stringResource(R.string.metric_distance), distanceParts(it).value, "km") },
+            pace?.let { MetricItem(stringResource(R.string.metric_avg_pace), it.value, it.unit) },
+            totals.avgSpeedKmh?.takeIf { item.discipline == Discipline.ROAD }
+                ?.let { MetricItem(stringResource(R.string.metric_avg_speed), speedParts(it).value, "km/h") },
+            totals.caloriesKcal?.let { MetricItem(stringResource(R.string.dashboard_burned_month), caloriesParts(it).value, "kcal") },
+            // Średni dystans jednego treningu (basen w metrach), a dla trenażera średni czas.
+            if (hasDistance) {
+                totals.averageDistanceM?.let { workoutDistanceParts(item.discipline, it) }
+                    ?.let { MetricItem(stringResource(R.string.metric_avg_distance), it.value, it.unit) }
+            } else {
+                avgDuration
+            },
         )
+        // Siatka ma dwie kolumny: przy nieparzystej liczbie pól dokładamy średni czas, żeby nie było dziury.
+        MetricGrid(if (items.size % 2 == 1 && avgDuration != null && avgDuration !in items) items + avgDuration else items)
     }
 }

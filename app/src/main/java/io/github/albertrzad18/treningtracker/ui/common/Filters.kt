@@ -24,6 +24,15 @@ fun PeriodFilter.labelRes(): Int = when (this) {
     PeriodFilter.ALL -> R.string.period_all
 }
 
+/** Okres w nagłówku karty, np. „Basen · ten miesiąc”. */
+@StringRes
+fun PeriodFilter.thisLabelRes(): Int = when (this) {
+    PeriodFilter.WEEK -> R.string.period_this_week
+    PeriodFilter.MONTH -> R.string.period_this_month
+    PeriodFilter.YEAR -> R.string.period_this_year
+    PeriodFilter.ALL -> R.string.period_all_time
+}
+
 @StringRes
 fun StatsMetric.labelRes(): Int = when (this) {
     StatsMetric.TIME -> R.string.metric_label_time

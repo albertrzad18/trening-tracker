@@ -27,12 +27,14 @@ import io.github.albertrzad18.treningtracker.ui.theme.TtSpace
  * Dyscyplin bez treningów nie pokazujemy wcale: wywołujący pomija je, zanim narysuje kartę.
  */
 @Composable
-fun DisciplineSummaryPanel(item: DisciplineTotals) {
+fun DisciplineSummaryPanel(item: DisciplineTotals, period: String? = null) {
     val totals = item.totals
     Panel {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DisciplineDot(item.discipline)
-            LabelText(stringResource(item.discipline.labelRes()))
+            // Okres w nagłówku („Basen · ten miesiąc”), żeby było jasne, czego dotyczą liczby.
+            val name = stringResource(item.discipline.labelRes())
+            LabelText(if (period != null) "$name · $period" else name)
         }
         Spacer(Modifier.height(TtSpace.x3))
         val hasDistance = item.discipline != Discipline.TRAINER

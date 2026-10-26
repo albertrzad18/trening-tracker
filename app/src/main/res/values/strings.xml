@@ -47,6 +47,10 @@
     <string name="period_month">Miesiąc</string>
     <string name="period_year">Rok</string>
     <string name="period_all">Wszystko</string>
+    <string name="period_this_week">ten tydzień</string>
+    <string name="period_this_month">ten miesiąc</string>
+    <string name="period_this_year">ten rok</string>
+    <string name="period_all_time">cała historia</string>
 
     <string name="col_date">Data</string>
     <string name="col_time">Czas</string>
@@ -243,10 +247,11 @@
     <string name="metric_avg_distance">Śr. dystans</string>
     <string name="metric_avg_duration">Śr. czas treningu</string>
     <string name="dashboard_burned_month">Przepalone</string>
-    <string name="passive_basal_avg">Śr. dziennie</string>
+    <string name="passive_basal_avg">Śr. kcal / dzień</string>
+    <string name="passive_steps_max">Najwięcej kroków</string>
+    <string name="passive_basal_only">Spoczynkowe</string>
     <string name="dashboard_burned">Aktywne</string>
     <string name="dashboard_burned_total">Łączne</string>
-    <string name="dashboard_avg_per_day">śr. %1$s kcal / dzień</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
     <string name="dashboard_all_goals">Wszystkie cele</string>

@@ -54,6 +54,7 @@ import io.github.albertrzad18.treningtracker.data.db.toDomain
 import io.github.albertrzad18.treningtracker.domain.Discipline
 import io.github.albertrzad18.treningtracker.domain.MonthGroup
 import io.github.albertrzad18.treningtracker.domain.PeriodFilter
+import io.github.albertrzad18.treningtracker.ui.common.thisLabelRes
 import io.github.albertrzad18.treningtracker.domain.SortColumn
 import io.github.albertrzad18.treningtracker.domain.Workout
 import io.github.albertrzad18.treningtracker.domain.WorkoutListResult
@@ -200,6 +201,7 @@ internal fun WorkoutsContent(
             else -> {
                 WorkoutList(
                     result = result,
+                    period = filters.period,
                     collapsed = collapsed,
                     onToggleMonth = onToggleMonth,
                     onOpenWorkout = onOpenWorkout,
@@ -244,6 +246,7 @@ private fun workoutsCountText(count: Int): String = pluralPl(
 @Composable
 private fun WorkoutList(
     result: WorkoutListResult,
+    period: PeriodFilter,
     collapsed: Set<String>,
     onToggleMonth: (String) -> Unit,
     onOpenWorkout: (String) -> Unit,
@@ -271,7 +274,7 @@ private fun WorkoutList(
             result.workouts.perDiscipline().filter { it.totals.count > 0 && it.discipline.card() !in hidden },
             key = { "disc-${it.discipline.name}" },
         ) {
-            Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(vertical = TtSpace.x1)) { DisciplineSummaryPanel(it) }
+            Box(Modifier.padding(horizontal = TtSpace.screenMargin).padding(vertical = TtSpace.x1)) { DisciplineSummaryPanel(it, period = stringResource(period.thisLabelRes())) }
         }
         if (result.groups.isNotEmpty()) {
             result.groups.forEach { group ->

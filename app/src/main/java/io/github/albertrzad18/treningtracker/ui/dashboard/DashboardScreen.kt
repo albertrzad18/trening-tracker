@@ -163,7 +163,7 @@ internal fun DashboardContent(
             if (period == SummaryGranularity.MONTH) {
                 // Miesiąc: zamiast listy ostatnich treningów karty dyscyplin, tylko tych z treningami w tym miesiącu.
                 items(data.perDiscipline.filter { it.totals.count > 0 && it.discipline.card() !in hiddenCards }, key = { it.discipline.name }) {
-                    DisciplineSummaryPanel(it)
+                    DisciplineSummaryPanel(it, period = stringResource(R.string.period_this_month))
                 }
             } else if (HomeCard.LATEST !in hiddenCards) {
                 item { LatestPanel(data.latest, onOpenWorkout, onOpenSummaries) }
@@ -215,8 +215,6 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
                     HeroColumn(
                         label = stringResource(R.string.dashboard_burned_total),
                         value = caloriesParts(total),
-                        caption = d.passive.averageKcal?.takeIf { period != SummaryGranularity.DAY }
-                            ?.let { stringResource(R.string.dashboard_avg_per_day, caloriesParts(it).value) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -243,8 +241,8 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
             Spacer(Modifier.height(TtSpace.x4))
             DisciplineColumns(columns)
         }
-        // Na dole zostają kroki; kalorie łączne są na górze karty obok aktywnych.
-        d.passive?.takeIf { it.steps != null }?.let { passive ->
+        // Na dole kroki i średnie; kalorie łączne są na górze karty obok aktywnych.
+        d.passive?.takeIf { it.steps != null || it.averageKcal != null }?.let { passive ->
             Spacer(Modifier.height(TtSpace.x3))
             TtDivider()
             Spacer(Modifier.height(TtSpace.x4))
@@ -529,11 +527,19 @@ private fun DashboardEmpty() {
 /** Kroki w głównej karcie (suma i średnia dzienna): tylko to, co Health Connect faktycznie podał. */
 @Composable
 private fun PassiveGrid(passive: PassiveTotals, period: SummaryGranularity) {
+    val day = period == SummaryGranularity.DAY
     val items = listOfNotNull(
         passive.steps?.let { MetricItem(stringResource(R.string.passive_steps), formatNumberShort(it.toDouble())) },
-        // Średnia dzienna ma sens tylko dla okresu dłuższego niż jeden dzień.
-        passive.averageSteps?.takeIf { period != SummaryGranularity.DAY }
-            ?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) },
+        if (day) {
+            // Jeden dzień nie ma średnich, więc obok kroków stoją kalorie spoczynkowe.
+            passive.basalKcal?.let { MetricItem(stringResource(R.string.passive_basal_only), caloriesParts(it).value, "kcal") }
+        } else {
+            passive.averageSteps?.let { MetricItem(stringResource(R.string.passive_steps_avg), formatNumberShort(it.toDouble())) }
+        },
+        passive.maxSteps?.takeIf { !day }
+            ?.let { MetricItem(stringResource(R.string.passive_steps_max), formatNumberShort(it.toDouble())) },
+        passive.averageKcal?.takeIf { !day }
+            ?.let { MetricItem(stringResource(R.string.passive_basal_avg), caloriesParts(it).value, "kcal") },
     )
     MetricGrid(items)
 }

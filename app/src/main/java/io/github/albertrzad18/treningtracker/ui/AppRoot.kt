@@ -356,11 +356,6 @@ private fun MainScaffold() {
 
     Scaffold(
         containerColor = LocalTtColors.current.bg,
-        // „Więcej” ma własny przycisk synchronizacji, więc tam okrągłego nie pokazujemy.
-        floatingActionButton = {
-            val onMore = destination?.hierarchy?.any { it.route == Routes.MORE } == true
-            if (showBar && !onMore) io.github.albertrzad18.treningtracker.ui.common.SyncButton()
-        },
         bottomBar = {
             if (showBar) {
                 TtNavBar(

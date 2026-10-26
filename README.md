@@ -1,37 +1,33 @@
 # trening-tracker
 
-An Android app that shows workouts recorded by a Huawei Watch GT5: pool swimming, outdoor cycling
-and indoor trainer rides. Tables, workout details, charts, summaries, goals, personal records and route maps.
+An Android app that shows workouts recorded by a Huawei Watch GT5: pool swimming, outdoor cycling and
+indoor trainer rides. All data stays on the phone: no server, no accounts. The UI is in Polish.
 
-All data stays on the phone. There is no server and no accounts. The app UI is in Polish.
-
-| Dashboard | Workouts | Stats |
+| Dashboard | Month | Workouts |
 |---|---|---|
-| ![Dashboard](docs/screenshots/01-pulpit.png) | ![Workouts](docs/screenshots/02-treningi.png) | ![Stats](docs/screenshots/03-statystyki.png) |
+| <img src="docs/screenshots/light-1-dashboard.png" width="240"> | <img src="docs/screenshots/light-2-month.png" width="240"> | <img src="docs/screenshots/light-3-workouts.png" width="240"> |
+| <img src="docs/screenshots/dark-1-dashboard.png" width="240"> | <img src="docs/screenshots/dark-2-month.png" width="240"> | <img src="docs/screenshots/dark-3-workouts.png" width="240"> |
 
-| Route | Records | Summaries |
+| Stats | More | Settings |
 |---|---|---|
-| ![Route](docs/screenshots/04-trasa.png) | ![Records](docs/screenshots/05-rekordy.png) | ![Summaries](docs/screenshots/06-podsumowania.png) |
+| <img src="docs/screenshots/light-4-stats.png" width="240"> | <img src="docs/screenshots/light-5-more.png" width="240"> | <img src="docs/screenshots/light-6-settings.png" width="240"> |
+| <img src="docs/screenshots/dark-4-stats.png" width="240"> | <img src="docs/screenshots/dark-5-more.png" width="240"> | <img src="docs/screenshots/dark-6-settings.png" width="240"> |
 
-*(Screenshots use generated demo data, not real workouts.)*
+*Light and dark theme, generated demo data (not real workouts).*
 
-## What it does
+## Features
 
-- **Dashboard** – this week against the last one, per-discipline tiles, a seven day chart, goal progress,
-  fresh personal records and the latest workouts.
-- **Workouts** – a sortable table grouped by month, with filters for discipline and period, and totals at the bottom.
-- **Workout details** – metrics, heart rate over time, time in heart rate zones, speed, elevation profile
-  and the route on an OpenStreetMap map.
-- **Stats** – training volume (time, distance or calories) stacked per discipline, an activity calendar,
-  discipline share, weekday and time-of-day breakdowns, pace and fitness trends, and cumulative distance
-  for this year against the last one.
-- **Summaries** – weeks, months and years with totals, change against the previous period, streaks and the best workout.
-- **Records** – longest distance, longest time, best speed or pace, most calories and biggest climb per discipline,
-  plus the strongest week and month.
-- **Goals** – weekly, monthly or yearly targets for distance, time, calories or workout count, with a projection
-  and a history of completed periods.
+- **Dashboard** – today's card (burned calories, steps, total burned) and the whole week below it.
+- **Month** – the same card for the month plus one summary card per discipline: time, workouts, calories,
+  distance and average pace (pool) or speed (road bike).
+- **Workouts** – sortable list grouped by month, filters, totals and the same discipline cards.
+- **Details** – heart rate, zones, speed, elevation and the route on an OpenStreetMap map.
+- **Stats** – personal records, volume, activity calendar, discipline share, pace and fitness trends.
+- **Summaries and goals** – weeks, months and years with streaks; weekly, monthly or yearly targets.
+- **Sync** – pull down on any main screen, the round button, or "Sync" in More. Runs on app start and every 15 minutes.
+- **Settings** – max heart rate, pool length, theme, and switches to show or hide each card.
 
-Missing data is hidden rather than shown as zero: an indoor trainer ride without distance simply has no distance.
+Pool workouts show distance in metres, sums in kilometres. Missing data is hidden, never shown as zero.
 
 ## Where the data comes from
 
@@ -39,53 +35,35 @@ Missing data is hidden rather than shown as zero: an indoor trainer ride without
 Watch → Huawei Health → Health Sync → Health Connect → trening-tracker
 ```
 
-The app does not use Huawei Health Kit. It reads workouts from **Health Connect** and keeps a local
-copy in a Room database, so the history is not lost.
+The app reads only **Health Connect** and keeps a local Room copy. It cannot make Huawei Health or Health Sync
+fetch data: for fresh data both must be allowed to run in the background (battery "unrestricted", autostart).
+More → Settings has shortcuts to their settings.
 
-## Setup
-
-1. Install **Huawei Health** on your phone and pair the watch.
-2. Install **Health Sync** (Google Play) and set up syncing from Huawei Health to Health Connect for
-   workouts (swimming, cycling, indoor cycling), heart rate, distance and calories.
-3. Make sure **Health Connect** is installed (it is part of the system since Android 14).
-4. Open trening-tracker and grant it read access to Health Connect.
-
-By default Health Connect exposes data from the 30 days before you grant permissions. To read older
-history the app asks for the additional "history access" permission.
+1. Install **Huawei Health**, pair the watch, and install **Health Sync** with Health Connect as the destination.
+2. Open trening-tracker and grant read access. Grant **history access** too, otherwise Health Connect shows only
+   the last 30 days. If older workouts are missing, use More → "Reload history".
 
 ## Install
 
-Grab the APK from [Releases](https://github.com/albertrzad18/trening-tracker/releases) and allow
-installing from unknown sources. Android 9 (API 28) or newer.
+Grab the APK from [Releases](https://github.com/albertrzad18/trening-tracker/releases) (Android 9+) and allow
+installing from unknown sources.
 
 ## Building
 
-Requirements: JDK 17+ and the Android SDK (platform 37).
+JDK 17+ and the Android SDK (platform 37).
 
 ```
-./gradlew assembleDebug   # APK in app/build/outputs/apk/debug/
+./gradlew assembleDebug   # debug APK; diagnostics screen can load demo data
 ./gradlew test            # unit tests
 ```
 
-Debug builds have a "demo data" button in the diagnostics screen that fills the database with generated
-workouts, so the screens can be checked without a watch.
-
-To build a signed release, create `keystore.properties` in the project root (it is git-ignored):
-
-```
-storeFile=/absolute/path/to/trening-tracker.jks
-storePassword=...
-keyAlias=trening
-keyPassword=...
-```
-
-Then run `./gradlew assembleRelease`. Without that file the release build is unsigned.
+For a signed release put `keystore.properties` (git-ignored) in the project root with `storeFile`,
+`storePassword`, `keyAlias`, `keyPassword`, then run `./gradlew assembleRelease`.
 
 ## Tech
 
-Kotlin, Jetpack Compose with Material 3, Room, WorkManager, Health Connect client,
-[Vico](https://github.com/patrykandpatrick/vico) for charts and [osmdroid](https://github.com/osmdroid/osmdroid)
-for OpenStreetMap tiles. Business logic lives in a plain Kotlin `domain` layer covered by unit tests.
+Kotlin, Jetpack Compose (Material 3), Room, WorkManager, Health Connect client, osmdroid. Charts are drawn
+on `Canvas`. Business logic lives in a plain Kotlin `domain` layer covered by unit tests.
 
 ## License
 

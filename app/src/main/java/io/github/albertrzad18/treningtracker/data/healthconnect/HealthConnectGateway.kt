@@ -102,9 +102,10 @@ class HealthConnectGateway(private val context: Context) {
      * Kroki i kalorie (spoczynkowe, aktywne) dzień po dniu. Metryki bez uprawnienia pomijamy.
      *
      * Kilka aplikacji może zapisywać te same dane do Health Connect (np. Huawei Health, Health Sync, krokomierz
-     * telefonu), a każda z nich ma tylko część albo całość dnia. Suma ze wszystkich źródeł liczyła więc za dużo,
-     * a wybór jednej apki na sztywno trafiał w źródło z niepełnymi kaloriami. Dlatego dla każdego dnia i każdej metryki
-     * bierzemy NAJWIĘKSZĄ wartość spośród pojedynczych źródeł, czyli najpełniejsze źródło, bez dodawania ich do siebie.
+     * telefonu). Suma ze wszystkich źródeł liczyłaby za dużo, więc kroki i kalorie aktywne bierzemy z jednego źródła:
+     * najpierw z zegarka (Health Sync, Huawei Health), a dopiero gdy w danym dniu zegarek nic nie zapisał,
+     * z innych źródeł (np. telefonu). Spośród kilku źródeł jednej grupy wygrywa największa wartość.
+     * Kalorie treningów Health Sync zapisuje przy treningu, nie tu; dolicza je [withWorkoutCalories].
      */
     suspend fun readDailyStats(from: java.time.LocalDate, toInclusive: java.time.LocalDate, granted: Set<String>): List<DailyStats> {
         val steps = HealthPermission.getReadPermission(StepsRecord::class) in granted
@@ -127,18 +128,24 @@ class HealthConnectGateway(private val context: Context) {
         )
         val all = client.aggregateGroupByPeriod(request(emptySet()))
         // Osobny agregat dla każdego źródła, które zapisuje kroki albo kalorie aktywne.
-        val perOrigin = dailyOrigins(granted, steps, active).map { origin ->
+        val perOrigin = dailyOrigins(granted, steps, active).associateWith { origin ->
             client.aggregateGroupByPeriod(request(setOf(DataOrigin(origin)))).associateBy { it.startTime.toLocalDate() }
         }
+        val (watch, others) = perOrigin.entries.partition { it.key in WATCH_PACKAGES }
         return all.map { day ->
             val date = day.startTime.toLocalDate()
-            val sources = perOrigin.mapNotNull { it[date]?.result }
+            val watchDay = watch.mapNotNull { it.value[date]?.result }
+            val otherDay = others.mapNotNull { it.value[date]?.result }
+            // Wartość z zegarka, a bez niej z innego źródła; agregat ze wszystkich źródeł tylko na samym końcu.
+            fun <T : Comparable<T>> best(metric: AggregateMetric<T>): T? =
+                watchDay.mapNotNull { it[metric] }.maxOrNull()
+                    ?: otherDay.mapNotNull { it[metric] }.maxOrNull()
+                    ?: day.result[metric]
             DailyStats(
                 date = date,
-                steps = sources.mapNotNull { it[StepsRecord.COUNT_TOTAL] }.maxOrNull() ?: day.result[StepsRecord.COUNT_TOTAL],
+                steps = best(StepsRecord.COUNT_TOTAL),
                 basalKcal = day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories,
-                activeKcal = sources.mapNotNull { it[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories }.maxOrNull()
-                    ?: day.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
+                activeKcal = best(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)?.inKilocalories,
             )
         }
     }
@@ -159,7 +166,7 @@ class HealthConnectGateway(private val context: Context) {
                     .getOrDefault(emptyList()).forEach { add(it.metadata.dataOrigin.packageName) }
             }
         }
-        return found + setOf(HEALTH_SYNC_PACKAGE, HUAWEI_HEALTH_PACKAGE)
+        return found + WATCH_PACKAGES
     }
 
     /**
@@ -353,3 +360,6 @@ const val HEALTH_SYNC_PACKAGE = "nl.appyhapps.healthsync"
 
 /** Pakiet Huawei Health: nowsze wersje same zapisują kroki i kalorie do Health Connect. */
 const val HUAWEI_HEALTH_PACKAGE = "com.huawei.health"
+
+/** Źródła, które niosą dane z zegarka; mają pierwszeństwo przed np. krokomierzem telefonu. */
+private val WATCH_PACKAGES = setOf(HEALTH_SYNC_PACKAGE, HUAWEI_HEALTH_PACKAGE)

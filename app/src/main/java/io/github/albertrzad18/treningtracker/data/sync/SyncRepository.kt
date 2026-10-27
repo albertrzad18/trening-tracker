@@ -10,7 +10,10 @@ import io.github.albertrzad18.treningtracker.data.db.SampleDao
 import io.github.albertrzad18.treningtracker.data.db.SampleEntity
 import io.github.albertrzad18.treningtracker.data.db.SampleType
 import io.github.albertrzad18.treningtracker.data.db.WorkoutDao
+import io.github.albertrzad18.treningtracker.data.db.toDomain
+import io.github.albertrzad18.treningtracker.data.demo.DEMO_ORIGIN
 import io.github.albertrzad18.treningtracker.data.healthconnect.HealthConnectGateway
+import io.github.albertrzad18.treningtracker.domain.withWorkoutCalories
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.Instant
@@ -94,7 +97,12 @@ class SyncRepository(
         val days = if (gateway.historyPermission in granted) FULL_HISTORY_DAYS.coerceAtMost(DAILY_MAX_DAYS) else LIMITED_DAYS
         val zone = java.time.ZoneId.systemDefault()
         val today = now.atZone(zone).toLocalDate()
-        val stats = gateway.readDailyStats(today.minusDays(days), today, granted)
+        val from = today.minusDays(days)
+        // Kalorie treningów doliczamy do aktywnych, tak jak robi to zegarek (dane demo pomijamy).
+        val workouts = dao.since(from.atStartOfDay(zone).minusDays(1).toInstant().toEpochMilli())
+            .filter { it.dataOrigin != DEMO_ORIGIN }
+            .map { it.toDomain() }
+        val stats = gateway.readDailyStats(from, today, granted).withWorkoutCalories(workouts, zone)
         val entities = stats
             .filter { it.steps != null || it.totalKcal != null }
             .map { DailyStatsEntity(it.date.toString(), it.steps, it.basalKcal, "healthconnect", it.activeKcal) }

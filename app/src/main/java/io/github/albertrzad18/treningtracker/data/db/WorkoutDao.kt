@@ -20,6 +20,9 @@ interface WorkoutDao {
     @Query("DELETE FROM workouts WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
 
+    @Query("SELECT * FROM workouts WHERE startMillis >= :sinceMillis")
+    suspend fun since(sinceMillis: Long): List<WorkoutEntity>
+
     @Query("SELECT id FROM workouts WHERE startMillis >= :sinceMillis")
     suspend fun idsSince(sinceMillis: Long): List<String>
 

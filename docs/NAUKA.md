@@ -268,3 +268,25 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
 
 ### Animacja w pętli (`rememberInfiniteTransition`)
 Ikona synchronizacji kręci się, dopóki `loading` jest prawdą: `animateFloat` zmienia kąt od 0 do -360, a `Modifier.rotate(kąt)` obraca ikonę. Przycisk dostał parametr `loading`, więc ten sam wzorzec zadziała w każdym innym miejscu.
+
+### `partition` i rozkładanie na zmienne (`val (a, b) = ...`)
+`partition` dzieli listę na dwie: elementy spełniające warunek i resztę. Wynik to `Pair`, a zapis `val (a, b) = ...` od razu rozkłada go na dwie zmienne. W `readDailyStats` tak oddzielamy źródła z zegarka od reszty (np. telefonu).
+
+```kotlin
+val (watch, others) = perOrigin.entries.partition { it.key in WATCH_PACKAGES }
+```
+
+### Funkcja lokalna i typ generyczny (`<T : Comparable<T>>`)
+Funkcję można zdefiniować wewnątrz innej funkcji: widzi wtedy jej zmienne i nie zaśmieca reszty klasy. `<T : Comparable<T>>` znaczy „dowolny typ, który da się porównać”, dzięki czemu ta sama `best` działa i dla kroków (`Long`), i dla kalorii (`Energy`), a `maxOrNull()` wie, jak je porównać.
+
+```kotlin
+fun <T : Comparable<T>> best(metric: AggregateMetric<T>): T? =
+    watchDay.mapNotNull { it[metric] }.maxOrNull() ?: otherDay.mapNotNull { it[metric] }.maxOrNull()
+```
+
+### `return@map`: wyjście z lambdy
+Zwykłe `return` w lambdzie wyszłoby z całej funkcji. `return@map wartość` kończy tylko bieżące wywołanie lambdy w `map` i zwraca dla tego elementu podaną wartość. W `withWorkoutCalories` dzień bez treningu wraca bez zmian.
+
+```kotlin
+val extra = kcalByDay[day.date] ?: return@map day
+```

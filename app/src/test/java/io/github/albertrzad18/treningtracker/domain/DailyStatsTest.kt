@@ -4,7 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Duration
 import java.time.LocalDate
+import java.time.ZoneId
 
 class DailyStatsTest {
     private val range = DateRange(LocalDate.of(2026, 10, 19), LocalDate.of(2026, 10, 26))
@@ -50,6 +52,29 @@ class DailyStatsTest {
         assertEquals(1_600.0, totals.activeKcal!!, 0.001)
         assertEquals(533.333, totals.averageActiveKcal!!, 0.001)
         assertEquals(900.0, totals.maxActiveKcal!!, 0.001)
+    }
+
+    @Test
+    fun workoutCaloriesAreAddedToActiveOfTheirDay() {
+        val zone = ZoneId.of("Europe/Warsaw")
+        fun workout(day: Int, kcal: Double?) = Workout(
+            id = "w$day$kcal", discipline = Discipline.POOL,
+            start = LocalDate.of(2026, 10, day).atTime(18, 0).atZone(zone).toInstant(), zoneOffset = null,
+            duration = Duration.ofHours(1), title = null, distanceM = null, caloriesKcal = kcal,
+            avgHeartRate = null, maxHeartRate = null, avgSpeedMps = null, maxSpeedMps = null, elevationGainM = null,
+        )
+        val days = listOf(
+            DailyStats(LocalDate.of(2026, 10, 26), 5_000, 1_564.0, 300.0),
+            DailyStats(LocalDate.of(2026, 10, 27), 6_571, 1_564.0, 214.0),
+            DailyStats(LocalDate.of(2026, 10, 28), null, 1_564.0, null),
+        )
+        val result = days.withWorkoutCalories(
+            listOf(workout(27, 409.0), workout(27, null), workout(28, 250.0)),
+            zone,
+        )
+        assertEquals(300.0, result[0].activeKcal!!, 0.001)
+        assertEquals(623.0, result[1].activeKcal!!, 0.001)
+        assertEquals(250.0, result[2].activeKcal!!, 0.001)
     }
 
     @Test

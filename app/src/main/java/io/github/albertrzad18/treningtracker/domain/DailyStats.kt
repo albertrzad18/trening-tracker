@@ -1,6 +1,7 @@
 package io.github.albertrzad18.treningtracker.domain
 
 import java.time.LocalDate
+import java.time.ZoneId
 
 /** Kroki i kalorie z jednego dnia (spoczynkowe + aktywne); `null` = brak danych. */
 data class DailyStats(
@@ -31,6 +32,21 @@ data class PassiveTotals(
     val maxActiveKcal: Double? = null,
 ) {
     val isEmpty: Boolean get() = steps == null && kcal == null && activeKcal == null
+}
+
+/**
+ * Dolicza kalorie treningów do kalorii aktywnych dnia. Zegarek Huawei wlicza trening do „aktywnych”,
+ * ale Health Sync zapisuje kalorie treningu tylko przy samym treningu, a w kaloriach aktywnych dnia ich brakuje.
+ */
+fun List<DailyStats>.withWorkoutCalories(workouts: List<Workout>, zone: ZoneId): List<DailyStats> {
+    val kcalByDay = workouts
+        .mapNotNull { w -> w.caloriesKcal?.let { w.startLocal(zone).toLocalDate() to it } }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { it.value.sum() }
+    return map { day ->
+        val extra = kcalByDay[day.date] ?: return@map day
+        day.copy(activeKcal = (day.activeKcal ?: 0.0) + extra)
+    }
 }
 
 fun List<DailyStats>.passiveTotals(range: DateRange): PassiveTotals {

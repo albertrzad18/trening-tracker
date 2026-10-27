@@ -249,7 +249,7 @@
     <string name="passive_active_avg">Śr. aktywne / dzień</string>
     <string name="passive_active_max">Najwięcej aktywnych</string>
     <string name="passive_active">Aktywne</string>
-    <string name="dashboard_burned">Aktywne</string>
+    <string name="dashboard_burned">Przepalone</string>
     <string name="dashboard_this_week">Ten tydzień</string>
     <string name="dashboard_prev_week">Poprzedni tydzień</string>
     <string name="dashboard_all_goals">Wszystkie cele</string>

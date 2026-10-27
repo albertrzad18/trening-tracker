@@ -200,8 +200,8 @@ private fun WeekPanel(d: DashboardData, period: SummaryGranularity) {
                 color = colors.ink2,
             )
         }
-        // Obok siebie: „Aktywne” (kalorie w ruchu, jak „W ruchu” w Huawei Health) i kroki.
-        // Bez danych dziennych o ruchu „Aktywne” to kalorie z samych treningów.
+        // Obok siebie: „Przepalone” (kalorie w ruchu, jak „W ruchu” w Huawei Health) i kroki.
+        // Bez danych dziennych o ruchu „Przepalone” to kalorie z samych treningów.
         val steps = d.passive?.steps
         val active = d.passive?.activeKcal ?: d.week.caloriesKcal.takeIf { d.week.count > 0 }
         if (active != null || steps != null || d.week.count > 0) {

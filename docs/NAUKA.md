@@ -83,6 +83,15 @@ Typ z `?` (np. `Double?`) może być `null`, bez `?` nigdy. U nas `distanceM: Do
 a UI wtedy pole ukrywa. `?.` wywołuje coś tylko gdy wartość nie jest `null` (`distanceM?.let { ... }`),
 a `?:` podaje wartość zastępczą (`avgSpeedMps?.let { it * 3.6 } ?: policzZDystansu`).
 
+### `takeIf` i `takeUnless`
+`x.takeIf { warunek }` zwraca `x`, gdy warunek jest spełniony, a w przeciwnym razie `null`. `takeUnless` działa
+odwrotnie. Dzięki temu „złą” wartość zamieniamy na brak danych, a UI sam ją ukrywa. U nas w
+`data/db/WorkoutMapper.kt` dystans trenażera wyrzucamy, bo to tylko szum z zegarka:
+
+```kotlin
+distanceM = distanceM.takeUnless { discipline == Discipline.TRAINER },
+```
+
 ### Extension functions
 Funkcja „doklejona” do istniejącego typu. `fun List<Workout>.totals()` pozwala napisać `treningi.totals()`
 (w `domain/Aggregations.kt`), mimo że `List` nie jest naszą klasą.

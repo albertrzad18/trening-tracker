@@ -17,7 +17,8 @@ indoor trainer rides. All data stays on the phone: no server, no accounts. The U
 
 ## Features
 
-- **Dashboard** – today's card (burned calories, steps, total burned) and the whole week below it.
+- **Dashboard** – today's card (active calories burned and steps) and the current week below it. Active calories
+  combine the watch's daily value with workout calories, or a fuller phone source when it has more.
 - **Month** – the same card for the month plus one summary card per discipline: time, workouts, calories,
   distance and average pace (pool) or speed (road bike).
 - **Workouts** – the same discipline cards, a sortable list grouped by month, filters, and totals behind a "Show sum" button.
@@ -27,7 +28,7 @@ indoor trainer rides. All data stays on the phone: no server, no accounts. The U
 - **Sync** – pull down on any main screen, or "Sync" in More. Runs on app start and every 15 minutes.
 - **Settings** – max heart rate, pool length, theme, and switches to show or hide each card.
 
-Pool workouts show distance in metres, sums in kilometres. Missing data is hidden, never shown as zero.
+Pool workouts show distance in metres, sums in kilometres. Missing data is hidden, never shown as zero (e.g. no distance for trainer rides).
 
 ## Where the data comes from
 

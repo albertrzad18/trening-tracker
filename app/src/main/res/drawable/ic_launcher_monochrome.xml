@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Wersja jednokolorowa dla motywowanych ikon Androida 13+: ten sam pływak i fale, bez kolorów. -->
+<!--
+  Wersja jednokolorowa dla motywowanych ikon Androida 13+: ten sam wykres kołowy.
+  System zostawia tylko kształt i przezroczystość, więc wycinki różnią się jasnością (fillAlpha).
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -9,30 +12,17 @@
 
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M36.5,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+        android:pathData="M54,54 L54,27 A27,27 0 0,1 62.34,79.68 Z" />
     <path
-        android:pathData="M45,55 L68,59"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="7"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M50,55 Q46,36 29,42"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M68,59 L79,54"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M27,67 q5.5,-5 11,0 t11,0 t11,0 t11,0 t11,0"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M33,77 q5.5,-5 11,0 t11,0 t11,0 t11,0"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
+        android:fillAlpha="0.55"
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54 L62.34,79.68 A27,27 0 0,1 28.32,45.66 Z" />
+    <group
+        android:translateX="-1.76"
+        android:translateY="-2.43">
+        <path
+            android:fillAlpha="0.8"
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,54 L28.32,45.66 A27,27 0 0,1 54,27 Z" />
+    </group>
 </vector>

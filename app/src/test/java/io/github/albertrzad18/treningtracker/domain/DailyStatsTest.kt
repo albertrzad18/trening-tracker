@@ -78,6 +78,21 @@ class DailyStatsTest {
     }
 
     @Test
+    fun fullerOtherSourceBeatsWatchPlusWorkouts() {
+        val zone = ZoneId.of("Europe/Warsaw")
+        val workout = Workout(
+            id = "w", discipline = Discipline.POOL,
+            start = LocalDate.of(2026, 10, 30).atTime(18, 0).atZone(zone).toInstant(), zoneOffset = null,
+            duration = Duration.ofHours(1), title = null, distanceM = null, caloriesKcal = 358.0,
+            avgHeartRate = null, maxHeartRate = null, avgSpeedMps = null, maxSpeedMps = null, elevationGainM = null,
+        )
+        val day = DailyStats(LocalDate.of(2026, 10, 30), 8_258, 1_564.0, 211.0, otherActiveKcal = 954.0)
+        val result = listOf(day).withWorkoutCalories(listOf(workout), zone)
+        assertEquals(954.0, result[0].activeKcal!!, 0.001)
+        assertNull(result[0].otherActiveKcal)
+    }
+
+    @Test
     fun missingDataStaysNullInsteadOfZero() {
         val totals = listOf(DailyStats(LocalDate.of(2026, 10, 20), null, null)).passiveTotals(range)
         assertNull(totals.steps)

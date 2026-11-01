@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Ikona: pływak kraulem nad dwiema falami. Biała sylwetka (głowa, tułów, ręka w przenoszeniu, noga),
-  fale w kolorze basenu. Wszystko mieści się w bezpiecznej strefie ikony (koło r=33 wokół środka 54,54).
+  Ikona: wykres kołowy z trzech wycinków w kolorach dyscyplin (basen 45%, rower 35%, trenażer 20%).
+  Kąty liczone od góry zgodnie z ruchem wskazówek: 0°, 162°, 288°. Koło r=27 wokół środka 54,54;
+  wycinek trenażera jest wysunięty o 3 na zewnątrz, więc całość mieści się w bezpiecznej strefie (r=33).
+  Szczeliny między wycinkami to obrys w kolorze tła.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -9,38 +11,29 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Głowa -->
+    <!-- Basen -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M36.5,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
-    <!-- Tułów -->
+        android:fillColor="#6E9BFF"
+        android:pathData="M54,54 L54,27 A27,27 0 0,1 62.34,79.68 Z"
+        android:strokeColor="@color/ic_launcher_background"
+        android:strokeWidth="2.5"
+        android:strokeLineJoin="round" />
+    <!-- Rower -->
     <path
-        android:pathData="M45,55 L68,59"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="7"
-        android:strokeLineCap="round" />
-    <!-- Ręka przenoszona nad wodą, wyciągnięta do przodu -->
-    <path
-        android:pathData="M50,55 Q46,36 29,42"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-    <!-- Noga w kopnięciu -->
-    <path
-        android:pathData="M68,59 L79,54"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-
-    <!-- Fale -->
-    <path
-        android:pathData="M27,67 q5.5,-5 11,0 t11,0 t11,0 t11,0 t11,0"
-        android:strokeColor="#4FC3F7"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M33,77 q5.5,-5 11,0 t11,0 t11,0 t11,0"
-        android:strokeColor="#1E88E5"
-        android:strokeWidth="4"
-        android:strokeLineCap="round" />
+        android:fillColor="#4CC985"
+        android:pathData="M54,54 L62.34,79.68 A27,27 0 0,1 28.32,45.66 Z"
+        android:strokeColor="@color/ic_launcher_background"
+        android:strokeWidth="2.5"
+        android:strokeLineJoin="round" />
+    <!-- Trenażer, wysunięty wzdłuż środka wycinka (324°) -->
+    <group
+        android:translateX="-1.76"
+        android:translateY="-2.43">
+        <path
+            android:fillColor="#FF9E4A"
+            android:pathData="M54,54 L28.32,45.66 A27,27 0 0,1 54,27 Z"
+            android:strokeColor="@color/ic_launcher_background"
+            android:strokeWidth="2.5"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>

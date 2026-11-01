@@ -9,6 +9,8 @@ data class DailyStats(
     val steps: Long?,
     val basalKcal: Double?,
     val activeKcal: Double? = null,
+    /** Kalorie aktywne z innego źródła niż zegarek (np. Health Connect telefonu); do scalenia w [withWorkoutCalories]. */
+    val otherActiveKcal: Double? = null,
 ) {
     /** Kalorie całego dnia jak na zegarku; `null`, gdy nie ma żadnej z dwóch części. */
     val totalKcal: Double? get() = if (basalKcal == null && activeKcal == null) null else (basalKcal ?: 0.0) + (activeKcal ?: 0.0)
@@ -35,8 +37,9 @@ data class PassiveTotals(
 }
 
 /**
- * Dolicza kalorie treningów do kalorii aktywnych dnia. Zegarek Huawei wlicza trening do „aktywnych”,
- * ale Health Sync zapisuje kalorie treningu tylko przy samym treningu, a w kaloriach aktywnych dnia ich brakuje.
+ * Składa kalorie aktywne dnia. Zegarek Huawei wlicza trening do „aktywnych”, ale Health Sync zapisuje kalorie
+ * treningu tylko przy samym treningu, więc do wartości z zegarka dokładamy treningi. Inne źródło (np. telefon)
+ * bywa pełniejsze od zegarka, więc bierzemy większą z dwóch wartości, a nie ich sumę (żeby nie liczyć dwa razy).
  */
 fun List<DailyStats>.withWorkoutCalories(workouts: List<Workout>, zone: ZoneId): List<DailyStats> {
     val kcalByDay = workouts
@@ -44,8 +47,10 @@ fun List<DailyStats>.withWorkoutCalories(workouts: List<Workout>, zone: ZoneId):
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.sum() }
     return map { day ->
-        val extra = kcalByDay[day.date] ?: return@map day
-        day.copy(activeKcal = (day.activeKcal ?: 0.0) + extra)
+        val extra = kcalByDay[day.date]
+        val watch = if (extra == null) day.activeKcal else (day.activeKcal ?: 0.0) + extra
+        val merged = listOfNotNull(watch, day.otherActiveKcal).maxOrNull()
+        day.copy(activeKcal = merged, otherActiveKcal = null)
     }
 }
 

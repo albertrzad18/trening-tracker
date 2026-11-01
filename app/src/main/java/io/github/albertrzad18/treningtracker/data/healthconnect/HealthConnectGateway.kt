@@ -145,7 +145,10 @@ class HealthConnectGateway(private val context: Context) {
                 date = date,
                 steps = best(StepsRecord.COUNT_TOTAL),
                 basalKcal = day.result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories,
-                activeKcal = best(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)?.inKilocalories,
+                // Zegarek i inne źródła zwracamy osobno; scala je withWorkoutCalories (z kaloriami treningów).
+                activeKcal = watchDay.mapNotNull { it[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL] }.maxOrNull()?.inKilocalories,
+                otherActiveKcal = otherDay.mapNotNull { it[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL] }.maxOrNull()?.inKilocalories
+                    ?: day.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
             )
         }
     }

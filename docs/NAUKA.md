@@ -299,3 +299,14 @@ Zwykłe `return` w lambdzie wyszłoby z całej funkcji. `return@map wartość` k
 ```kotlin
 val extra = kcalByDay[day.date] ?: return@map day
 ```
+
+### `if` jako wyrażenie i smart cast
+W Kotlinie `if` zwraca wartość, więc można go od razu przypisać do `val`, bez zmiennej ustawianej w dwóch gałęziach. Po sprawdzeniu `x != null` kompilator sam traktuje `x` w tej gałęzi jako typ bez `?` (smart cast), więc nie trzeba pisać `!!` ani `?:`. W `withWorkoutCalories` tak wybieramy, czy liczyć z zegarka, czy z innego źródła.
+
+```kotlin
+val merged = if (day.activeKcal != null) {
+    day.activeKcal + (extra ?: 0.0)   // tu activeKcal to już Double, nie Double?
+} else {
+    listOfNotNull(day.otherActiveKcal, extra).maxOrNull()
+}
+```

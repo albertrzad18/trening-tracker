@@ -38,8 +38,9 @@ data class PassiveTotals(
 
 /**
  * Składa kalorie aktywne dnia. Zegarek Huawei wlicza trening do „aktywnych”, ale Health Sync zapisuje kalorie
- * treningu tylko przy samym treningu, więc do wartości z zegarka dokładamy treningi. Inne źródło (np. telefon)
- * bywa pełniejsze od zegarka, więc bierzemy większą z dwóch wartości, a nie ich sumę (żeby nie liczyć dwa razy).
+ * treningu tylko przy samym treningu, więc do wartości z zegarka dokładamy treningi.
+ * Inne źródło (np. Health Connect telefonu) liczy kalorie po swojemu i zawyża je względem zegarka,
+ * więc bierzemy je tylko w dniu, w którym zegarek nie zapisał kalorii aktywnych.
  */
 fun List<DailyStats>.withWorkoutCalories(workouts: List<Workout>, zone: ZoneId): List<DailyStats> {
     val kcalByDay = workouts
@@ -48,8 +49,12 @@ fun List<DailyStats>.withWorkoutCalories(workouts: List<Workout>, zone: ZoneId):
         .mapValues { it.value.sum() }
     return map { day ->
         val extra = kcalByDay[day.date]
-        val watch = if (extra == null) day.activeKcal else (day.activeKcal ?: 0.0) + extra
-        val merged = listOfNotNull(watch, day.otherActiveKcal).maxOrNull()
+        val merged = if (day.activeKcal != null) {
+            day.activeKcal + (extra ?: 0.0)
+        } else {
+            // Bez danych z zegarka: inne źródło albo same treningi, większa z wartości (bez sumowania).
+            listOfNotNull(day.otherActiveKcal, extra).maxOrNull()
+        }
         day.copy(activeKcal = merged, otherActiveKcal = null)
     }
 }

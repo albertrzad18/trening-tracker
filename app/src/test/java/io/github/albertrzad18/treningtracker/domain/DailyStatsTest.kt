@@ -78,18 +78,31 @@ class DailyStatsTest {
     }
 
     @Test
-    fun fullerOtherSourceBeatsWatchPlusWorkouts() {
+    fun watchPlusWorkoutsWinsOverOtherSource() {
         val zone = ZoneId.of("Europe/Warsaw")
         val workout = Workout(
             id = "w", discipline = Discipline.POOL,
-            start = LocalDate.of(2026, 10, 30).atTime(18, 0).atZone(zone).toInstant(), zoneOffset = null,
-            duration = Duration.ofHours(1), title = null, distanceM = null, caloriesKcal = 358.0,
+            start = LocalDate.of(2026, 11, 2).atTime(18, 0).atZone(zone).toInstant(), zoneOffset = null,
+            duration = Duration.ofHours(1), title = null, distanceM = null, caloriesKcal = 451.0,
             avgHeartRate = null, maxHeartRate = null, avgSpeedMps = null, maxSpeedMps = null, elevationGainM = null,
         )
-        val day = DailyStats(LocalDate.of(2026, 10, 30), 8_258, 1_564.0, 211.0, otherActiveKcal = 954.0)
+        // Telefon pokazał 911 kcal, zegarek 661 (210 w ciągu dnia + 451 z treningu).
+        val day = DailyStats(LocalDate.of(2026, 11, 2), 5_959, 1_564.0, 210.0, otherActiveKcal = 911.0)
         val result = listOf(day).withWorkoutCalories(listOf(workout), zone)
-        assertEquals(954.0, result[0].activeKcal!!, 0.001)
+        assertEquals(661.0, result[0].activeKcal!!, 0.001)
         assertNull(result[0].otherActiveKcal)
+    }
+
+    @Test
+    fun otherSourceOnlyWhenWatchHasNoActiveCalories() {
+        val zone = ZoneId.of("Europe/Warsaw")
+        val days = listOf(
+            DailyStats(LocalDate.of(2026, 11, 1), 3_000, 1_564.0, null, otherActiveKcal = 400.0),
+            DailyStats(LocalDate.of(2026, 11, 2), 3_000, 1_564.0, 120.0, otherActiveKcal = 400.0),
+        )
+        val result = days.withWorkoutCalories(emptyList(), zone)
+        assertEquals(400.0, result[0].activeKcal!!, 0.001)
+        assertEquals(120.0, result[1].activeKcal!!, 0.001)
     }
 
     @Test
